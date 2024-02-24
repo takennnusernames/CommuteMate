@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PUV_Route_Recommender.Views.InfoPage"
+             Title="Vehicle List">
+
+    <ListView 
+        BackgroundColor="Transparent"
+        x:Name="vehicle_list"
+        SeparatorColor="Aqua"
+        RowHeight="60"
+        ItemSelected="vehicle_list_ItemSelected"
+        ItemTapped="vehicle_list_ItemTapped"
+        >
+
+        <ListView.ItemTemplate>
+            
+            <DataTemplate>
+                
+                <TextCell
+                    Text="{Binding Type}"
+                    Detail="{Binding Route}">
+                </TextCell>
+                
+            </DataTemplate>
+            
+        </ListView.ItemTemplate>
+        
+    </ListView>
+    
+</ContentPage>

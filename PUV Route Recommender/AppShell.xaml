@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="PUV_Route_Recommender.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:PUV_Route_Recommender"
+    xmlns:views="clr-namespace:PUV_Route_Recommender.Views"
+    Shell.FlyoutBehavior="Disabled">
+
+    <TabBar>
+        <ShellContent
+            Title="Home"
+            ContentTemplate="{DataTemplate views:NavigatingPage}"
+            Route="NavigatingPage" />
+        
+        <ShellContent
+            Title="Routes"
+            ContentTemplate="{DataTemplate views:RoutesPage}"
+            Route="RoutePage" />
+
+        <ShellContent
+            Title="List"
+            ContentTemplate="{DataTemplate views:InfoPage}"
+            Route="InforPage" />
+
+    </TabBar>
+
+</Shell>

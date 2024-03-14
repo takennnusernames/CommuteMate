@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModel="clr-namespace:PUV_Route_Recommender.ViewModels"
+             xmlns:model="clr-namespace:PUV_Route_Recommender.Models"
+             x:Class="PUV_Route_Recommender.Views.RoutesView"
+             x:DataType="viewModel:RoutesViewModel"
+             Title="{Binding Title}">
+
+    <Grid ColumnDefinitions="*,*"
+          ColumnSpacing="5"
+          RowDefinitions="*,Auto"
+          RowSpacing="0"
+          BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}">
+
+        <CollectionView BackgroundColor="Transparent"
+                        Grid.ColumnSpan="2"
+                        ItemsSource="{Binding Routes}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:Route">
+                    <Grid Padding="10">
+                        <Frame HeightRequest="125"
+                               Padding="0"
+                               Style="{StaticResource CardView}">
+                            <Grid Padding="0"
+                                  ColumnDefinitions="125, *">
+                                <VerticalStackLayout Grid.ColumnSpan="2"
+                                                     Padding="10">
+                                    <Label Style="{StaticResource LargeLabel}" Text="{Binding Code}"/>
+                                    <Label Style="{StaticResource MediumLabel}" Text="{Binding Name}"/>
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Frame>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Button
+            Grid.Row="1"
+            Grid.Column="0"
+            Margin="9"
+            Command="{Binding GetRoutesCommand}"
+            IsEnabled="{Binding IsNotBusy}"
+            Text="Get Routes"/>
+
+        <ActivityIndicator
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            HorizontalOptions="Fill"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            VerticalOptions="Center"/>
+    </Grid>
+    
+</ContentPage>

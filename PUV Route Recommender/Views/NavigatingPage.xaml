@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             xmlns:tiling="clr-namespace:Mapsui.Tiling;assembly=Mapsui.Tiling"
              x:Class="PUV_Route_Recommender.Views.NavigatingPage"
              Title="NavigatingPage">
-    <VerticalStackLayout>
+    <!--<VerticalStackLayout>
         <Frame 
             Margin="20, 10, 20, 0"
             Padding="20, 2, 20, 2"
@@ -19,11 +21,32 @@
             CornerRadius="45">
 
             <SearchBar
-                Placeholder="Destination"
-                Style="None"/>
+                Placeholder="Destination"/>
         </Frame>
 
         
 
-    </VerticalStackLayout>
+    </VerticalStackLayout>-->
+
+    <Grid>
+        <mapsui:MapControl x:Name="mapControl"/>
+
+        <!-- Search Box 1 -->
+        <SearchBar x:Name="searchBox1"
+                   Placeholder="Orign"
+                   HorizontalOptions="FillAndExpand"
+                   VerticalOptions="Start"
+                   BackgroundColor="Transparent"
+                   TextColor="White"
+                   Margin="20"/>
+
+        <!-- Search Box 2 -->
+        <SearchBar x:Name="searchBox2"
+                   Placeholder="Destination"
+                   HorizontalOptions="FillAndExpand"
+                   VerticalOptions="End"
+                   BackgroundColor="Transparent"
+                   TextColor="White"
+                   Margin="20"/>
+    </Grid>
 </ContentPage>

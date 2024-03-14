@@ -11,17 +11,26 @@
         <ShellContent
             Title="Home"
             ContentTemplate="{DataTemplate views:NavigatingPage}"
-            Route="NavigatingPage" />
+            Route="NavigatingPage" 
+            Icon="home_icon.png"/>
         
         <ShellContent
             Title="Routes"
-            ContentTemplate="{DataTemplate views:RoutesPage}"
-            Route="RoutePage" />
+            ContentTemplate="{DataTemplate views:RoutesView}"
+            Route="RoutesView" 
+            Icon="routes_icon.png"/>
 
         <ShellContent
             Title="List"
             ContentTemplate="{DataTemplate views:InfoPage}"
-            Route="InforPage" />
+            Route="InforPage" 
+            Icon="list_icon.svg"/>
+
+        <!--<ShellContent
+            Title="Main"
+            ContentTemplate="{DataTemplate local:MainPage}"
+            Route="MainPage" 
+            Icon="list_icon.svg"/>-->
 
     </TabBar>
 

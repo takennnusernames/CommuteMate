@@ -11,7 +11,8 @@ namespace PUV_Route_Recommender
             Routing.RegisterRoute(nameof(NavigatingPage), typeof(NavigatingPage));
             Routing.RegisterRoute(nameof(InfoPage), typeof(InfoPage));
             Routing.RegisterRoute(nameof(VehicleInfoPage), typeof(VehicleInfoPage));
-            Routing.RegisterRoute(nameof(RoutesPage), typeof(RoutesPage));
+            Routing.RegisterRoute(nameof(RoutesView), typeof(RoutesView));
+            Routing.RegisterRoute(nameof(RoutesInfoPage), typeof(RoutesInfoPage));
         }
     }
 }

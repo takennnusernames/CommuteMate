@@ -1,0 +1,9 @@
+﻿global using CommunityToolkit.Mvvm.ComponentModel;
+global using CommunityToolkit.Mvvm.Input;
+global using PUV_Route_Recommender.Models;
+global using PUV_Route_Recommender.ViewModels;
+global using System.Collections.ObjectModel;
+global using System.ComponentModel;
+global using System.Diagnostics;
+global using System.Runtime.CompilerServices;
+global using System.Text.Json;

@@ -10,6 +10,7 @@ namespace PUV_Route_Recommender.Interfaces
 {
     public interface IOverpassApiServices
     {
-        Task<List<Route>> GetOSMData();
+        Task RetrieveOverpassRoutesAsync();
+        Task RetrieveOverpassRouteStreetsAsync(long wayId, int routeId);
     }
 }

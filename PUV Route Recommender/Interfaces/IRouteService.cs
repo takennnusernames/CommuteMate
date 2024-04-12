@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NetTopologySuite.Geometries;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,9 @@ namespace PUV_Route_Recommender.Interfaces
 {
     public interface IRouteService
     {
-        Task<List<Route>> GetRoutesAsync();
+        Task<int> InsertRouteAsync(Route route);
+        Task<List<Route>> GetAllRoutesAsync();
+        Task<Route> GetRouteByOsmIdAsync(long id);
+        Task<Route> GetRouteByIdAsync(int id);
     }
 }

@@ -31,7 +31,7 @@
     <MauiIcon Include="Resources\Images\list_icon.svg" />
     <MauiIcon Include="Resources\Images\routes_icon.png" />
     <!-- Splash Screen -->
-    <!--<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />-->
+    <!--<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128, 128" />-->
     <MauiSplashScreen Include="Resources\Splash\commutematesplash.svg" Color="white" />
     <!-- Images -->
     <MauiImage Include="Resources\Images\*" />
@@ -56,17 +56,21 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
-    <PackageReference Include="Mapsui" Version="4.1.4" />
-    <PackageReference Include="Mapsui.Maui" Version="4.1.4" />
+    <PackageReference Include="Mapsui" Version="4.1.5" />
+    <PackageReference Include="Mapsui.Maui" Version="4.1.5" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Maui.Maps" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Maui.Maps" Version="8.0.20" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="OsmSharp" Version="6.2.0" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.7" />
-    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.7" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.20" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+    <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+    <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
+    <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\RoutesView.xaml.cs">

@@ -12,25 +12,32 @@ namespace PUV_Route_Recommender.DTO
         public DateTime timestamp_areas_base { get; set; }
         public string copyright { get; set; }
     }
-    public class OSMRelationDTO
+    public class Element
     {
         public string type { get; set; }
         public long id { get; set; }
-        public List<OSMWayDTO> members { get; set; }
         public Dictionary<string, string> tags { get; set; }
+        public List<OSMCoordinate> geometry { get; set; }
     }
-    public class OSMWayDTO
+    public class BoundingBox
     {
-        public string type { get; set; }
-        public object @ref { get; set; }
-        public string role {  get; set; }
+        public double minLat { get; set; }
+        public double minLon { get; set; }
+        public double maxLat { get; set; }
+        public double maxLon { get; set; }
+    }
+
+    public class OSMCoordinate
+    {
+        public double lat { get; set; }
+        public double lon { get; set; }
     }
     public class OSMDataDTO
     {
         public float version { get; set; }
         public string generator { get; set; }
         public OSM3S osm3s { get; set; }
-        public List<OSMRelationDTO> elements { get; set; }
+        public List<Element> elements { get; set; }
 
     }
 }

@@ -1,135 +1,99 @@
-﻿using Microsoft.VisualBasic;
-using PUV_Route_Recommender.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using NetTopologySuite.Geometries;
+using PUV_Route_Recommender.Interfaces;
+using SQLite;
+using System.Collections;
 
 namespace PUV_Route_Recommender.Repositories
 {
-    public class RouteRepository
+    public class RouteRepository : IRouteRepository
     {
-        private readonly HttpClient _httpClient;
-        private List<Route> _routes;
-        private List<string> _streets;
-        public RouteRepository(HttpClient httpClient)
+        private readonly SQLiteAsyncConnection db; 
+        public RouteRepository(SQLiteAsyncConnection db)
         {
-            _httpClient = httpClient;
-            //Create list for routes;
-            _routes = new List<Route>();
-            _streets = new List<string>();
+            this.db = db;
+        }
+        //create
+        public async Task<int> InsertRouteAsync(Route route)
+        {
+            await db.InsertAsync(route);
+            return route.Id;
         }
 
-        public async Task<List<Route>> GetOsmRoutes()
+        //read
+        public async Task<IEnumerable<Route>> GetAllRoutesAsync()
         {
-            //Overpass QL query
-            string query = @"
-                [out:json]
-;
-                area(3612455830)->.searchArea; /*cebu city area*/
-                relation
-                  [""route""=""bus""]
-                  (area.searchArea);
-                out tags;";
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://overpass-api.de/api/interpreter"),
-                Content = new StringContent(query, Encoding.UTF8, "application/x-www-form-urlencoded")
-            };
             try
             {
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                // Get the JSON data from the response as a string
-                string jsonData = await response.Content.ReadAsStringAsync();
-
-                // Parse the JSON data using the JsonDocument class
-                JsonDocument document = JsonDocument.Parse(jsonData);
-
-                // Get the array of elements from the parsed JSON data
-                JsonElement elements = document.RootElement.GetProperty("elements");
-
-
-                // Iterate through the array of elements
-                foreach (JsonElement element in elements.EnumerateArray())
+                if(await db.Table<Route>().CountAsync() != 0)
                 {
-                    // Check if the element is a relation
-                    if (element.GetProperty("type").GetString() == "relation")
-                    {
-                        // Get the tags object
-                        JsonElement tagsProperty = element.GetProperty("tags");
-                        //element.TryGetProperty("relation", out osmElement);
-
-                        _routes.Add(new Route
-                        {
-                            Osm_Id = element.GetProperty("id").GetInt32(),
-                            Code = tagsProperty.TryGetProperty("ref", out JsonElement refElement) ? refElement.GetString() : "No Code",
-                            Name = tagsProperty.TryGetProperty("name", out JsonElement nameElement) ? nameElement.GetString() : "No Name",
-                        });
-                    }
+                    var routes = await db.Table<Route>().ToListAsync();
+                    return routes;
                 }
-                return _routes;
+                Console.WriteLine($"Failed to retrive routes:");
+                throw new Exception("Route Table is empty");
             }
-            catch (HttpRequestException e)
+            catch (Exception ex)
             {
-                Debug.WriteLine("\nException Caught!");
-                Debug.WriteLine("Message :{0} ", e.Message);
-                return new List<Route>();
+                Console.WriteLine($"Failed to retrive routes: {ex.Message}");
+                throw;
             }
         }
-        public async Task<List<String>> GetRouteStreets(int Osm_Id)
+
+        public async Task<Route> GetRouteByOsmIdAsync(long id)
         {
-            //Overpass QL query
-            string query = @"
-                [out:json]
-                relation(" + Osm_Id + @");
-                way(r);
-                out tags;";
-            var request = new HttpRequestMessage
-            {
-                Method = HttpMethod.Post,
-                RequestUri = new Uri("https://overpass-api.de/api/interpreter"),
-                Content = new StringContent(query, Encoding.UTF8, "application/x-www-form-urlencoded")
-            };
             try
             {
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
-                response.EnsureSuccessStatusCode();
-
-                // Get the JSON data from the response as a string
-                string jsonData = await response.Content.ReadAsStringAsync();
-
-                // Parse the JSON data using the JsonDocument class
-                JsonDocument document = JsonDocument.Parse(jsonData);
-
-                // Get the array of elements from the parsed JSON data
-                JsonElement tags = document.RootElement.GetProperty("elements").GetProperty("tags");
-
-                // Iterate through the array of members
-                foreach (JsonElement tag in tags.EnumerateArray())
-                {
-                    _streets.Add(tag.GetProperty("name").GetString());
-                }
-                return _streets;
-
+                return await db.Table<Route>().FirstOrDefaultAsync(r => r.Osm_Id == id);
             }
-            catch (HttpRequestException e)
+            catch (Exception ex)
             {
-                Debug.WriteLine("\nException Caught!");
-                Debug.WriteLine("Message :{0} ", e.Message);
-                return new List<string>();
-
+                Console.WriteLine($"Failed to retrieve route: {ex.Message}");
+                throw;
             }
         }
-        public Route GetRouteById(int route_Id)
+
+        public async Task<Route> GetRouteByIdAsync(int id)
         {
-            return _routes.FirstOrDefault(x => x.Osm_Id == route_Id);
+            try
+            {
+                return await db.Table<Route>().FirstOrDefaultAsync(r => r.Id == id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to retrieve route: {ex.Message}");
+                throw;
+            }
         }
+
+        public async Task<int> CountRoutesAsync()
+        {
+            try
+            {
+                return await db.Table<Route>().CountAsync();
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception (e.g., log it, rethrow it, etc.)
+                Console.WriteLine($"An error occurred while counting routes: {ex.Message}");
+                throw;
+            }
+        }
+
+        //public async Task<IEnumerable<Route>> GetRoutesByWayId(long wayId)
+        //{
+        //    try
+        //    {
+        //        return await db.Table<Route>().Where(r => r.Streets.Any(s => s.Way_Id == wayId)).ToListAsync();
+            
+        //         //return _routes.Where(route => route.Streets.Any(street => street.Way_Id == wayId));
+        //    }
+        //    catch(Exception ex)
+        //    {
+        //        Console.WriteLine($"An error occurred while getting routes: {ex.Message}");
+        //        throw;
+        //    }
+        //}
+
     }
     
 }

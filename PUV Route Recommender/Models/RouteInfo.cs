@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace PUV_Route_Recommender.Models
 {
-    public class Street
+    public class RouteInfo
     {
-        public int Way_Id { get; set; }
-        public string Name { get; set; }
-        public List<double> Nodes { get; set; }
+        public Route Route { get; set; }
+        public List<Street> Street { get; set; }
+        public List<string> StreetNames { get; set; }
     }
 }

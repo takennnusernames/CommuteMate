@@ -7,7 +7,6 @@ namespace PUV_Route_Recommender
 {
     public partial class MainPage : ContentPage
     {
-        int count = 0;
 
         public MainPage()
         {

@@ -1,5 +1,7 @@
 ﻿using Microsoft.Maui.Controls;
+using PUV_Route_Recommender.Interfaces;
 using PUV_Route_Recommender.Models;
+using SQLite;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,19 +12,39 @@ using System.Threading.Tasks;
 
 namespace PUV_Route_Recommender.Repositories
 {
-    public class StreetRepository
+    public class StreetRepository : IStreetRepository
     {
-        public List<Street> _streets = new List<Street>();
-        private readonly RouteRepository _routeRepository;
-        public StreetRepository(RouteRepository routeRepository)
+        private readonly SQLiteAsyncConnection db;
+        public StreetRepository(SQLiteAsyncConnection db)
         {
-            _routeRepository = routeRepository;
+            this.db = db;
         }
-        public async Task<List<string>> GetStreets(int Osm_Id)
+        public async Task<int> InsertStreetAsync(Street street)
         {
-            List<string> streetList = await _routeRepository.GetRouteStreets(Osm_Id);
+            try
+            {
+                await db.InsertAsync(street);
+                return street.Id;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to add route: {ex.Message}");
+                throw;
+            }
+        }
+        public async Task<Street> GetStreetByWayIdAsync(long wayId)
+        {
+            return await db.Table<Street>().FirstOrDefaultAsync(x => x.Way_Id == wayId);
+        }
 
-            return streetList;
+        public async Task<Street> GetStreetByIdAsync(int id)
+        {
+            return await db.Table<Street>().FirstOrDefaultAsync(x => x.Id == id);
+        }
+        public async Task<int> GetStreetIdAsync(string name)
+        {
+            Street street = await db.Table<Street>().FirstOrDefaultAsync(x => x.Name == name);
+            return street.Id;
         }
     }
 }

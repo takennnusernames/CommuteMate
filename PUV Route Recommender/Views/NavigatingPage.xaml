@@ -3,50 +3,41 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              xmlns:tiling="clr-namespace:Mapsui.Tiling;assembly=Mapsui.Tiling"
+             xmlns:viewModel="clr-namespace:PUV_Route_Recommender.ViewModels"
              x:Class="PUV_Route_Recommender.Views.NavigatingPage"
-             Title="NavigatingPage">
-    <!--<VerticalStackLayout>
-        <Frame 
-            Margin="20, 10, 20, 0"
-            Padding="20, 2, 20, 2"
-            CornerRadius="45">
-
-            <SearchBar
-            Placeholder="Origin"/>
-        </Frame>
-        
-        <Frame 
-            Margin="20, 10, 20, 0"
-            Padding="20, 2, 20, 2"
-            CornerRadius="45">
-
-            <SearchBar
-                Placeholder="Destination"/>
-        </Frame>
-
-        
-
-    </VerticalStackLayout>-->
+             x:DataType="viewModel:NavigatingViewModel"
+             Title="{Binding Title}">
 
     <Grid>
         <mapsui:MapControl x:Name="mapControl"/>
-
-        <!-- Search Box 1 -->
-        <SearchBar x:Name="searchBox1"
-                   Placeholder="Orign"
-                   HorizontalOptions="FillAndExpand"
-                   VerticalOptions="Start"
-                   BackgroundColor="Transparent"
-                   TextColor="White"
-                   Margin="20"/>
-
-        <!-- Search Box 2 -->
-        <SearchBar x:Name="searchBox2"
-                   Placeholder="Destination"
-                   HorizontalOptions="FillAndExpand"
-                   VerticalOptions="End"
-                   BackgroundColor="Transparent"
-                   TextColor="White"
-                   Margin="20"/>
+        <Grid RowDefinitions="*,*"
+              WidthRequest="360"
+              HeightRequest="100"
+              Margin="10"
+              BackgroundColor="Green"
+              VerticalOptions="Start">
+            <!--<SearchBar Placeholder="Enter Start Location"
+                   x:Name="Origin"
+                   Grid.Row="0" 
+                   HorizontalOptions="FillAndExpand" 
+                   BackgroundColor="Blue"
+                   Unfocused="Origin_Unfocused"/>
+            <SearchBar Placeholder="Destination" 
+                   Grid.Row="1" 
+                   HorizontalOptions="FillAndExpand" 
+                   BackgroundColor="Red"/>-->
+            <SearchBar x:Name="searchBar"
+                       Placeholder="Enter Location"
+                       SearchCommand="{Binding SearchLocationCommand}"
+                       SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"
+                       BackgroundColor="Blue"/>
+            <ActivityIndicator HorizontalOptions="Start"
+                               IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               VerticalOptions="Center"/>
+            <ListView x:Name="searchResults"
+                      ItemsSource="{Binding SearchResults}"
+                      Grid.Row="1" />
+        </Grid>
     </Grid>
 </ContentPage>

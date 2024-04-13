@@ -1,7 +1,7 @@
-using PUV_Route_Recommender.Repositories;
-using Vehicle = PUV_Route_Recommender.Models.Vehicle;
+using CommuteMate.Repositories;
+using Vehicle = CommuteMate.Models.Vehicle;
 
-namespace PUV_Route_Recommender.Views;
+namespace CommuteMate.Views;
 
 [QueryProperty(nameof(Vehicle_ID),"Id")]
 public partial class VehicleInfoPage : ContentPage

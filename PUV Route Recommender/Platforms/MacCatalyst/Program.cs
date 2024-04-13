@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     public class Program
     {

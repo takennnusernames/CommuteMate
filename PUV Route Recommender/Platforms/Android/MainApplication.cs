@@ -1,7 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     [Application]
     public class MainApplication : MauiApplication

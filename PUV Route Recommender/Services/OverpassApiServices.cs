@@ -1,11 +1,11 @@
 ﻿using NetTopologySuite.Geometries;
-using PUV_Route_Recommender.DTO;
-using PUV_Route_Recommender.Interfaces;
+using CommuteMate.DTO;
+using CommuteMate.Interfaces;
 using System.Net.Http.Json;
 using Linestring = NetTopologySuite.Geometries.LineString;
 
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class OverpassApiServices : IOverpassApiServices
     {
@@ -56,6 +56,7 @@ namespace PUV_Route_Recommender.Services
         }
         public async Task RetrieveOverpassRouteStreetsAsync(long OsmId, int routeId)
         {
+            var route = await _routeService.GetRouteByIdAsync(routeId);
             string url = "https://overpass-api.de/api/interpreter";
             string query = $@"
                 [out:json];
@@ -80,10 +81,10 @@ namespace PUV_Route_Recommender.Services
                         Name = element.tags.TryGetValue("name", out string name) ? name : "No Name",
                         GeometryWKT = linestringWKT
                     });
-                    await _routeStreetService.AddRouteStreetAsync(routeId, streetId);
-
+                    Street street = await _streetService.GetStreetByIdAsync(streetId);
+                    route.Streets.Add(street);
                 }
-
+                await _routeService.UpdateRouteAsync(route);
             }
         }
     }

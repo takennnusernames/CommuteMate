@@ -1,9 +1,9 @@
 ﻿using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using NetTopologySuite.Operation.Linemerge;
-using PUV_Route_Recommender.Interfaces;
+using CommuteMate.Interfaces;
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class RouteService : IRouteService
     {
@@ -30,6 +30,10 @@ namespace PUV_Route_Recommender.Services
         public async Task<Route> GetRouteByOsmIdAsync(long id)
         {
             return await _routeRepository.GetRouteByOsmIdAsync(id);
+        }
+        public async Task UpdateRouteAsync(Route route)
+        {
+            await _routeRepository.UpdateRouteAsync(route);
         }
     }
 }

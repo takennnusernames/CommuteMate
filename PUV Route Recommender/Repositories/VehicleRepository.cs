@@ -1,4 +1,4 @@
-﻿using PUV_Route_Recommender.Models;
+﻿using CommuteMate.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.Repositories
+namespace CommuteMate.Repositories
 {
     public static class VehicleRepository
     {

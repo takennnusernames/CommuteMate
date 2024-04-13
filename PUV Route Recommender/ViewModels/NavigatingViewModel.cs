@@ -5,14 +5,14 @@ using Mapsui.Styles;
 using Microsoft.Maui.Networking;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
-using PUV_Route_Recommender.Interfaces;
+using CommuteMate.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.ViewModels
+namespace CommuteMate.ViewModels
 {
     public partial class NavigatingViewModel : BaseViewModel
     {

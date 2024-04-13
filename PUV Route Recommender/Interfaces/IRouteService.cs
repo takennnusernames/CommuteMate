@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.Interfaces
+namespace CommuteMate.Interfaces
 {
     public interface IRouteService
     {
@@ -13,5 +13,6 @@ namespace PUV_Route_Recommender.Interfaces
         Task<List<Route>> GetAllRoutesAsync();
         Task<Route> GetRouteByOsmIdAsync(long id);
         Task<Route> GetRouteByIdAsync(int id);
+        Task UpdateRouteAsync(Route route);
     }
 }

@@ -1,8 +1,8 @@
 <maui:MauiWinUIApplication
-    x:Class="PUV_Route_Recommender.WinUI.App"
+    x:Class="CommuteMate.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="using:Microsoft.Maui"
-    xmlns:local="using:PUV_Route_Recommender.WinUI">
+    xmlns:local="using:CommuteMate.WinUI">
 
 </maui:MauiWinUIApplication>

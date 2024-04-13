@@ -1,6 +1,6 @@
-﻿using PUV_Route_Recommender.Views;
+﻿using CommuteMate.Views;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     public partial class AppShell : Shell
     {

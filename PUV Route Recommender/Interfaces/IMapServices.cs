@@ -1,9 +1,9 @@
 ﻿using NetTopologySuite.Geometries;
-using PUV_Route_Recommender.DTO;
+using CommuteMate.DTO;
 using Location = Microsoft.Maui.Devices.Sensors.Location;
 using Map = Mapsui.Map;
 
-namespace PUV_Route_Recommender.Interfaces
+namespace CommuteMate.Interfaces
 {
     public interface IMapServices
     {

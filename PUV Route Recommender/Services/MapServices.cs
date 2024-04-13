@@ -1,4 +1,4 @@
-﻿using PUV_Route_Recommender.Interfaces;
+﻿using CommuteMate.Interfaces;
 using Mapsui;
 using Mapsui.Projections;
 using Tiling = Mapsui.Tiling;
@@ -11,7 +11,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Location = Microsoft.Maui.Devices.Sensors.Location;
 using System.Net.Http.Json;
-using PUV_Route_Recommender.DTO;
+using CommuteMate.DTO;
 using Color = Mapsui.Styles.Color;
 using Mapsui.Nts.Extensions;
 using Newtonsoft.Json;
@@ -22,7 +22,7 @@ using NetTopologySuite.Algorithm;
 using Geom = NetTopologySuite.Geometries.Geometry;
 using System.Text;
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class MapServices : IMapServices
     {

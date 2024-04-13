@@ -1,6 +1,6 @@
 ﻿using SQLite;
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class LocalDBServices
     {

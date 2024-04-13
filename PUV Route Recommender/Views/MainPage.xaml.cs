@@ -3,7 +3,7 @@ using OsmSharp.Streams;
 using OsmSharp;
 using SkiaSharp;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     public partial class MainPage : ContentPage
     {

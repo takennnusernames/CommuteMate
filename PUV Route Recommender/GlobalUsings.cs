@@ -1,7 +1,7 @@
 ﻿global using CommunityToolkit.Mvvm.ComponentModel;
 global using CommunityToolkit.Mvvm.Input;
-global using PUV_Route_Recommender.Models;
-global using PUV_Route_Recommender.ViewModels;
+global using CommuteMate.Models;
+global using CommuteMate.ViewModels;
 global using System.Collections.ObjectModel;
 global using System.ComponentModel;
 global using System.Diagnostics;

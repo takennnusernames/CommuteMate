@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.DTO
+namespace CommuteMate.DTO
 {
     public class Address
     {

@@ -1,12 +1,12 @@
-﻿using PUV_Route_Recommender.Interfaces;
-using PUV_Route_Recommender.Views;
+﻿using CommuteMate.Interfaces;
+using CommuteMate.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.ViewModels
+namespace CommuteMate.ViewModels
 {
     public partial class RoutesViewModel : BaseViewModel
     {  
@@ -94,25 +94,16 @@ namespace PUV_Route_Recommender.ViewModels
             try
             {
                 IsBusy = true;
-                var streets = await _routeStreetService.GetRouteStreetsAsync(route.Id);
-                if(streets.Count is 0)
+                if (route.Streets == null || route.Streets.Count == 0)
                 {
-                    await _overpassApiServices.RetrieveOverpassRouteStreetsAsync(route.Osm_Id, route.Id);
-                    streets = await _routeStreetService.GetRouteStreetsAsync(route.Id);
+                    await _overpassApiServices.RetrieveOverpassRouteStreetsAsync(route.Osm_Id, route.RouteId);
+                    route = await _routeService.GetRouteByIdAsync(route.RouteId);
                 }
-                List<string> streetNames = new List<string>();
-                foreach (var street in streets)
-                {
-                    if (!streetNames.Contains(street.Name))
-                    {
-                        streetNames.Add(street.Name);
-                    }
-                }
+                var streets = route.Streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
                 RouteInfo routeInfo = new RouteInfo
                 {
-                    Route = route,
-                    Street = streets,
-                    StreetNames = streetNames
+                    RouteName = route.Name,
+                    StreetNames = streets
                 };
                 await Shell.Current.GoToAsync($"{nameof(RoutesInfoPage)}", true,
                     new Dictionary<string, object>

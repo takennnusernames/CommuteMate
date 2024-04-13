@@ -1,4 +1,4 @@
-﻿namespace PUV_Route_Recommender
+﻿namespace CommuteMate
 {
     public partial class App : Application
     {

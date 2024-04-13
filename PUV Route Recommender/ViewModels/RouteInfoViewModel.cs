@@ -1,6 +1,6 @@
-﻿using PUV_Route_Recommender.Interfaces;
+﻿using CommuteMate.Interfaces;
 
-namespace PUV_Route_Recommender.ViewModels
+namespace CommuteMate.ViewModels
 {
     [QueryProperty(nameof(Route), "Route")]
     public partial class RouteInfoViewModel : BaseViewModel
@@ -13,7 +13,6 @@ namespace PUV_Route_Recommender.ViewModels
         }
         [ObservableProperty]
         private RouteInfo route;
-
 
     }
 

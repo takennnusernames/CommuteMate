@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     [Register("AppDelegate")]
     public class AppDelegate : MauiUIApplicationDelegate

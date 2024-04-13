@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="PUV_Route_Recommender.AppShell"
+    x:Class="CommuteMate.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:PUV_Route_Recommender"
-    xmlns:views="clr-namespace:PUV_Route_Recommender.Views"
+    xmlns:local="clr-namespace:CommuteMate"
+    xmlns:views="clr-namespace:CommuteMate.Views"
     Shell.FlyoutBehavior="Disabled">
 
     <TabBar>

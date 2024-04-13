@@ -1,11 +1,11 @@
-﻿using PUV_Route_Recommender.Interfaces;
+﻿using CommuteMate.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class StreetService : IStreetService
     {

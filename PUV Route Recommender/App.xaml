@@ -1,8 +1,8 @@
 <?xml version = "1.0" encoding = "UTF-8" ?>
 <Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:PUV_Route_Recommender"
-             x:Class="PUV_Route_Recommender.App">
+             xmlns:local="clr-namespace:CommuteMate"
+             x:Class="CommuteMate.App">
     <Application.Resources>
         <ResourceDictionary>
             <Color x:Key="Primary">#FFC107</Color>

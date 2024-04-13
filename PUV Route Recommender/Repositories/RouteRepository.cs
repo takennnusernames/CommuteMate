@@ -1,22 +1,32 @@
-﻿using NetTopologySuite.Geometries;
-using PUV_Route_Recommender.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
+using CommuteMate.Interfaces;
 using SQLite;
 using System.Collections;
 
-namespace PUV_Route_Recommender.Repositories
+namespace CommuteMate.Repositories
 {
     public class RouteRepository : IRouteRepository
     {
-        private readonly SQLiteAsyncConnection db; 
-        public RouteRepository(SQLiteAsyncConnection db)
+        private readonly CommuteMateDbContext _dbContext;
+        public RouteRepository(CommuteMateDbContext dbContext)
         {
-            this.db = db;
+            _dbContext = dbContext;
         }
         //create
         public async Task<int> InsertRouteAsync(Route route)
         {
-            await db.InsertAsync(route);
-            return route.Id;
+            try
+            {
+                await _dbContext.AddAsync(route);
+                await _dbContext.SaveChangesAsync();
+                return route.RouteId;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to retrive routes: {ex.Message}");
+                throw;
+            }
         }
 
         //read
@@ -24,13 +34,14 @@ namespace PUV_Route_Recommender.Repositories
         {
             try
             {
-                if(await db.Table<Route>().CountAsync() != 0)
-                {
-                    var routes = await db.Table<Route>().ToListAsync();
-                    return routes;
-                }
-                Console.WriteLine($"Failed to retrive routes:");
-                throw new Exception("Route Table is empty");
+                return await _dbContext.Routes.Include(r => r.Streets).ToListAsync();
+                //if(await db.Table<Route>().CountAsync() != 0)
+                //{
+                //    var routes = await db.Table<Route>().ToListAsync();
+                //    return routes;
+                //}
+                //Console.WriteLine($"Failed to retrive routes:");
+                //throw new Exception("Route Table is empty");
             }
             catch (Exception ex)
             {
@@ -43,7 +54,8 @@ namespace PUV_Route_Recommender.Repositories
         {
             try
             {
-                return await db.Table<Route>().FirstOrDefaultAsync(r => r.Osm_Id == id);
+                return await _dbContext.Routes.Where(r => r.Osm_Id == id).FirstOrDefaultAsync();
+                //return await db.Table<Route>().FirstOrDefaultAsync(r => r.Osm_Id == id);
             }
             catch (Exception ex)
             {
@@ -54,22 +66,24 @@ namespace PUV_Route_Recommender.Repositories
 
         public async Task<Route> GetRouteByIdAsync(int id)
         {
-            try
-            {
-                return await db.Table<Route>().FirstOrDefaultAsync(r => r.Id == id);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to retrieve route: {ex.Message}");
-                throw;
-            }
+            var route = await _dbContext.Routes.Include(r => r.Streets).FirstOrDefaultAsync(r => r.RouteId == id);
+            return route;
+                //try
+                //{
+                //    return await db.Table<Route>().FirstOrDefaultAsync(r => r.Id == id);
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine($"Failed to retrieve route: {ex.Message}");
+                //    throw;
+                //}
         }
 
         public async Task<int> CountRoutesAsync()
         {
             try
             {
-                return await db.Table<Route>().CountAsync();
+                return await _dbContext.Routes.CountAsync();
             }
             catch (Exception ex)
             {
@@ -79,21 +93,11 @@ namespace PUV_Route_Recommender.Repositories
             }
         }
 
-        //public async Task<IEnumerable<Route>> GetRoutesByWayId(long wayId)
-        //{
-        //    try
-        //    {
-        //        return await db.Table<Route>().Where(r => r.Streets.Any(s => s.Way_Id == wayId)).ToListAsync();
-            
-        //         //return _routes.Where(route => route.Streets.Any(street => street.Way_Id == wayId));
-        //    }
-        //    catch(Exception ex)
-        //    {
-        //        Console.WriteLine($"An error occurred while getting routes: {ex.Message}");
-        //        throw;
-        //    }
-        //}
-
+        public async Task UpdateRouteAsync(Route route)
+        {
+            _dbContext.Entry(route).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
+        }
     }
     
 }

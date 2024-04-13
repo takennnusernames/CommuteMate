@@ -1,8 +1,8 @@
-using PUV_Route_Recommender.Repositories;
-using PUV_Route_Recommender.Models;
-using PUV_Route_Recommender.Interfaces;
+using CommuteMate.Repositories;
+using CommuteMate.Models;
+using CommuteMate.Interfaces;
 
-namespace PUV_Route_Recommender.Views;
+namespace CommuteMate.Views;
  
 public partial class RoutesView : ContentPage
 {

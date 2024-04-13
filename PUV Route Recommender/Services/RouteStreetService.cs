@@ -1,11 +1,11 @@
-﻿using PUV_Route_Recommender.Interfaces;
+﻿using CommuteMate.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PUV_Route_Recommender.Services
+namespace CommuteMate.Services
 {
     public class RouteStreetService : IRouteStreetService
     {
@@ -27,37 +27,37 @@ namespace PUV_Route_Recommender.Services
             };
             await _routeStreetRepository.AddRouteStreetAsync(routeStreet);
         }
-        public async Task<List<Street>> GetRouteStreetsAsync(int routeId)
-        {
-            try
-            {
-                var routeStreets = await _routeStreetRepository.GetRouteStreetsAsync(routeId);
-                List<Street> streets = [];
-                foreach (var routeStreet in routeStreets)
-                {
-                    Street street = await _streetService.GetStreetByIdAsync(routeStreet.StreetId);
-                    if (street != null)
-                        streets.Add(street);
-                }
-                return streets;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine("Error!", ex.Message);
-                throw new Exception("error unable to retrieve streets");
-            }
-        }
-        public async Task<List<Route>> GetStreetRoutesAsync(int streetId)
-        {
-            var routeStreets = await _routeStreetRepository.GetStreetRoutesAsync(streetId);
-            List<Route> routes = [];
-            foreach (var routeStreet in routeStreets)
-            {
-                Route route = await _routeService.GetRouteByIdAsync(routeStreet.RouteId);
-                if (routes != null)
-                    routes.Add(route);
-            }
-            return routes;
-        }
+        //public async Task<List<Street>> GetRouteStreetsAsync(int routeId)
+        //{
+        //    try
+        //    {
+        //        var routeStreets = await _routeStreetRepository.GetRouteStreetsAsync(routeId);
+        //        List<Street> streets = [];
+        //        foreach (var routeStreet in routeStreets)
+        //        {
+        //            Street street = await _streetService.GetStreetByIdAsync(routeStreet.StreetId);
+        //            if (street != null)
+        //                streets.Add(street);
+        //        }
+        //        return streets;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Debug.WriteLine("Error!", ex.Message);
+        //        throw new Exception("error unable to retrieve streets");
+        //    }
+        //}
+        //public async Task<List<Route>> GetStreetRoutesAsync(int streetId)
+        //{
+        //    var routeStreets = await _routeStreetRepository.GetStreetRoutesAsync(streetId);
+        //    List<Route> routes = [];
+        //    foreach (var routeStreet in routeStreets)
+        //    {
+        //        Route route = await _routeService.GetRouteByIdAsync(routeStreet.RouteId);
+        //        if (routes != null)
+        //            routes.Add(route);
+        //    }
+        //    return routes;
+        //}
     }
 }

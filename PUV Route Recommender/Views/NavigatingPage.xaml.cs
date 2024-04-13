@@ -12,9 +12,9 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.IO;
 using Color = Mapsui.Styles.Color;
 using Mapsui.Nts.Extensions;
-using PUV_Route_Recommender.Interfaces;
+using CommuteMate.Interfaces;
 
-namespace PUV_Route_Recommender.Views;
+namespace CommuteMate.Views;
 
 public partial class NavigatingPage : ContentPage
 {

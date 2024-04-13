@@ -1,4 +1,4 @@
-﻿namespace PUV_Route_Recommender.ViewModels
+﻿namespace CommuteMate.ViewModels
 {
     public partial class BaseViewModel : ObservableObject
     {

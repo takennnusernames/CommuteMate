@@ -3,8 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              xmlns:tiling="clr-namespace:Mapsui.Tiling;assembly=Mapsui.Tiling"
-             xmlns:viewModel="clr-namespace:PUV_Route_Recommender.ViewModels"
-             x:Class="PUV_Route_Recommender.Views.NavigatingPage"
+             xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+             x:Class="CommuteMate.Views.NavigatingPage"
              x:DataType="viewModel:NavigatingViewModel"
              Title="{Binding Title}">
 
@@ -26,18 +26,23 @@
                    Grid.Row="1" 
                    HorizontalOptions="FillAndExpand" 
                    BackgroundColor="Red"/>-->
-            <SearchBar x:Name="searchBar"
-                       Placeholder="Enter Location"
-                       SearchCommand="{Binding SearchLocationCommand}"
-                       SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"
-                       BackgroundColor="Blue"/>
-            <ActivityIndicator HorizontalOptions="Start"
-                               IsRunning="{Binding IsBusy}"
-                               IsVisible="{Binding IsBusy}"
-                               VerticalOptions="Center"/>
-            <ListView x:Name="searchResults"
-                      ItemsSource="{Binding SearchResults}"
-                      Grid.Row="1" />
+            <StackLayout>
+                <SearchBar x:Name="searchBar"
+                           Placeholder="Enter Location"
+                           SearchCommand="{Binding SearchLocationCommand}"
+                           SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"
+                           BackgroundColor="Blue"/>
+                <ActivityIndicator HorizontalOptions="Start"
+                   IsRunning="{Binding IsBusy}"
+                   IsVisible="{Binding IsBusy}"
+                   VerticalOptions="Center"/>
+                <ListView x:Name="searchResults"
+                          ItemsSource="{Binding SearchResults}"
+                          Grid.Row="1"
+                          HeightRequest="140"
+                          VerticalOptions="Start"
+                          BackgroundColor="White"/>
+            </StackLayout>
         </Grid>
     </Grid>
 </ContentPage>

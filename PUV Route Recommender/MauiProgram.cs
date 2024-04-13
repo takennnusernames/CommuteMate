@@ -4,13 +4,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
-using PUV_Route_Recommender.Interfaces;
-using PUV_Route_Recommender.Services;
-using PUV_Route_Recommender.Views;
-using PUV_Route_Recommender.Repositories;
+using CommuteMate.Interfaces;
+using CommuteMate.Services;
+using CommuteMate.Views;
+using CommuteMate.Repositories;
 using SQLite;
 
-namespace PUV_Route_Recommender
+namespace CommuteMate
 {
     public static class MauiProgram
     {
@@ -31,31 +31,17 @@ namespace PUV_Route_Recommender
 		builder.Logging.AddDebug();
 #endif
             // Database
-            builder.Services.AddSingleton<SQLiteAsyncConnection>(provider =>
-            {
-                var connection = new SQLiteAsyncConnection(Path.Combine(FileSystem.AppDataDirectory, "Commute_Mate_Data.db3"));
+            builder.Services.AddDbContext<CommuteMateDbContext>();
 
-                connection.ExecuteAsync("PRAGMA foreign_keys = ON;").Wait();
-
-#if DEBUG
-                connection.DropTableAsync<Route>().Wait();
-                connection.DropTableAsync<Street>().Wait();
-                connection.DropTableAsync<RouteStreet>().Wait();
-#endif
-                connection.CreateTableAsync<Route>().Wait();
-                connection.CreateTableAsync<Street>().Wait();
-                connection.CreateTableAsync<RouteStreet>().Wait();
-
-                return connection;
-            });
+            SQLitePCL.Batteries_V2.Init();
 
             // Repositories
             builder.Services.AddSingleton<IStreetRepository>(provider =>
-                new StreetRepository(provider.GetService<SQLiteAsyncConnection>()));
+                new StreetRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IRouteRepository>(provider =>
-                new RouteRepository(provider.GetService<SQLiteAsyncConnection>()));
+                new RouteRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IRouteStreetRepository>(provider =>
-                new RouteStreetRepository(provider.GetService<SQLiteAsyncConnection>()));
+                new RouteStreetRepository(provider.GetService<CommuteMateDbContext>()));
 
             //Services
             builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
@@ -76,6 +62,14 @@ namespace PUV_Route_Recommender
             builder.Services.AddSingleton<RoutesView>();
             builder.Services.AddTransient<RoutesInfoPage>();
             builder.Services.AddSingleton<NavigatingPage>();
+
+            var dbContext = new CommuteMateDbContext();
+
+//#if DEBUG
+//            dbContext.Database.EnsureDeleted();
+//#endif
+            dbContext.Database.EnsureCreated();
+            dbContext.Dispose();
 
             return builder.Build();
         }

@@ -10,8 +10,7 @@ namespace CommuteMate.Interfaces
         Task<Map> CreateMapAsync();
         Task<Location> GetLocationAsync(string location);
         Task<List<string>> SearchLocationAsync(string input);
-        Task GetDirectionsAsync(double origin, double destination);
+        Task GetDirectionsAsync(Coordinate origin, Coordinate destination);
         string LineStringToWKT(LineString lineString);
-        string StreetListToWkt(List<Coordinate> coordinates);
     }
 }

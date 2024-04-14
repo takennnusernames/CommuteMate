@@ -14,6 +14,8 @@ namespace CommuteMate.DTO
         public List<double> bbox { get; set; }
         public List<Feature> features { get; set; }
     }
+
+    // Root myDeserializedClass = JsonConvert.DeserializeObject<Root>(myJsonResponse);
     public class AlternativeRoutes
     {
         public int target_count { get; set; }
@@ -28,22 +30,17 @@ namespace CommuteMate.DTO
         public DateTime graph_date { get; set; }
     }
 
-    public class Extras
-    {
-        public Roadaccessrestrictions roadaccessrestrictions { get; set; }
-    }
-
     public class Feature
     {
         public List<double> bbox { get; set; }
         public string type { get; set; }
         public Properties properties { get; set; }
-        public ORSGeometry geometry { get; set; }
+        public Geometry geometry { get; set; }
     }
 
-    public class ORSGeometry
+    public class Geometry
     {
-        public List<Coordinate> coordinates { get; set; }
+        public List<List<double>> coordinates { get; set; }
         public string type { get; set; }
     }
 
@@ -61,28 +58,18 @@ namespace CommuteMate.DTO
         public int transfers { get; set; }
         public int fare { get; set; }
         public List<Segment> segments { get; set; }
-        public List<Warning> warnings { get; set; }
-        public List<int> way_points { get; set; }
         public Summary summary { get; set; }
-        public Extras extras { get; set; }
+        public List<int> way_points { get; set; }
     }
 
     public class Query
     {
-        public List<Coordinate> coordinates { get; set; }
+        public List<List<double>> coordinates { get; set; }
         public string profile { get; set; }
         public string format { get; set; }
-        public List<string> extra_info { get; set; }
         public AlternativeRoutes alternative_routes { get; set; }
     }
 
-    public class Roadaccessrestrictions
-    {
-        public List<List<int>> values { get; set; }
-        public List<Summary> summary { get; set; }
-    }
-
-    
 
     public class Segment
     {
@@ -105,13 +92,7 @@ namespace CommuteMate.DTO
     {
         public double distance { get; set; }
         public double duration { get; set; }
-        public double value { get; set; }
-        public double amount { get; set; }
     }
 
-    public class Warning
-    {
-        public int code { get; set; }
-        public string message { get; set; }
-    }
+
 }

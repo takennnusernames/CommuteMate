@@ -62,6 +62,7 @@ namespace CommuteMate
             builder.Services.AddSingleton<RoutesView>();
             builder.Services.AddTransient<RoutesInfoPage>();
             builder.Services.AddSingleton<NavigatingPage>();
+            builder.Services.AddTransient<MethodTests>();
 
             var dbContext = new CommuteMateDbContext();
 

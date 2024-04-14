@@ -9,10 +9,11 @@ namespace CommuteMate.Interfaces
 {
     public interface IRouteService
     {
-        Task<int> InsertRouteAsync(Route route);
+        Task<Route> InsertRouteAsync(Route route);
         Task<List<Route>> GetAllRoutesAsync();
         Task<Route> GetRouteByOsmIdAsync(long id);
         Task<Route> GetRouteByIdAsync(int id);
         Task UpdateRouteAsync(Route route);
+        Task<int> CountRoutesAsync();
     }
 }

@@ -26,11 +26,11 @@
             Route="InforPage" 
             Icon="list_icon.svg"/>
 
-        <!--<ShellContent
+        <ShellContent
             Title="Main"
-            ContentTemplate="{DataTemplate local:MainPage}"
-            Route="MainPage" 
-            Icon="list_icon.svg"/>-->
+            ContentTemplate="{DataTemplate views:MethodTests}"
+            Route="MethodTests" 
+            Icon="list_icon.svg"/>
 
     </TabBar>
 

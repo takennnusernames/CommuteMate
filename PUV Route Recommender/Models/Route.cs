@@ -9,6 +9,7 @@ namespace CommuteMate.Models
     {
         [PrimaryKey, AutoIncrement]
         public int RouteId { get; set; }
+        [Unique]
         public long Osm_Id { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
@@ -18,7 +19,8 @@ namespace CommuteMate.Models
     {
         [PrimaryKey, AutoIncrement]
         public int StreetId { get; set; }
-        public long Way_Id { get; set; }
+        [Unique]
+        public long Osm_Id { get; set; }
         public string Name { get; set; }
         public string GeometryWKT { get; set; }
         public virtual ICollection<Route> Routes { get; set; }

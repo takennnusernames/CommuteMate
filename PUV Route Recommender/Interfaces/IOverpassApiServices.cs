@@ -12,5 +12,7 @@ namespace CommuteMate.Interfaces
     {
         Task RetrieveOverpassRoutesAsync();
         Task RetrieveOverpassRouteStreetsAsync(long wayId, int routeId);
+        Task<Street> RetrieveOverpassStreetAsync(long OsmId);
+        Task RetrieveOverpassRouteStreetsAsync();
     }
 }

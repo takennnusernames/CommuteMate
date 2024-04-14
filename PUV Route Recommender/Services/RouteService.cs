@@ -13,7 +13,7 @@ namespace CommuteMate.Services
         {
             _routeRepository = routeRepository;
         }
-        public async Task<int> InsertRouteAsync(Route route)
+        public async Task<Route> InsertRouteAsync(Route route)
         {
             return await _routeRepository.InsertRouteAsync(route);
         }
@@ -34,6 +34,10 @@ namespace CommuteMate.Services
         public async Task UpdateRouteAsync(Route route)
         {
             await _routeRepository.UpdateRouteAsync(route);
+        }
+        public async Task<int> CountRoutesAsync()
+        {
+            return await _routeRepository.CountRoutesAsync();
         }
     }
 }

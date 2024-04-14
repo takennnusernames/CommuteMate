@@ -14,13 +14,9 @@ using System.Net.Http.Json;
 using CommuteMate.DTO;
 using Color = Mapsui.Styles.Color;
 using Mapsui.Nts.Extensions;
-using Newtonsoft.Json;
-using NetTopologySuite.Features;
-using Mapsui.Providers.Wms;
-using Point = NetTopologySuite.Geometries.Point;
-using NetTopologySuite.Algorithm;
-using Geom = NetTopologySuite.Geometries.Geometry;
 using System.Text;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace CommuteMate.Services
 {
@@ -28,12 +24,16 @@ namespace CommuteMate.Services
     {
         HttpClient _httpClient;
         CancellationTokenSource _cancellationTokenSource;
-        IRouteRepository _routeRepository;
-        public MapServices(IRouteRepository routeRepository) 
+        IRouteService _routeService;
+        IStreetService _streetService;
+        IOverpassApiServices _overpassApiServices;
+        public MapServices(IRouteService routeService, IStreetService streetService, IOverpassApiServices overpassApiServices) 
         {
             _httpClient = new HttpClient();
             _cancellationTokenSource = new CancellationTokenSource();
-            _routeRepository = routeRepository;
+            _routeService = routeService;
+            _streetService = streetService;
+            _overpassApiServices = overpassApiServices;
         }
 
         public async Task<Map> CreateMapAsync()
@@ -56,10 +56,6 @@ namespace CommuteMate.Services
                 var geoLocation = await Geocoding.Default.GetLocationsAsync(addresss);
                 Location location = geoLocation?.FirstOrDefault();
                 return location;
-                //if (location != null)
-                //{
-                //    var coordinates = new MPoint(location.Latitude, location.Longitude);
-                //}
         }
         public async Task<List<string>> SearchLocationAsync(string input)
         {
@@ -85,29 +81,58 @@ namespace CommuteMate.Services
 
         }
 
-        public async Task GetDirectionsAsync(double origin, double destination)
+        public async Task GetDirectionsAsync(Coordinate origin, Coordinate destination)
         {
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new CancellationTokenSource();
 
+            if (_routeService.CountRoutesAsync().Result == 0)
+                throw new Exception("Routes Table is empty");
+
             var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/driving-car/geojson");
+
             //OpenRouteService Directions API Token
             orsRequest.Headers.Add("Authorization", "Bearer 5b3ce3597851110001cf6248d82ffd7c0abb468cbe0cd0bf61653d82");
-            var content = new StringContent("{\"coordinates\":[[123.888767,10.298491],[123.906199,10.293772]],\"alternative_routes\":{\"target_count\":3,\"weight_factor\":1.4,\"share_factor\":0.6},\"extra_info\":[\"osmid\"]}", null, "application/json");
+            var coordinates = new double[][] {
+            [origin.X, origin.Y],
+            [origin.X, destination.Y]
+            };
+
+            var alternativeRoutes = new
+            {
+                target_count = 3,
+                weight_factor = 1.4,
+                share_factor = 0.6
+            };
+
+            var requestData = new
+            {
+                coordinates,
+                alternative_routes = alternativeRoutes
+            };
+
+            var jsonString = System.Text.Json.JsonSerializer.Serialize(requestData);
+            var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
             orsRequest.Content = content;
+
             //Get route from origin to destination
             var response = await _httpClient.SendAsync(orsRequest);
             response.EnsureSuccessStatusCode();
 
             ORSDirectionsDTO responseData = await response.Content.ReadFromJsonAsync<ORSDirectionsDTO>();
 
+            List<List<PathAction>> possibleRoute = [];
+
+            List<Route> possiblePuv = [];
+            List<List<OSMCoordinate>> puvGeom = [];
+
             //loop each coordinate
-            foreach(var feature in responseData.features)
+            foreach (var feature in responseData.features)
             {
+                List<PathAction> paths = [];
+                List<Street> ride = [];
                 List<Route> puvRoutes = [];
-                List<List<OSMCoordinate>> puvGeom = [];
-                List<Coordinate> routeCoordinates = [];
-                List<Coordinate> puvRouteCoordinates = [];
+                List<Route> tempRoutes = [];
                 //get each coordinate
                 foreach(var coordinate in feature.geometry.coordinates)
                 {
@@ -121,36 +146,44 @@ namespace CommuteMate.Services
                     {
                         if(nominatimResponseData.osm_type == "way")
                         {
-                            string overpassUrl = "https://overpass-api.de/api/interpreter";
-                            string query = $@"
-                                [out:json];
-                                way({nominatimResponseData.osm_id});
-                                rel(bw);
-                                out geom;";
-                            //get the available PUV routes in the O-D path
-                            var overpassResponse = await _httpClient.GetAsync($"{ overpassUrl}?data={Uri.EscapeDataString(query)}");
-                            if (overpassResponse.IsSuccessStatusCode)
+                            var street = await _streetService.GetStreetByWayIdAsync(nominatimResponseData.osm_id);
+                            if (street == null)
                             {
-                                OSMDataDTO overpassResponseData = await overpassResponse.Content.ReadFromJsonAsync<OSMDataDTO>();
-                                foreach(var element in overpassResponseData.elements)
+                                street = await _overpassApiServices.RetrieveOverpassStreetAsync(nominatimResponseData.osm_id);
+                                paths.Add(new PathAction
                                 {
-                                    puvRoutes.Add(new Route
-                                    {
-                                        Osm_Id = element.id,
-                                        Code = element.tags.TryGetValue("ref", out string code) ? code : "No Code",
-                                        Name = element.tags.TryGetValue("name", out string name) ? name : "No Name",
-                                    });
+                                    Street = street,
+                                    Act = $"Walk {street.Name}"
+                                });
+                            }
+                            else
+                            {
+                                foreach (var route in street.Routes)
+                                {
+                                    if(!puvRoutes.Contains(route))
+                                        puvRoutes.Add(route);
                                 }
                             }
-                            //if (await _routeRepository.CountRoutesAsync() != 0)
-                            //{
-                            //    var routes = await _routeRepository.GetRoutesByWayId(nominatimResponseData.osm_id);
-                            //}
                         }
                     }
-                    //add coordinate to the final route
-                    routeCoordinates.Add(coordinate);
                 }
+                List<RoutePath> routePaths = new List<RoutePath>();
+                foreach(var route in puvRoutes)
+                {
+                    RoutePath newPath = new();
+                    foreach(var path in paths)
+                    {
+                        if (path.Act == "walk")
+                            newPath.PathAction.Add(path);
+                        else if (route.Streets.Contains(path.Street))
+                            newPath.PathAction.Add(path);
+                    }
+                    newPath.puvRoute = route;
+                    routePaths.Add(newPath);
+                    puvRoutes.Remove(route);
+                }
+                //add coordinate to the final route
+                possibleRoute.Add();
             }
             Console.WriteLine(responseData);
             Debug.WriteLine(responseData);
@@ -179,28 +212,7 @@ namespace CommuteMate.Services
             wktBuilder.Append(")");
             return wktBuilder.ToString();
         }
-        public string StreetListToWkt(List<Coordinate> coordinates)
-        {
-            if (coordinates == null || coordinates.Count == 0)
-            {
-                return string.Empty;
-            }
-
-            // Construct the LINESTRING WKT string
-            StringBuilder wktBuilder = new StringBuilder();
-            wktBuilder.Append("LINESTRING (");
-
-            foreach (Coordinate coord in coordinates)
-            {
-                wktBuilder.Append(coord.X).Append(" ").Append(coord.Y).Append(", ");
-            }
-
-            // Remove the trailing comma and space
-            wktBuilder.Length -= 2;
-            wktBuilder.Append(")");
-
-            return wktBuilder.ToString();
-        }
+        
 
 
         public static ILayer CreateLineStringLayer(IStyle style = null)

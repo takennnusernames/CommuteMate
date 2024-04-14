@@ -13,6 +13,7 @@ namespace CommuteMate
             Routing.RegisterRoute(nameof(VehicleInfoPage), typeof(VehicleInfoPage));
             Routing.RegisterRoute(nameof(RoutesView), typeof(RoutesView));
             Routing.RegisterRoute(nameof(RoutesInfoPage), typeof(RoutesInfoPage));
+            Routing.RegisterRoute(nameof(MethodTests), typeof(MethodTests));
         }
     }
 }

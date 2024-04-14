@@ -1,4 +1,5 @@
 ﻿using CommuteMate.Interfaces;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,13 +15,13 @@ namespace CommuteMate.Services
         {
             _streetRepository = streetRepository;
         }
-        public async Task<int> InsertStreetAsync(Street street)
+        public async Task<Street> InsertStreetAsync(Street street)
         {
             return await _streetRepository.InsertStreetAsync(street);
         }
         public async Task<Street> GetStreetByWayIdAsync(long wayId)
         {
-            return await _streetRepository.GetStreetByWayIdAsync(wayId);
+            return await _streetRepository.GetStreetByOsmIdAsync(wayId);
         }
         public async Task<int> GetStreetIdAsync(string name)
         {
@@ -29,6 +30,29 @@ namespace CommuteMate.Services
         public async Task<Street> GetStreetByIdAsync(int wayId)
         {
             return await _streetRepository.GetStreetByIdAsync(wayId);
+        }
+
+        public string StreetListToWkt(List<Coordinate> coordinates)
+        {
+            if (coordinates == null || coordinates.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            // Construct the LINESTRING WKT string
+            StringBuilder wktBuilder = new StringBuilder();
+            wktBuilder.Append("LINESTRING (");
+
+            foreach (Coordinate coord in coordinates)
+            {
+                wktBuilder.Append(coord.X).Append(" ").Append(coord.Y).Append(", ");
+            }
+
+            // Remove the trailing comma and space
+            wktBuilder.Length -= 2;
+            wktBuilder.Append(")");
+
+            return wktBuilder.ToString();
         }
     }
 }

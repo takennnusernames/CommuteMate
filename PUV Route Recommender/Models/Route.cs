@@ -22,6 +22,7 @@ namespace CommuteMate.Models
         [Unique]
         public long Osm_Id { get; set; }
         public string Name { get; set; }
+        //public List<double[][]> GeomCoordinates { get; set; }
         public string GeometryWKT { get; set; }
         public virtual ICollection<Route> Routes { get; set; }
     }

@@ -1,4 +1,5 @@
 using CommuteMate.Interfaces;
+using Mapsui.UI.Maui;
 using NetTopologySuite.Geometries;
 
 namespace CommuteMate.Views;
@@ -14,11 +15,14 @@ public partial class MethodTests : ContentPage
 
     private async void Button_Pressed(object sender, EventArgs e)
     {
-		Coordinate origin = new Coordinate(123.888767, 10.298491);
-		Coordinate destination = new Coordinate(123.906199, 10.293772);
+		Coordinate origin = new Coordinate(123.89539, 10.31035);
+		Coordinate destination = new Coordinate(123.90006, 10.30421);
         try
         {
-            await _mapServices.GetDirectionsAsync(origin, destination);
+            var map = await _mapServices.CreateMapAsync();
+            await _mapServices.GetDirectionsAsync(origin, destination, map);
+
+            mapControlTest.Map = map;
         }
         catch(Exception ex) 
         {

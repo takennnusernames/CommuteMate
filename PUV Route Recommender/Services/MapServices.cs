@@ -15,8 +15,8 @@ using CommuteMate.DTO;
 using Color = Mapsui.Styles.Color;
 using Mapsui.Nts.Extensions;
 using System.Text;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using System.Linq;
 
 namespace CommuteMate.Services
 {
@@ -48,7 +48,6 @@ namespace CommuteMate.Services
             map.Navigator.RotationLock = true;
             map.Navigator.OverridePanBounds = panBounds;
             map.Home = n => n.ZoomToBox(panBounds);
-
             return await Task.FromResult(map);
         }
         public async Task<Location> GetLocationAsync(string addresss)
@@ -67,7 +66,7 @@ namespace CommuteMate.Services
             var minY = 10.25;
             var maxX = 123.9309;
             var maxY = 10.4953;
-            var response = await _httpClient.GetAsync($"{url}?q={input}&bounded=1&format=json&viewbox={minX},{minY},{maxX},{maxY}", _cancellationTokenSource.Token);
+            var response = await _httpClient.GetAsync($"{url}?q={input}&bounded=1&format=jsonv2&viewbox={minX},{minY},{maxX},{maxY}", _cancellationTokenSource.Token);
 
             if (response.IsSuccessStatusCode)
             {
@@ -81,7 +80,7 @@ namespace CommuteMate.Services
 
         }
 
-        public async Task GetDirectionsAsync(Coordinate origin, Coordinate destination)
+        public async Task GetDirectionsAsync(Coordinate origin, Coordinate destination, Map map)
         {
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new CancellationTokenSource();
@@ -95,7 +94,7 @@ namespace CommuteMate.Services
             orsRequest.Headers.Add("Authorization", "Bearer 5b3ce3597851110001cf6248d82ffd7c0abb468cbe0cd0bf61653d82");
             var coordinates = new double[][] {
             [origin.X, origin.Y],
-            [origin.X, destination.Y]
+            [destination.X, destination.Y]
             };
 
             var alternativeRoutes = new
@@ -120,7 +119,7 @@ namespace CommuteMate.Services
             response.EnsureSuccessStatusCode();
 
             ORSDirectionsDTO responseData = await response.Content.ReadFromJsonAsync<ORSDirectionsDTO>();
-
+            List<string> lineStrings = [];
             List<List<PathAction>> possibleRoute = [];
 
             List<Route> possiblePuv = [];
@@ -129,69 +128,58 @@ namespace CommuteMate.Services
             //loop each coordinate
             foreach (var feature in responseData.features)
             {
-                List<PathAction> paths = [];
+                List<Street> streetPath = [];
                 List<Street> ride = [];
-                List<Route> puvRoutes = [];
+                Queue<List<Route>> puvRoutesQueue = [];
                 List<Route> tempRoutes = [];
+
+                List<Coordinate> points = [];
                 //get each coordinate
-                foreach(var coordinate in feature.geometry.coordinates)
+                foreach (var coordinate in feature.geometry.coordinates)
                 {
                     //search for osm object connected to the coordinate
-                    string url = $"https://nominatim.openstreetmap.org/reverse?format=json&lat={Uri.EscapeDataString(coordinate[1].ToString())}&lon={Uri.EscapeDataString(coordinate[0].ToString())}";
+                    string url = $"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={Uri.EscapeDataString(coordinate[1].ToString())}&lon={Uri.EscapeDataString(coordinate[0].ToString())}";
                     var nominatimRequest = new HttpRequestMessage(HttpMethod.Get, url);
                     var nominatimResponse = await _httpClient.SendAsync(nominatimRequest);
                     nominatimResponse.EnsureSuccessStatusCode();
                     var nominatimResponseData = await nominatimResponse.Content.ReadFromJsonAsync<LocationDTO>();
                     if( nominatimResponseData != null)
                     {
-                        if(nominatimResponseData.osm_type == "way")
+                        //get street objects that is part of the path
+                        if (nominatimResponseData.category == "highway" )
                         {
                             var street = await _streetService.GetStreetByWayIdAsync(nominatimResponseData.osm_id);
-                            if (street == null)
-                            {
-                                street = await _overpassApiServices.RetrieveOverpassStreetAsync(nominatimResponseData.osm_id);
-                                paths.Add(new PathAction
-                                {
-                                    Street = street,
-                                    Act = $"Walk {street.Name}"
-                                });
-                            }
-                            else
-                            {
-                                foreach (var route in street.Routes)
-                                {
-                                    if(!puvRoutes.Contains(route))
-                                        puvRoutes.Add(route);
-                                }
-                            }
+
+                            street ??= await _overpassApiServices.RetrieveOverpassStreetAsync(nominatimResponseData.osm_id);
+                            
+                            if (!streetPath.Contains(street))
+                                streetPath.Add(street);
+                            points.Add(new Coordinate(coordinate[1], coordinate[0]));
+
+                            //create queue for available routes in the path
+                            if(!puvRoutesQueue.Contains(street.Routes))
+                                puvRoutesQueue.Enqueue([.. street.Routes]);
                         }
                     }
                 }
-                List<RoutePath> routePaths = new List<RoutePath>();
-                foreach(var route in puvRoutes)
+                while(puvRoutesQueue.Count > 0)
                 {
-                    RoutePath newPath = new();
-                    foreach(var path in paths)
+                    var routes = puvRoutesQueue.Dequeue();
+                    foreach(var route in routes)
                     {
-                        if (path.Act == "walk")
-                            newPath.PathAction.Add(path);
-                        else if (route.Streets.Contains(path.Street))
-                            newPath.PathAction.Add(path);
+                        var intersect = route.Streets.Intersect(streetPath);
                     }
-                    newPath.puvRoute = route;
-                    routePaths.Add(newPath);
-                    puvRoutes.Remove(route);
                 }
-                //add coordinate to the final route
-                possibleRoute.Add();
+                string linestringWKT = _streetService.StreetListToWkt(points);
+                lineStrings.Add(linestringWKT);
             }
-            Console.WriteLine(responseData);
-            Debug.WriteLine(responseData);
+            foreach(var linestringWKT in lineStrings)
+                await addLineString(map, linestringWKT);
             return;
         }
-        public async Task<Map> addLineString(Map map)
+        public async Task<Map> addLineString(Map map, string WKTString)
         {
-            var lineStringLayer = CreateLineStringLayer(CreateLineStringStyle());
+            var lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
             map.Layers.Add(lineStringLayer);
             map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
             return await Task.FromResult(map);
@@ -215,9 +203,9 @@ namespace CommuteMate.Services
         
 
 
-        public static ILayer CreateLineStringLayer(IStyle style = null)
+        public static ILayer CreateLineStringLayer(string WKTString, IStyle style = null)
         {
-            var lineString = (LineString)new WKTReader().Read(WKTGr5);
+            var lineString = (LineString)new WKTReader().Read(WKTString);
             //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
             lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
 

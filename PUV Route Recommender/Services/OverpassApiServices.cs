@@ -16,7 +16,6 @@ namespace CommuteMate.Services
         public OverpassApiServices(
             IStreetService streetService,
             IRouteService routeService,
-            IMapServices mapServices,
             IRouteStreetService routeStreetService)
         {
             _httpClient = new HttpClient();

@@ -24,7 +24,6 @@ namespace CommuteMate.Services
                 await db.CreateTableAsync<Route>();
                 await db.CreateTableAsync<Street>();
                 //junction table
-                await db.CreateTableAsync<RouteStreet>();
             }
             catch (Exception ex)
             {

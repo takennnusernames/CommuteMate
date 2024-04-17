@@ -31,6 +31,10 @@ namespace CommuteMate.Services
         {
             return await _streetRepository.GetStreetByIdAsync(wayId);
         }
+        public async Task UpdateStreetAsync(Street street)
+        {
+            await _streetRepository.UpdateStreetAsync(street);
+        }
 
         public string StreetListToWkt(List<Coordinate> coordinates)
         {
@@ -45,7 +49,7 @@ namespace CommuteMate.Services
 
             foreach (Coordinate coord in coordinates)
             {
-                wktBuilder.Append(coord.X).Append(" ").Append(coord.Y).Append(", ");
+                wktBuilder.Append(coord.Y).Append(" ").Append(coord.X).Append(", ");
             }
 
             // Remove the trailing comma and space

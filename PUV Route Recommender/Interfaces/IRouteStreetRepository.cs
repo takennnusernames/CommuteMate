@@ -8,8 +8,8 @@ namespace CommuteMate.Interfaces
 {
     public interface IRouteStreetRepository
     {
-        Task AddRouteStreetAsync(RouteStreet routeStreet);
-        //Task<IEnumerable<RouteStreet>> GetRouteStreetsAsync(int routeId);
-        //Task<IEnumerable<RouteStreet>> GetStreetRoutesAsync(int streetId);
+        Task AddRouteStreetAsync(RoutePath routeStreet);
+        //Task<IEnumerable<RoutePath>> GetRouteStreetsAsync(int routeId);
+        //Task<IEnumerable<RoutePath>> GetStreetRoutesAsync(int streetId);
     }
 }

@@ -27,16 +27,6 @@ namespace CommuteMate.Repositories
                 await _dbContext.AddAsync(street);
                 await _dbContext.SaveChangesAsync();
                 return street;
-
-                //if (!_dbContext.Streets.Any(s => s.Osm_Id == street.Osm_Id))
-                //{
-                //    await _dbContext.AddAsync(street);
-                //    await _dbContext.SaveChangesAsync();
-
-                //    return street;
-                //}
-                //var savedStreet = await this.GetStreetByOsmIdAsync(street.Osm_Id);
-                //savedStreet.Routes.Add(street.Routes);
             }
             catch (Exception ex)
             {
@@ -60,6 +50,11 @@ namespace CommuteMate.Repositories
         {
             Street street = await _dbContext.Streets.Where(s => s.Name == name).FirstOrDefaultAsync();
             return street.StreetId;
+        }
+        public async Task UpdateStreetAsync(Street street)
+        {
+            _dbContext.Entry(street).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

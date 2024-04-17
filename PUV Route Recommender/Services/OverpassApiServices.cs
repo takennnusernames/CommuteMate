@@ -12,16 +12,13 @@ namespace CommuteMate.Services
         HttpClient _httpClient;
         readonly IStreetService _streetService;
         readonly IRouteService _routeService;
-        readonly IRouteStreetService _routeStreetService;
         public OverpassApiServices(
             IStreetService streetService,
-            IRouteService routeService,
-            IRouteStreetService routeStreetService)
+            IRouteService routeService)
         {
             _httpClient = new HttpClient();
             _streetService = streetService;
             _routeService = routeService;
-            _routeStreetService = routeStreetService;
         }
 
         public async Task RetrieveOverpassRoutesAsync()
@@ -31,7 +28,7 @@ namespace CommuteMate.Services
                 [out:json];
                 area(3612455830)->.searchArea; /*cebu city area*/
                 relation[""route""=""bus""](area.searchArea);
-                out body;";
+                out geom;";
             var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(query)}");
 
             if (response.IsSuccessStatusCode)
@@ -44,60 +41,65 @@ namespace CommuteMate.Services
                         var code = element.tags.TryGetValue("ref", out string routeCode) ? routeCode : "No Code";
                         if (code.Contains("Ceres"))
                             continue;
-                        Route route = await _routeService.InsertRouteAsync(new Route
+                        Route route = new Route
                         {
                             Osm_Id = element.id,
                             Code = code,
-                            Name = element.tags.TryGetValue("name", out string name) ? name : "No Name"
-                        });
+                            Name = element.tags.TryGetValue("name", out string name) ? name : "No Name",
+                            StreetNameSaved = false,
+                            Streets = []
+                        };
+                        route = await _routeService.InsertRouteAsync(route);
+                        foreach (var member in element.members)
+                        {
+                            var points = new List<Coordinate>();
+                            foreach (var coordinate in member.geometry)
+                            {
+                                points.Add(new Coordinate(coordinate.lon, coordinate.lat));
+                            }
+                            string linestringWKT = _streetService.StreetListToWkt(points);
+                            Street street = new Street
+                            {
+                                Osm_Id = member.@ref,
+                                Name = "No Tags",
+                                GeometryWKT = linestringWKT,
+                                Routes = []
+                            };
+                            street.Routes.Add(route);
+                            await _streetService.InsertStreetAsync(street);
+                        }
+                        await _routeService.UpdateRouteAsync(route);
                     }
                 }
             }
-            await RetrieveOverpassRouteStreetsAsync();
         }
-        public async Task RetrieveOverpassRouteStreetsAsync(long OsmId, int routeId)
+        public async Task RetrieveOverpassRouteStreetNamesAsync(long OsmId, int routeId)
         {
             var route = await _routeService.GetRouteByIdAsync(routeId);
-            string url = "https://overpass-api.de/api/interpreter";
-            string query = $@"
+            if (!route.StreetNameSaved)
+            {
+                string url = "https://overpass-api.de/api/interpreter";
+                string query = $@"
                 [out:json];
                 relation({OsmId});
                 way(r);
-                out geom;";
-            var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(query)}");
-            if (response.IsSuccessStatusCode)
-            {
-                var osmData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
-                foreach(var element in osmData.elements)
+                out tags;";
+                var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(query)}");
+                if (response.IsSuccessStatusCode)
                 {
-                    var street = await _streetService.GetStreetByWayIdAsync(element.id);
-                    if(street != null)
+                    var osmData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
+                    foreach (var element in osmData.elements)
                     {
-                        if(route.Streets.Any(s => s.Osm_Id == element.id))
-                            continue;
-
-                        route.Streets.Add(street);
-                    }
-                    else
-                    {
-                        var points = new List<Coordinate>();
-                        foreach (var coordinate in element.geometry)
+                        var street = await _streetService.GetStreetByWayIdAsync(element.id);
+                        if (street.Name == "No Tags")
                         {
-                            points.Add(new Coordinate(coordinate.lon, coordinate.lat));
+                            street.Name = element.tags.TryGetValue("name", out string name) ? name : "No Name";
+                            await _streetService.UpdateStreetAsync(street);
                         }
-                        string linestringWKT = _streetService.StreetListToWkt(points);
-                        Street newStreet = new Street
-                        {
-                            Osm_Id = element.id,
-                            Name = element.tags.TryGetValue("name", out string name) ? name : "No Name",
-                            GeometryWKT = linestringWKT
-                        };
-                        newStreet.Routes.Add(route);
-                        street = await _streetService.InsertStreetAsync(newStreet);
-                        route.Streets.Add(street);
                     }
+                    route.StreetNameSaved = true;
+                    await _routeService.UpdateRouteAsync(route);
                 }
-                await _routeService.UpdateRouteAsync(route);
             }
         }
         public async Task RetrieveOverpassRouteStreetsAsync()

@@ -35,13 +35,19 @@ namespace CommuteMate.Repositories
             try
             {
                 return await _dbContext.Routes.Include(r => r.Streets).ToListAsync();
-                //if(await db.Table<Route>().CountAsync() != 0)
-                //{
-                //    var routes = await db.Table<Route>().ToListAsync();
-                //    return routes;
-                //}
-                //Console.WriteLine($"Failed to retrive routes:");
-                //throw new Exception("Route Table is empty");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to retrive routes: {ex.Message}");
+                throw;
+            }
+        }
+        public async Task<IEnumerable<Street>> GetRouteStreets(int id)
+        {
+            try
+            {
+                var route = await _dbContext.Routes.Where(r => r.RouteId == id).Include(r => r.Streets).FirstOrDefaultAsync();
+                return route.Streets;
             }
             catch (Exception ex)
             {
@@ -66,7 +72,7 @@ namespace CommuteMate.Repositories
 
         public async Task<Route> GetRouteByIdAsync(int id)
         {
-            var route = await _dbContext.Routes.Include(r => r.Streets).FirstOrDefaultAsync(r => r.RouteId == id);
+            var route = await _dbContext.Routes.Where(r => r.RouteId == id).Include(r => r.Streets).FirstOrDefaultAsync();
             return route;
                 //try
                 //{

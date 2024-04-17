@@ -66,9 +66,9 @@ namespace CommuteMate
 
             var dbContext = new CommuteMateDbContext();
 
-//#if DEBUG
-//            dbContext.Database.EnsureDeleted();
-//#endif
+#if DEBUG
+            dbContext.Database.EnsureDeleted();
+#endif
             dbContext.Database.EnsureCreated();
             dbContext.Dispose();
 

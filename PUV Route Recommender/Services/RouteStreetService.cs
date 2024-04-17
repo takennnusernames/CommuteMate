@@ -20,9 +20,8 @@ namespace CommuteMate.Services
         }
         public async Task AddRouteStreetAsync(int routeId, int streetId)
         {
-            var routeStreet = new RouteStreet
+            var routeStreet = new RoutePath
             {
-                RouteId = routeId,
                 StreetId = streetId
             };
             await _routeStreetRepository.AddRouteStreetAsync(routeStreet);

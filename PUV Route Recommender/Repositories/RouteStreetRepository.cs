@@ -16,23 +16,23 @@ namespace CommuteMate.Repositories
         {
             this.db = db;
         }
-        public async Task AddRouteStreetAsync(RouteStreet routeStreet)
+        public async Task AddRouteStreetAsync(RoutePath routeStreet)
         {
             await db.AddAsync(routeStreet);
         }
 
-        //public async Task<IEnumerable<RouteStreet>> GetRouteStreetsAsync(int routeId)
+        //public async Task<IEnumerable<RoutePath>> GetRouteStreetsAsync(int routeId)
         //{
         //    using(var db = new CommuteMateDbContext())
         //    {
-        //        db.Set<RouteStreet>().Where(r => r.RouteId == routeId).Include(r => r.Street);
+        //        db.Set<RoutePath>().Where(r => r.RouteId == routeId).Include(r => r.Street);
         //    }
-        //    db.Set<RouteStreet>().Where(r => r.RouteId == routeId).Include(r => r.Street);
+        //    db.Set<RoutePath>().Where(r => r.RouteId == routeId).Include(r => r.Street);
         //    return await query.ToListAsync();
         //}
-        //public async Task<IEnumerable<RouteStreet>> GetStreetRoutesAsync(int streetId)
+        //public async Task<IEnumerable<RoutePath>> GetStreetRoutesAsync(int streetId)
         //{
-        //    return await db.Table<RouteStreet>().Where(r => r.StreetId == streetId).ToListAsync();
+        //    return await db.Table<RoutePath>().Where(r => r.StreetId == streetId).ToListAsync();
         //}
     }
 }

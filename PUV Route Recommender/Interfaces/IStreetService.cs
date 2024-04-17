@@ -13,6 +13,7 @@ namespace CommuteMate.Interfaces
         Task<Street> GetStreetByWayIdAsync(long wayId);
         Task<int> GetStreetIdAsync(string name);
         Task<Street> GetStreetByIdAsync(int id);
+        Task UpdateStreetAsync(Street street);
         string StreetListToWkt(List<Coordinate> coordinates);
     }
 }

@@ -12,5 +12,6 @@ namespace CommuteMate.Interfaces
         Task<Street> GetStreetByOsmIdAsync(long wayId);
         Task<int> GetStreetIdAsync(string name);
         Task<Street> GetStreetByIdAsync(int id);
+        Task UpdateStreetAsync(Street street);
     }
 }

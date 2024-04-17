@@ -24,6 +24,7 @@ namespace CommuteMate.DTO
     {
         public string type { get; set; }
         public long @ref {  get; set; }
+        public List<OSMCoordinate> geometry { get; set; }
     }
     public class BoundingBox
     {

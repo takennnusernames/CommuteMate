@@ -21,7 +21,12 @@ namespace CommuteMate.Services
         {
             var routes = await _routeRepository.GetAllRoutesAsync();
             return routes.ToList();
-        } 
+        }
+        public async Task<List<Street>> GetRouteStreets(int id)
+        {
+            var streets = await _routeRepository.GetRouteStreets(id);
+            return streets.ToList();
+        }
 
         public async Task<Route> GetRouteByIdAsync(int id)
         {

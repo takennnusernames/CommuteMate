@@ -94,10 +94,9 @@ namespace CommuteMate.ViewModels
             try
             {
                 IsBusy = true;
-                if (route.Streets == null || route.Streets.Count == 0)
+                if (!route.StreetNameSaved)
                 {
-                    await _overpassApiServices.RetrieveOverpassRouteStreetsAsync(route.Osm_Id, route.RouteId);
-                    route = await _routeService.GetRouteByIdAsync(route.RouteId);
+                    await _overpassApiServices.RetrieveOverpassRouteStreetNamesAsync(route.Osm_Id, route.RouteId);
                 }
                 var streets = route.Streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
                 RouteInfo routeInfo = new RouteInfo

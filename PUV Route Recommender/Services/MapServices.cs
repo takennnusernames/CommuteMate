@@ -17,6 +17,8 @@ using Mapsui.Nts.Extensions;
 using System.Text;
 using Microsoft.Maui.Controls;
 using System.Linq;
+using NominatimAPI;
+using System.Collections.Generic;
 
 namespace CommuteMate.Services
 {
@@ -58,7 +60,7 @@ namespace CommuteMate.Services
         }
         public async Task<List<string>> SearchLocationAsync(string input)
         {
-            _cancellationTokenSource.Cancel();
+            await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource = new CancellationTokenSource();
             List<string> locationNames = [];
             string url = "https://nominatim.openstreetmap.org/search";
@@ -82,10 +84,10 @@ namespace CommuteMate.Services
 
         public async Task GetDirectionsAsync(Coordinate origin, Coordinate destination, Map map)
         {
-            _cancellationTokenSource.Cancel();
+            await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource = new CancellationTokenSource();
 
-            if (_routeService.CountRoutesAsync().Result == 0)
+            if (await _routeService.CountRoutesAsync() == 0)
                 throw new Exception("Routes Table is empty");
 
             var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/driving-car/geojson");
@@ -115,11 +117,10 @@ namespace CommuteMate.Services
             orsRequest.Content = content;
 
             //Get route from origin to destination
-            var response = await _httpClient.SendAsync(orsRequest);
+            var response = await _httpClient.SendAsync(orsRequest, _cancellationTokenSource.Token);
             response.EnsureSuccessStatusCode();
 
             ORSDirectionsDTO responseData = await response.Content.ReadFromJsonAsync<ORSDirectionsDTO>();
-            List<string> lineStrings = [];
             List<List<PathAction>> possibleRoute = [];
 
             List<Route> possiblePuv = [];
@@ -128,62 +129,85 @@ namespace CommuteMate.Services
             //loop each coordinate
             foreach (var feature in responseData.features)
             {
-                List<Street> streetPath = [];
-                List<Street> ride = [];
+                Dictionary<Coordinate, int> streetLineString = [];
+                List<StreetOrder> pathStreetsOrder = [];
+                List<RoutePath> routeWithPuv = [];
                 Queue<List<Route>> puvRoutesQueue = [];
-                List<Route> tempRoutes = [];
-
+                List<Route> puvRoutesList = [];
                 List<Coordinate> points = [];
-                //get each coordinate
-                foreach (var coordinate in feature.geometry.coordinates)
+
+                int iteration = 0;
+                foreach(var coordinate in feature.geometry.coordinates)
                 {
-                    //search for osm object connected to the coordinate
-                    string url = $"https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat={Uri.EscapeDataString(coordinate[1].ToString())}&lon={Uri.EscapeDataString(coordinate[0].ToString())}";
-                    var nominatimRequest = new HttpRequestMessage(HttpMethod.Get, url);
-                    var nominatimResponse = await _httpClient.SendAsync(nominatimRequest);
-                    nominatimResponse.EnsureSuccessStatusCode();
-                    var nominatimResponseData = await nominatimResponse.Content.ReadFromJsonAsync<LocationDTO>();
-                    if( nominatimResponseData != null)
+                    NominatimReverse reverseData = new()
                     {
-                        //get street objects that is part of the path
-                        if (nominatimResponseData.category == "highway" )
+                        Lat = coordinate[1],
+                        Lon = coordinate[0]
+                    };
+                    ReverseResultLimitation reverseLimit = new ReverseResultLimitation()
+                    {
+                        Zoom = 18
+                    };
+
+                    NominatimAPIReverse reverse = new();
+
+                    reverse.SetParameters(reverseData);
+                    reverse.SetLimitation(reverseLimit);
+
+                    NominatimResponse[] nominatimResponseData = await reverse.ToJson();
+
+                    foreach (var data in nominatimResponseData)
+                    {
+                        if (data.Class == "highway" || data.Category == "highway")
                         {
-                            var street = await _streetService.GetStreetByWayIdAsync(nominatimResponseData.osm_id);
+                            var street = await _streetService.GetStreetByWayIdAsync(long.Parse(data.OsmId));
 
-                            street ??= await _overpassApiServices.RetrieveOverpassStreetAsync(nominatimResponseData.osm_id);
-                            
-                            if (!streetPath.Contains(street))
-                                streetPath.Add(street);
-                            points.Add(new Coordinate(coordinate[1], coordinate[0]));
-
-                            //create queue for available routes in the path
-                            if(!puvRoutesQueue.Contains(street.Routes))
-                                puvRoutesQueue.Enqueue([.. street.Routes]);
+                            if (street != null && pathStreetsOrder.Where(p => p.Street.StreetId == street.StreetId) == null)
+                            {
+                                pathStreetsOrder.Add(new StreetOrder
+                                {
+                                    Street = street,
+                                    Rank = iteration
+                                });
+                            }
                         }
                     }
+                    streetLineString.Add(new Coordinate(coordinate[1], coordinate[0]), iteration);
+                    points.Add(new Coordinate(coordinate[1], coordinate[0]));
+                    iteration++;
                 }
-                while(puvRoutesQueue.Count > 0)
+                
+                string linestringWKT = _streetService.StreetListToWkt(points);
+                await addLineString(map, linestringWKT);
+                
+                List<Route> routeList = [];
+                foreach(var street in pathStreetsOrder)
                 {
-                    var routes = puvRoutesQueue.Dequeue();
-                    foreach(var route in routes)
+                    var routes = street.Street.Routes;
+                    int intersectCount = 0;
+                    List<Route> bestRoutes = new();
+                    foreach (Route route in routes)
                     {
-                        var intersect = route.Streets.Intersect(streetPath);
+                        var intersect = route.Streets.Intersect(pathStreetsOrder.Select(p => p.Street));
+                        if (intersect.Count() > intersectCount)
+                        {
+                            intersectCount = intersect.Count();
+                            bestRoutes.Clear();
+                            bestRoutes.Add(route);
+                        }
+                        else if (intersect.Count() == intersectCount)
+                            bestRoutes.Add(route);
+                    }
+                    foreach(Route route in bestRoutes)
+                    {
+                        var intersect = route.Streets.Intersect(pathStreetsOrder.Select(p => p.Street));
+                        var highestRankStreet = intersect.OrderByDescending(x => pathStreetsOrder.First(y => y.Street == x).Rank).First();
                     }
                 }
-                string linestringWKT = _streetService.StreetListToWkt(points);
-                lineStrings.Add(linestringWKT);
             }
-            foreach(var linestringWKT in lineStrings)
-                await addLineString(map, linestringWKT);
             return;
         }
-        public async Task<Map> addLineString(Map map, string WKTString)
-        {
-            var lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
-            map.Layers.Add(lineStringLayer);
-            map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
-            return await Task.FromResult(map);
-        }
+
         public string LineStringToWKT(LineString lineString)
         {
             StringBuilder wktBuilder = new StringBuilder();
@@ -200,9 +224,17 @@ namespace CommuteMate.Services
             wktBuilder.Append(")");
             return wktBuilder.ToString();
         }
-        
 
 
+
+
+        public async Task<Map> addLineString(Map map, string WKTString)
+        {
+            var lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
+            map.Layers.Add(lineStringLayer);
+            map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
+            return await Task.FromResult(map);
+        }
         public static ILayer CreateLineStringLayer(string WKTString, IStyle style = null)
         {
             var lineString = (LineString)new WKTReader().Read(WKTString);

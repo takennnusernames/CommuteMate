@@ -11,7 +11,7 @@ namespace CommuteMate.Interfaces
     public interface IOverpassApiServices
     {
         Task RetrieveOverpassRoutesAsync();
-        Task RetrieveOverpassRouteStreetsAsync(long wayId, int routeId);
+        Task RetrieveOverpassRouteStreetNamesAsync(long wayId, int routeId);
         Task<Street> RetrieveOverpassStreetAsync(long OsmId);
         Task RetrieveOverpassRouteStreetsAsync();
     }

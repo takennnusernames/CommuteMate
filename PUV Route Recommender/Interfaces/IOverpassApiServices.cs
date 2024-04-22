@@ -1,5 +1,6 @@
 ﻿using CommuteMate.DTO;
 using CommuteMate.Models;
+using NetTopologySuite.Geometries;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,9 @@ namespace CommuteMate.Interfaces
         Task RetrieveOverpassRouteStreetNamesAsync(long wayId, int routeId);
         Task<Street> RetrieveOverpassStreetAsync(long OsmId);
         Task RetrieveOverpassRouteStreetsAsync();
+        Task<List<Route>> RetrieveRelatedRoutes(long OsmId);
+        Task<List<Street>> RetrieveRelatedStreetsAsync(long OsmId);
+        Task<List<StreetWithNode>> RetrieveStreetWithNodesAsync(long OsmId);
+        Task<List<(Street, Coordinate, int)>> GeometryToStreetListAsync(DTO.Geometry geometry);
     }
 }

@@ -19,6 +19,8 @@ using Microsoft.Maui.Controls;
 using System.Linq;
 using NominatimAPI;
 using System.Collections.Generic;
+using NetTopologySuite.IO.Converters;
+using System;
 
 namespace CommuteMate.Services
 {
@@ -84,128 +86,136 @@ namespace CommuteMate.Services
 
         public async Task GetDirectionsAsync(Coordinate origin, Coordinate destination, Map map)
         {
-            await _cancellationTokenSource.CancelAsync();
-            _cancellationTokenSource = new CancellationTokenSource();
+            try
+            {
+                await _cancellationTokenSource.CancelAsync();
+                _cancellationTokenSource = new CancellationTokenSource();
 
-            if (await _routeService.CountRoutesAsync() == 0)
-                throw new Exception("Routes Table is empty");
-
-            var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/driving-car/geojson");
-
-            //OpenRouteService Directions API Token
-            orsRequest.Headers.Add("Authorization", "Bearer 5b3ce3597851110001cf6248d82ffd7c0abb468cbe0cd0bf61653d82");
-            var coordinates = new double[][] {
+                //OpenRouteService Directions 
+                var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/driving-car/geojson");
+                orsRequest.Headers.Add("Authorization", "Bearer 5b3ce3597851110001cf6248d82ffd7c0abb468cbe0cd0bf61653d82");
+                var coordinates = new double[][] {
             [origin.X, origin.Y],
             [destination.X, destination.Y]
             };
 
-            var alternativeRoutes = new
-            {
-                target_count = 3,
-                weight_factor = 1.4,
-                share_factor = 0.6
-            };
-
-            var requestData = new
-            {
-                coordinates,
-                alternative_routes = alternativeRoutes
-            };
-
-            var jsonString = System.Text.Json.JsonSerializer.Serialize(requestData);
-            var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
-            orsRequest.Content = content;
-
-            //Get route from origin to destination
-            var response = await _httpClient.SendAsync(orsRequest, _cancellationTokenSource.Token);
-            response.EnsureSuccessStatusCode();
-
-            ORSDirectionsDTO responseData = await response.Content.ReadFromJsonAsync<ORSDirectionsDTO>();
-            List<List<PathAction>> possibleRoute = [];
-
-            List<Route> possiblePuv = [];
-            List<List<OSMCoordinate>> puvGeom = [];
-
-            //loop each coordinate
-            foreach (var feature in responseData.features)
-            {
-                Dictionary<Coordinate, int> streetLineString = [];
-                List<StreetOrder> pathStreetsOrder = [];
-                List<RoutePath> routeWithPuv = [];
-                Queue<List<Route>> puvRoutesQueue = [];
-                List<Route> puvRoutesList = [];
-                List<Coordinate> points = [];
-
-                int iteration = 0;
-                foreach(var coordinate in feature.geometry.coordinates)
+                var alternativeRoutes = new
                 {
-                    NominatimReverse reverseData = new()
+                    target_count = 3,
+                    weight_factor = 1.4,
+                    share_factor = 0.6
+                };
+
+                var requestData = new
+                {
+                    coordinates,
+                    alternative_routes = alternativeRoutes
+                };
+
+                var jsonString = System.Text.Json.JsonSerializer.Serialize(requestData);
+                var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
+                orsRequest.Content = content;
+
+                //Get route from origin to destination
+                var orsResponse = await _httpClient.SendAsync(orsRequest, _cancellationTokenSource.Token);
+                if (orsResponse.IsSuccessStatusCode)
+                {
+                    ORSDirectionsDTO orsResponseData = await orsResponse.Content.ReadFromJsonAsync<ORSDirectionsDTO>();
+
+                    foreach (var feature in orsResponseData.features)
                     {
-                        Lat = coordinate[1],
-                        Lon = coordinate[0]
-                    };
-                    ReverseResultLimitation reverseLimit = new ReverseResultLimitation()
-                    {
-                        Zoom = 18
-                    };
+                        List<(Coordinate, OSMDataDTO)> coordinateRelatedRoutesList = new List<(Coordinate, OSMDataDTO)>();
+                        //queue for puv route and number of streets that it intersects
+                        Queue<List<(Route, int, Street, Street)>> routesQueue = new();
 
-                    NominatimAPIReverse reverse = new();
+                        //get street information for the geometry
+                        var streetList = await _overpassApiServices.GeometryToStreetListAsync(feature.geometry);
 
-                    reverse.SetParameters(reverseData);
-                    reverse.SetLimitation(reverseLimit);
-
-                    NominatimResponse[] nominatimResponseData = await reverse.ToJson();
-
-                    foreach (var data in nominatimResponseData)
-                    {
-                        if (data.Class == "highway" || data.Category == "highway")
+                        //remove redunduncy of streets
+                        var streets = streetList.Select(tuple => tuple.Item1).GroupBy(s => s.Name).Select(g => g.First()).ToList();
+                        foreach (var street in streets)
                         {
-                            var street = await _streetService.GetStreetByWayIdAsync(long.Parse(data.OsmId));
-
-                            if (street != null && pathStreetsOrder.Where(p => p.Street.StreetId == street.StreetId) == null)
+                            //get puv routes that pass through the street
+                            var relatedRoutes = await _overpassApiServices.RetrieveRelatedRoutes(street.Osm_Id);
+                            if (relatedRoutes.Count > 0)
                             {
-                                pathStreetsOrder.Add(new StreetOrder
+                                List<(Route, int, Street, Street)> routes = new();
+                                foreach (var route in relatedRoutes)
                                 {
-                                    Street = street,
-                                    Rank = iteration
-                                });
+                                    //check if route is already in the queue
+                                    if (routesQueue.Any(q => q.Any(r => r.Item1.Osm_Id == route.Osm_Id)))
+                                    {
+                                        var routeList = routesQueue.FirstOrDefault(q => q.Any(l => l.Item1.Equals(route)));
+                                        //increase count of route to determine best route
+                                        var tuple = routeList.FirstOrDefault(item => item.Item1.Equals(route));
+                                        if (tuple != default)
+                                        {
+                                            var index = routeList.IndexOf(tuple);
+                                            var updatedTuple = (tuple.Item1, tuple.Item2 + 1, tuple.Item3, street);
+                                            routeList[index] = updatedTuple;
+                                        }
+                                    }
+                                    else
+                                        routes.Add(new(route, 0, street, street));
+                                }
+                                //create the queue for the routes
+                                if (routes.Count > 0)
+                                    routesQueue.Enqueue(routes);
                             }
                         }
-                    }
-                    streetLineString.Add(new Coordinate(coordinate[1], coordinate[0]), iteration);
-                    points.Add(new Coordinate(coordinate[1], coordinate[0]));
-                    iteration++;
-                }
-                
-                string linestringWKT = _streetService.StreetListToWkt(points);
-                await addLineString(map, linestringWKT);
-                
-                List<Route> routeList = [];
-                foreach(var street in pathStreetsOrder)
-                {
-                    var routes = street.Street.Routes;
-                    int intersectCount = 0;
-                    List<Route> bestRoutes = new();
-                    foreach (Route route in routes)
-                    {
-                        var intersect = route.Streets.Intersect(pathStreetsOrder.Select(p => p.Street));
-                        if (intersect.Count() > intersectCount)
+                        List<string> lineStrings = [];
+                        while (routesQueue.Count > 0)
                         {
-                            intersectCount = intersect.Count();
-                            bestRoutes.Clear();
-                            bestRoutes.Add(route);
+                            var routes = routesQueue.Dequeue();
+                            var highestIntersectRoute = routes
+                                                    .GroupBy(tuple => tuple.Item2) // Group tuples by their integer value
+                                                    .OrderByDescending(group => group.Key) // Order groups by descending integer value
+                                                    .FirstOrDefault() // Select the first (i.e., highest) group
+                                                    .ToList();
+                            //iterate each route
+                            foreach (var route in highestIntersectRoute)
+                            {
+                                //get all streets for the route
+                                var relatedStreets = await _overpassApiServices.RetrieveStreetWithNodesAsync(route.Item1.Osm_Id);
+                                //get streets of main route
+                                var newPath = streetList.Select(l => l.Item1).ToList();
+                                var streetStart = newPath.FindIndex(s => s.Osm_Id == route.Item3.Osm_Id);
+                                var streetEnd = newPath.FindIndex(s => s.Osm_Id == route.Item4.Osm_Id);
+                                //remove streets to be changed by puv route
+                                newPath.RemoveRange((streetStart + 1), ((streetEnd - streetStart) - 1));
+
+                                //sequence streets of route
+                                await _streetService.StreetSequenceOrder(relatedStreets);
+                                var routeStart = route.Item3;
+                                var routeEnd = route.Item4;
+                                var routeStartIndex = relatedStreets.FindIndex(tuple => tuple.Osm_Id == routeStart.Osm_Id);
+                                var routeEndIndex = relatedStreets.FindIndex(tuple => tuple.Osm_Id == routeEnd.Osm_Id);
+                                //select streets from the start up to the end of intersection
+                                var streetsInRange = relatedStreets
+                                        .Skip(routeStartIndex)
+                                        .Take(routeEndIndex - routeStartIndex + 1)
+                                        .ToList();
+
+                                //insert new path
+                                //newPath.InsertRange((streetStart + 1), streetsInRange);
+                                var wkts = newPath.Select(s => s.GeometryWKT).ToList();
+                                lineStrings.AddRange(wkts);
+                                break;
+                            }
+                            break;
+
                         }
-                        else if (intersect.Count() == intersectCount)
-                            bestRoutes.Add(route);
-                    }
-                    foreach(Route route in bestRoutes)
-                    {
-                        var intersect = route.Streets.Intersect(pathStreetsOrder.Select(p => p.Street));
-                        var highestRankStreet = intersect.OrderByDescending(x => pathStreetsOrder.First(y => y.Street == x).Rank).First();
+                        //var lineString = _streetService.StreetListToWkt(streetList.Select(tuple => tuple.Item2).ToList());
+                        await addLineString(map, lineStrings);
+                        break;
                     }
                 }
             }
-            return;
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in getting Direction:", ex.Message);
+                throw;
+            }
         }
 
         public string LineStringToWKT(LineString lineString)
@@ -235,31 +245,67 @@ namespace CommuteMate.Services
             map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
             return await Task.FromResult(map);
         }
+
+        public async Task<Map> addLineString(Map map, List<string> WKTStrings)
+        {
+            try
+            {
+                foreach (string wktString in WKTStrings)
+                {
+                    var lineStringLayer = CreateLineStringLayer(wktString, CreateLineStringStyle());
+                    map.Layers.Add(lineStringLayer);
+                    map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
+                }
+
+                return await Task.FromResult(map);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine("Error inc addLineString: ", ex.Message);
+                throw;
+            }
+        }
         public static ILayer CreateLineStringLayer(string WKTString, IStyle style = null)
         {
-            var lineString = (LineString)new WKTReader().Read(WKTString);
-            //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
-            lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
-
-            return new MemoryLayer
+            try
             {
-                Features = new[] { new GeometryFeature { Geometry = lineString } },
-                Name = "LineStringLayer",
-                Style = style
+                var lineString = (LineString)new WKTReader().Read(WKTString);
+                //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
+                lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
 
-            };
+                return new MemoryLayer
+                {
+                    Features = new[] { new GeometryFeature { Geometry = lineString } },
+                    Name = "LineStringLayer",
+                    Style = style
+
+                };
+            }
+            
+            catch(Exception ex)
+            {
+                Console.WriteLine("Error inc CreateLineStringLayer: ", ex.Message);
+                throw;
+            }
         }
         public static IStyle CreateLineStringStyle()
         {
-            return new VectorStyle
+            try
             {
-                Fill = null,
-                Outline = null,
+                return new VectorStyle
+                {
+                    Fill = null,
+                    Outline = null,
 #pragma warning disable CS8670 // Object or collection initializer implicitly dereferences possibly null member.
-                Line = { Color = Color.FromString("YellowGreen"), Width = 4 }
-            };
+                    Line = { Color = Color.FromString("YellowGreen"), Width = 4 }
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inc CreateLineStringStyle: ", ex.Message);
+                throw;
+            }
         }
-
 
 
 

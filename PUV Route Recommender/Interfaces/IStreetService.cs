@@ -14,6 +14,8 @@ namespace CommuteMate.Interfaces
         Task<int> GetStreetIdAsync(string name);
         Task<Street> GetStreetByIdAsync(int id);
         Task UpdateStreetAsync(Street street);
-        string StreetListToWkt(List<Coordinate> coordinates);
+        Task<string> StreetListToWkt(List<Coordinate> coordinates);
+        Task<List<Coordinate>> WktToStreetList(string wktString);
+        Task StreetSequenceOrder(List<StreetWithNode> streets);
     }
 }

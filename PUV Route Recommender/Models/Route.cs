@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CommuteMate.Models
 {
+    //db tables
     public class Route
     {
         [PrimaryKey, AutoIncrement]
@@ -56,6 +57,8 @@ namespace CommuteMate.Models
             // Combine hash codes of relevant properties
         }
     }
+
+    //project objects
     public class RoutePath
     {
         public int StreetId { get; set; }
@@ -63,9 +66,18 @@ namespace CommuteMate.Models
         public string StreetAction {  get; set; }
         public string PathLineString { get; set; }
     }
-    public class StreetOrder
+    public class RouteQueueInfo
     {
-        public Street Street { get; set; }
-        public int Rank { get; set;}
+        public Route route { get; set; }
+        public int intersects { get; set; }
+        public Street Start { get; set; }
+        public Street End { get; set; }
+    }
+    public class StreetWithNode
+    {
+        public int StreetId { get; set; }
+        public long Osm_Id { get; set; }
+        public string Name { get; set; }
+        public List<long> Nodes { get; set; }
     }
 }

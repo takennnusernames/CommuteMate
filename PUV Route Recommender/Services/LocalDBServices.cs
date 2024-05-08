@@ -10,7 +10,7 @@ namespace CommuteMate.Services
             if (db != null)
                 return;
             // Get an absolute path to the database file
-            //var databasePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyData.db");
+            //var databasePath = PathAction.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyData.db");
             var databasePath = Path.Combine(FileSystem.AppDataDirectory, "Commute_Mate_Data.db");
 
             try
@@ -24,7 +24,6 @@ namespace CommuteMate.Services
                 await db.CreateTableAsync<Route>();
                 await db.CreateTableAsync<Street>();
                 //junction table
-                await db.CreateTableAsync<RouteStreet>();
             }
             catch (Exception ex)
             {

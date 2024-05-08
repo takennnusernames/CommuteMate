@@ -25,7 +25,7 @@ namespace CommuteMate
                 .HasMany(r => r.Streets)
                 .WithMany(s => s.Routes)
                 .UsingEntity<Dictionary<string, object>>(
-                    "RouteStreet",
+                    "RoutePath",
                     r => r
                         .HasOne<Street>()
                         .WithMany()

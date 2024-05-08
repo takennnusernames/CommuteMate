@@ -20,13 +20,13 @@ namespace CommuteMate.Repositories
         {
             _dbContext = db;
         }
-        public async Task<int> InsertStreetAsync(Street street)
+        public async Task<Street> InsertStreetAsync(Street street)
         {
             try
             {
                 await _dbContext.AddAsync(street);
                 await _dbContext.SaveChangesAsync();
-                return street.StreetId;
+                return street;
             }
             catch (Exception ex)
             {
@@ -34,10 +34,10 @@ namespace CommuteMate.Repositories
                 throw;
             }
         }
-        public async Task<Street> GetStreetByWayIdAsync(long wayId)
+        public async Task<Street> GetStreetByOsmIdAsync(long osmId)
         {
 
-            return await _dbContext.Streets.Where(s => s.Way_Id == wayId).FirstOrDefaultAsync();
+            return await _dbContext.Streets.Where(s => s.Osm_Id == osmId).Include(s => s.Routes).FirstOrDefaultAsync();
             //return await db.Table<Street>().FirstOrDefaultAsync(x => x.Way_Id == wayId);
         }
 
@@ -50,6 +50,11 @@ namespace CommuteMate.Repositories
         {
             Street street = await _dbContext.Streets.Where(s => s.Name == name).FirstOrDefaultAsync();
             return street.StreetId;
+        }
+        public async Task UpdateStreetAsync(Street street)
+        {
+            _dbContext.Entry(street).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
         }
     }
 }

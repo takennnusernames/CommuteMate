@@ -16,7 +16,16 @@ namespace CommuteMate.DTO
     {
         public string type { get; set; }
         public long id { get; set; }
+        public List<Member> members { get; set; }
         public Dictionary<string, string> tags { get; set; }
+        public List<long> nodes { get; set; }
+        public List<OSMCoordinate> geometry { get; set; }
+    }
+    public class Member
+    {
+        public string type { get; set; }
+        public long @ref {  get; set; }
+        public string role {  get; set; }
         public List<OSMCoordinate> geometry { get; set; }
     }
     public class BoundingBox

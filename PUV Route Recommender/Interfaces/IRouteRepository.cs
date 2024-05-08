@@ -8,8 +8,9 @@ namespace CommuteMate.Interfaces
 {
     public interface IRouteRepository
     {
-        Task<int> InsertRouteAsync(Route route);
+        Task<Route> InsertRouteAsync(Route route);
         Task<IEnumerable<Route>> GetAllRoutesAsync();
+        Task<IEnumerable<Street>> GetRouteStreets(int id);
         Task<Route> GetRouteByIdAsync(int id);
         Task<int> CountRoutesAsync();
         Task<Route> GetRouteByOsmIdAsync(long id);

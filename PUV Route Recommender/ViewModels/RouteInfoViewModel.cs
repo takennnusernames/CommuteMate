@@ -5,11 +5,9 @@ namespace CommuteMate.ViewModels
     [QueryProperty(nameof(Route), "Route")]
     public partial class RouteInfoViewModel : BaseViewModel
     {
-        private readonly IRouteStreetService _routeStreetService;
-        public RouteInfoViewModel(IRouteStreetService routeStreetService) 
+        public RouteInfoViewModel() 
         {
             Title = "Route Details";
-            _routeStreetService = routeStreetService;
         }
         [ObservableProperty]
         private RouteInfo route;

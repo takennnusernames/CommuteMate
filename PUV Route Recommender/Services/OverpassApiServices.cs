@@ -9,6 +9,8 @@ using NominatimAPI;
 using Point = NetTopologySuite.Geometries.Point;
 using System.Linq;
 using Microsoft.Maui.Controls;
+using NetTopologySuite.LinearReferencing;
+using NetTopologySuite.Operation.Distance;
 
 
 namespace CommuteMate.Services
@@ -193,6 +195,7 @@ namespace CommuteMate.Services
         }
         public async Task<Street> RetrieveOverpassStreetAsync(long OsmId)
         {
+            Console.WriteLine("Retrieving Streets");
             Street street = new();
             string overpassUrl = "https://overpass-api.de/api/interpreter";
             string query = $@"
@@ -216,6 +219,7 @@ namespace CommuteMate.Services
                     {
                         Osm_Id = element.id,
                         Name = element.tags.TryGetValue("name", out string name) ? name : "No Name",
+                        Coordinates = points,
                         GeometryWKT = linestringWKT
                     });
                 }
@@ -336,26 +340,107 @@ namespace CommuteMate.Services
                 throw;
             }
         }
-
-        public async Task<List<(Street, Coordinate, int)>> GeometryToStreetListAsync(DTO.Geometry geometry)
+        public async Task<List<StreetWithCoordinates>> RetrieveStreetWithCoordinatesAsync(long OsmId)
         {
             try
             {
-                List<(Street street, Coordinate, int rank)> streetList = new();
-                int iteration = 0;
+                await _cancellationTokenSource.CancelAsync();
+                _cancellationTokenSource = new CancellationTokenSource();
+                string url = "https://overpass-api.de/api/interpreter";
+                string query = $@"
+                [out:json];
+                relation({OsmId});
+                out geom;";
+                var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(query)}", _cancellationTokenSource.Token);
+                response.EnsureSuccessStatusCode();
+                var responseData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
+                List<StreetWithCoordinates>relatedStreets = [];
+                foreach(var element in responseData.elements)
+                {
+                    foreach (var member in element.members)
+                    {
+                        var points = new List<Coordinate>();
+                        foreach (var coordinate in member.geometry)
+                        {
+                            points.Add(new Coordinate(coordinate.lon, coordinate.lat));
+                        }
+                        StreetWithCoordinates street = new StreetWithCoordinates
+                        {
+                            Osm_Id = member.@ref,
+                            Role = member.role,
+                            Coordinates = []
+                        };
+                        street.Coordinates.AddRange(points);
+                        relatedStreets.Add(street);
+                    }
+                }
+                return relatedStreets;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in RetrieveRelatedStret: {ex.Message}", ex.Message);
+                throw;
+            }
+        }
+
+        public async Task<List<(Street, Coordinate)>> GeometryToStreetListAsync(DTO.Geometry geometry)
+        {
+            Console.WriteLine("Converting Geometry");
+            try
+            {
+
+                List<(Street street, Coordinate)> streetList = new();
+                HashSet<double> addedStreets = new HashSet<double>();
+                //test
+                var minX = geometry.coordinates.Min(coord => coord.First());
+                var minY = geometry.coordinates.Min(coord => coord.Last());
+                var maxX = geometry.coordinates.Max(coord => coord.First());
+                var maxY = geometry.coordinates.Max(coord => coord.Last());
+
+                string url = "https://overpass-api.de/api/interpreter";
+                string overPassQuery = $@"
+                [out:json];
+                way({minY}, {minX}, {maxY}, {maxX})[""highway""];
+                out geom;
+                ";
+                var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(overPassQuery)}");
+                response.EnsureSuccessStatusCode();
+                var responseData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
+                var ways = responseData.elements;
+                //test
                 foreach (var coordinate in geometry.coordinates)
                 {
-                    var data = await ReverseGeocodeSearch(coordinate[1], coordinate[0]);
+                    var point = new Coordinate(coordinate.First(), coordinate.Last());
 
-                    if (data.category == "highway")
+                    // Find the closest way to the coordinate
+                    var way = ways.OrderBy(way =>
                     {
-                        var street = await RetrieveOverpassStreetAsync(data.osm_id);
-                        streetList.Add(new(street, new Coordinate(coordinate[0], coordinate[1]), iteration));
-                        iteration++;
+                        var line = CreateLineString(way.geometry);
+                        //var distanceOp = new LengthIndexedLine(line);
+                        Point pointPoint = new Point(point);
+                        DistanceOp distanceOp = new DistanceOp(line, pointPoint);
+                        return distanceOp.Distance();
+                    }).FirstOrDefault();
+
+                    if (way == null)
+                        continue;
+                    var points = new List<Coordinate>();
+                    foreach (var coord in way.geometry)
+                    {
+                        points.Add(new Coordinate(coord.lon, coord.lat));
                     }
-                    else
+                    string linestringWKT = await _streetService.StreetListToWkt(points);
+                    var street = await _streetService.InsertStreetAsync(new Street
                     {
-                        Console.WriteLine($"{data.category}, {geometry.coordinates}");
+                        Osm_Id = way.id,
+                        Name = way.tags.TryGetValue("name", out string name) ? name : "No Name",
+                        Coordinates = points,
+                        GeometryWKT = linestringWKT
+                    });
+                    if (!addedStreets.Contains(street.Osm_Id))
+                    {
+                        streetList.Add(new(street, new Coordinate(coordinate[0], coordinate[1])));
+                        addedStreets.Add(street.Osm_Id);
                     }
                 }
                 return streetList;
@@ -366,9 +451,15 @@ namespace CommuteMate.Services
                 throw;
             }
         }
+        LineString CreateLineString(List<OSMCoordinate> coordinates)
+        {
+            var points = coordinates.Select(c => new Coordinate(c.lon, c.lat)).ToArray();
+            return new LineString(points);
+        }
 
         public async Task<LocationDTO> ReverseGeocodeSearch(double latitude, double longitude)
         {
+            Console.WriteLine("Searcing Reverse Geocode");
             try
             {
                 await _cancellationTokenSource.CancelAsync();

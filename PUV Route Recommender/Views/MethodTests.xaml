@@ -9,7 +9,19 @@
             Text="Welcome to .NET MAUI!"
             VerticalOptions="Center" 
             HorizontalOptions="Center" />
-        <mapsui:MapControl x:Name="mapControlTest" WidthRequest="400" HeightRequest="620"/>
+        <mapsui:MapControl x:Name="mapControlTest" WidthRequest="400" HeightRequest="500"/>
+        
+        <ListView x:Name="streetsListView">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextCell Text="{Binding NodesAsString}"/>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+        <Button
+            Text="Test StreetSequence"
+            Pressed="Button_Pressed_Sequence"
+            />
         <Button
             Text="Test Direction"
             Pressed="Button_Pressed"

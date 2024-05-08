@@ -1,4 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
+using QuickGraph;
 using SQLite;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -40,6 +41,9 @@ namespace CommuteMate.Models
         public long Osm_Id { get; set; }
         public string Name { get; set; }
         public string GeometryWKT { get; set; }
+
+        [NotMapped]
+        public List<Coordinate> Coordinates { get; set; }
         public virtual ICollection<Route> Routes { get; set; }
         public override bool Equals(object obj)
         {
@@ -59,13 +63,22 @@ namespace CommuteMate.Models
     }
 
     //project objects
-    public class RoutePath
+    public class PathData
     {
-        public int StreetId { get; set; }
-        public int StreetRank { get; set; }
-        public string StreetAction {  get; set; }
-        public string PathLineString { get; set; }
+        public List<Street> streets {  get; set; }
+        public Queue<Route> puvs { get; set; }
+        public IEnumerable<Edge<Coordinate>> puvShortestPaths { get; set; }
+        public double totalFare { get; set; }
+        public double totalDistance { get; set; }
+
     }
+
+    public class RouteAction
+    {
+        public Street street { get; set; }
+        public string action { get; set; }
+    }
+
     public class RouteQueueInfo
     {
         public Route route { get; set; }
@@ -79,5 +92,21 @@ namespace CommuteMate.Models
         public long Osm_Id { get; set; }
         public string Name { get; set; }
         public List<long> Nodes { get; set; }
+        public string NodesAsString => string.Join(", ", Nodes);
+    }
+    public class StreetWithCoordinates
+    {
+        public int StreetId { get; set; }
+        public long Osm_Id { get; set; }
+        public string Role { get; set; }
+        public List<Coordinate> Coordinates { get; set; }
+    }
+
+    public class RouteQueue
+    {
+        public Route route { get; set; }
+        public int intersectCount { get; set; }
+        public Street startStreet { get; set; }
+        public Street endStreet { get; set; }
     }
 }

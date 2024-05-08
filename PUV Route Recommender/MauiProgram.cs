@@ -40,8 +40,6 @@ namespace CommuteMate
                 new StreetRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IRouteRepository>(provider =>
                 new RouteRepository(provider.GetService<CommuteMateDbContext>()));
-            builder.Services.AddSingleton<IRouteStreetRepository>(provider =>
-                new RouteStreetRepository(provider.GetService<CommuteMateDbContext>()));
 
             //Services
             builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
@@ -49,7 +47,6 @@ namespace CommuteMate
             builder.Services.AddSingleton<IOverpassApiServices, OverpassApiServices>();
             builder.Services.AddSingleton<IRouteService, RouteService>();
             builder.Services.AddSingleton<IStreetService, StreetService>();
-            builder.Services.AddSingleton<IRouteStreetService, RouteStreetService>();
             builder.Services.AddSingleton<IMapServices, MapServices>();
 
 

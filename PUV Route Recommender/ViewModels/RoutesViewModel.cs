@@ -13,18 +13,15 @@ namespace CommuteMate.ViewModels
         readonly IOverpassApiServices _overpassApiServices;
         readonly IConnectivity _connectivity;
         readonly IRouteService _routeService;
-        readonly IRouteStreetService _routeStreetService;
         public RoutesViewModel(
             IOverpassApiServices overpassApiServices, 
             IConnectivity connectivity,
-            IRouteService routeService,
-            IRouteStreetService routeStreetService) 
+            IRouteService routeService) 
         {
             Title = "Route List";
             _overpassApiServices = overpassApiServices;
             _connectivity = connectivity;
             _routeService = routeService;
-            _routeStreetService = routeStreetService;
         }
 
         //properties

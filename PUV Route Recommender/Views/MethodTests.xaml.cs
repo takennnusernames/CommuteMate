@@ -26,20 +26,55 @@ public partial class MethodTests : ContentPage
 
     private async void Button_Pressed(object sender, EventArgs e)
     {
-		Coordinate origin = new Coordinate(123.89539, 10.31035);
-		Coordinate destination = new Coordinate(123.90006, 10.30421);
+		Coordinate origin = new Coordinate(123.90739229999998,10.3304499);
+		Coordinate destination = new Coordinate(123.8806068, 10.2817312);
         try
         {
             var map = await _mapServices.CreateMapAsync();
             var directions = await _mapServices.GetDirectionsAsync(origin, destination);
             //(Route, Path, Fare, Distance)
-            List<List<PathData>> options = [];
-            foreach (var feature in directions.features)
+            var feature = directions.features.FirstOrDefault();
+
+            var streetList = await _overpassApiServices.GeometryToStreetListAsync(feature.geometry);
+            var streets = streetList.Select(tuple => tuple.Item1).GroupBy(s => s.Name).Select(g => g.First()).ToList();
+            List<Coordinate> coordinates = [];
+            foreach(var street in streets)
             {
-                options.Add(await _mapServices.GetOptions(feature));
+                coordinates.Add(streetList.Find(s => s.Item1 == street).Item2);
             }
+            string lineString = await _streetService.StreetListToWkt(coordinates);
+            await _mapServices.addLineString(map, lineString, "dotted");
             
+            //var sequencedStreet = await _streetService.StreetSequence(streetList);
+            //foreach (var street in sequencedStreet)
+            //{
+            //    Console.WriteLine($"{street.Osm_Id}");
+            //}
+
+            //var graph =  _routeServices.StreetToGraph(streets);
+            //var components = new Dictionary<Coordinate, List<Edge<Coordinate>>>();
+
+            //var coordinates = new List<Coordinate>();
+            //foreach (var edge in graph.Edges)
+            //{
+            //    coordinates.Add(edge.Source);
+            //    coordinates.Add(edge.Target);
+            //}
+
+            //string lineString = await _streetService.StreetListToWkt(coordinates);
+
+            //await _mapServices.addLineString(map, lineString, "dotted");
+            //var options = await _mapServices.GetOptions(feature);
+            //var option = options.First();
+
+            //await _mapServices.addPath(map, option.walkingPath, "dotted");
+            //await _mapServices.addPath(map, option.puvShortestPaths, "straight");
+
             mapControlTest.Map = map;
+
+
+            //var routesQueues = await _mapServices.GetRoutesQueue(streets);
+            //Console.WriteLine($"{routesQueues.ToList()}");
         }
         catch(Exception ex) 
         {
@@ -51,38 +86,39 @@ public partial class MethodTests : ContentPage
     {
         try
         {
-            //var map = await _mapServices.CreateMapAsync();
-            //var streets = await _overpassApiServices.RetrieveStreetWithCoordinatesAsync(3199499);
-            //var graph = await _routeServices.StreetToGraph(streets, 3199499);
-            ////var shortestPath = _routeServices.GetShortetstPath(graph, new Coordinate(123.8953882, 10.3102911), new Coordinate(123.9000549, 10.3039991));
+            var location = await _mapServices.GetCurrentLocationAsync();
+            var map = await _mapServices.CreateMapAsync();
+            var streets = await _overpassApiServices.RetrieveStreetWithCoordinatesAsync(3199499);
+            var graph = await _routeServices.StreetToGraph(streets, 3199499);
+            var shortestPath = _routeServices.GetShortetstPath(graph, new Coordinate(123.8953882, 10.3102911), new Coordinate(123.9000549, 10.3039991));
 
-            //// Group edges by connected components
-            //var components = new Dictionary<Coordinate, List<Edge<Coordinate>>>();
-            //foreach (var edge in graph.Edges)
-            //{
-            //    if (!components.TryGetValue(edge.Source, out var list))
-            //    {
-            //        list = new List<Edge<Coordinate>>();
-            //        components.Add(edge.Source, list);
-            //    }
-            //    list.Add(edge);
-            //}
+            // Group edges by connected components
+            var components = new Dictionary<Coordinate, List<Edge<Coordinate>>>();
+            foreach (var edge in shortestPath)
+            {
+                if (!components.TryGetValue(edge.Source, out var list))
+                {
+                    list = new List<Edge<Coordinate>>();
+                    components.Add(edge.Source, list);
+                }
+                list.Add(edge);
+            }
 
-            //// Draw each connected component separately
-            //foreach (var component in components.Values)
-            //{
-            //    var coordinates = new List<Coordinate>();
-            //    foreach (var edge in component)
-            //    {
-            //        coordinates.Add(edge.Source);
-            //        coordinates.Add(edge.Target);
-            //    }
-            //    string lineString = await _streetService.StreetListToWkt(coordinates);
-            //    await _mapServices.addLineString(map, lineString);
-            //}
+            // Draw each connected component separately
+            foreach (var component in components.Values)
+            {
+                var coordinates = new List<Coordinate>();
+                foreach (var edge in component)
+                {
+                    coordinates.Add(edge.Source);
+                    coordinates.Add(edge.Target);
+                }
+                string lineString = await _streetService.StreetListToWkt(coordinates);
+                await _mapServices.addLineString(map, lineString, "test");
+            }
 
-            //mapControlTest.Map = map;
-            
+            mapControlTest.Map = map;
+
         }
         catch (Exception ex)
         {

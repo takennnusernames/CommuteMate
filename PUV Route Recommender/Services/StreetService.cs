@@ -108,50 +108,58 @@ namespace CommuteMate.Services
             return coordinates;
         }
 
-        public async Task<List<StreetWithNode>> StreetSequenceOrder(List<StreetWithNode> streets)
+        public Task<List<Street>> StreetCoordinateSequence(List<(Street, Coordinate)> streets)
         {
-            await Task.Delay(0);
-            LinkedList<StreetWithNode> linkedSequencedStreet = new LinkedList<StreetWithNode>(streets);
-            var currentNode = linkedSequencedStreet.First;
-            while (currentNode != null)
-            {
-                StreetWithNode currentStreet = currentNode.Value;
+            Queue<Street> streetQueue = new();
+            var coordinates = streets.Select(c => c.Item2).ToList();
 
-                var lastNode = currentStreet.Nodes.Last();
-                var nextStreet = streets.Find(s => s.Nodes.First() == lastNode);
-                if (nextStreet == null)
-                {
-                    if(currentNode.Next != null)
-                    {
-                        if (currentNode.Previous == null)
-                        {
-                            linkedSequencedStreet.AddLast(currentNode);
-                            currentNode = currentNode.Next;
-                            continue;
-                        }
-                        var firstNode = currentStreet.Nodes.First();
-                        var previousStreet = streets.Find(s => s.Nodes.Last() == firstNode);
-                        var previousNode = currentNode.Previous;
-                        while (previousStreet == previousNode.Value)
-                        {
-                            currentStreet = previousNode.Value;
-                            firstNode = currentStreet.Nodes.First();
-                            previousStreet = streets.Find(s => s.Nodes.Last() == firstNode);
-                            previousNode = currentNode.Previous;
-                        }
-                        linkedSequencedStreet.AddAfter(linkedSequencedStreet.Find(previousStreet), currentStreet);
+            var coordinate = coordinates.First();
+            //while (coordinates.Count() > 0)
+            //{
+            //    streetQueue.Enqueue(streets.Where(s => s.Item2 == coordinate).Select(l => l.Item1).FirstOrDefault());
+            //    var nextCoordinate = coordinates.Find(c => c. )
+            //    coordinates.Remove(coordinate);
+            //    coordinate = coordinates
+            //}
+            //while (currentNode != null)
+            //{
+            //    Street currentStreet = currentNode.Value;
 
-                    }
-                }
-                else if(currentNode.Next.Value != nextStreet)
-                {
-                    linkedSequencedStreet.Remove(linkedSequencedStreet.Find(nextStreet));
-                    linkedSequencedStreet.AddAfter(currentNode, nextStreet);
-                }
+            //    var lastNode = currentStreet.Coordinates.Last();
+            //    var nextStreet = streets.Find(s => s.Coordinates.First() == lastNode);
+            //    if (nextStreet == null)
+            //    {
+            //        if(currentNode.Next != null)
+            //        {
+            //            if (currentNode.Previous == null)
+            //            {
+            //                linkedSequencedStreet.AddLast(currentNode);
+            //                currentNode = currentNode.Next;
+            //                continue;
+            //            }
+            //            var firstNode = currentStreet.Coordinates.First();
+            //            var previousStreet = streets.Find(s => s.Coordinates.Last() == firstNode);
+            //            var previousNode = currentNode.Previous;
+            //            while (previousStreet == previousNode.Value)
+            //            {
+            //                currentStreet = previousNode.Value;
+            //                firstNode = currentStreet.Coordinates.First();
+            //                previousStreet = streets.Find(s => s.Coordinates.Last() == firstNode);
+            //                previousNode = currentNode.Previous;
+            //            }
+            //            linkedSequencedStreet.AddAfter(linkedSequencedStreet.Find(previousStreet), currentStreet);
 
-                currentNode = currentNode.Next;
-            }
-            return linkedSequencedStreet.ToList();
+            //        }
+            //    }
+            //    else if(currentNode.Next.Value != nextStreet)
+            //    {
+            //        linkedSequencedStreet.Remove(linkedSequencedStreet.Find(nextStreet));
+            //        linkedSequencedStreet.AddAfter(currentNode, nextStreet);
+            //    }
+
+            //    currentNode = currentNode.Next;
+            //}
+            return null;
         }
 
         public async Task<LinkedList<StreetWithCoordinates>> StartToEndStreets(long startId, long endId, List<StreetWithCoordinates> streets, long routeId)

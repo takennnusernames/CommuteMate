@@ -9,6 +9,7 @@ using CommuteMate.Services;
 using CommuteMate.Views;
 using CommuteMate.Repositories;
 using SQLite;
+using The49.Maui.BottomSheet;
 
 namespace CommuteMate
 {
@@ -20,6 +21,8 @@ namespace CommuteMate
             builder
                 .UseMauiApp<App>()
                 .UseSkiaSharp(true) /*for mapsui*/
+                .UseMauiMaps()
+                .UseBottomSheet()
                 //.UseMauiMaps() /*uses google maps api key*/
                 .ConfigureFonts(fonts =>
                 {
@@ -60,6 +63,9 @@ namespace CommuteMate
             builder.Services.AddTransient<RoutesInfoPage>();
             builder.Services.AddSingleton<NavigatingPage>();
             builder.Services.AddTransient<MethodTests>();
+
+            //Sheet
+            builder.Services.AddTransient<SlideUpSheet>();
 
             var dbContext = new CommuteMateDbContext();
 

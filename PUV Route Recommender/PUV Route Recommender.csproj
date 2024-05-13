@@ -42,6 +42,9 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
+    <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
+  </ItemGroup>
+  <ItemGroup>
     <MauiImage Remove="Resources\Images\home_icon.png" />
     <MauiImage Remove="Resources\Images\list_icon.svg" />
     <MauiImage Remove="Resources\Images\routes_icon.png" />
@@ -74,13 +77,20 @@
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
+    <PackageReference Include="The49.Maui.BottomSheet" Version="8.0.3" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\SlideUpSheet.xaml.cs">
+      <DependentUpon>SlideUpSheet.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\RoutesView.xaml.cs">
       <DependentUpon>RoutesView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <MauiXaml Update="Views\SlideUpSheet.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Views\InfoPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

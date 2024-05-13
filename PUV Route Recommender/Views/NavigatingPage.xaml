@@ -3,46 +3,121 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
              xmlns:tiling="clr-namespace:Mapsui.Tiling;assembly=Mapsui.Tiling"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+             xmlns:model="clr-namespace:CommuteMate.Models"
              x:Class="CommuteMate.Views.NavigatingPage"
              x:DataType="viewModel:NavigatingViewModel"
              Title="{Binding Title}">
+ 
 
     <Grid>
-        <mapsui:MapControl x:Name="mapControl"/>
-        <Grid RowDefinitions="*,*"
+        <mapsui:MapControl x:Name="mapControl" BindingContext="{Binding}"/>
+        <Grid RowDefinitions="*,*,*"
               WidthRequest="360"
-              HeightRequest="100"
+              HeightRequest="600"
               Margin="10"
-              BackgroundColor="Green"
+              BackgroundColor="Transparent"
               VerticalOptions="Start">
-            <!--<SearchBar Placeholder="Enter Start Location"
-                   x:Name="Origin"
-                   Grid.Row="0" 
-                   HorizontalOptions="FillAndExpand" 
-                   BackgroundColor="Blue"
-                   Unfocused="Origin_Unfocused"/>
-            <SearchBar Placeholder="Destination" 
-                   Grid.Row="1" 
-                   HorizontalOptions="FillAndExpand" 
-                   BackgroundColor="Red"/>-->
-            <StackLayout>
-                <SearchBar x:Name="searchBar"
-                           Placeholder="Enter Location"
+            <Grid RowSpacing="0"
+                  Padding="10"
+                  Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+
+                <SearchBar x:Name="originSearchBar"
+                           BindingContext="{Binding}"
+                           Placeholder="Enter Origin"
+                           Text="{Binding OriginText, Mode=TwoWay}"
                            SearchCommand="{Binding SearchLocationCommand}"
-                           SearchCommandParameter="{Binding Text, Source={x:Reference searchBar}}"
-                           BackgroundColor="Blue"/>
+                           SearchCommandParameter="Origin"
+                           BackgroundColor="Transparent"
+                           CancelButtonColor="Transparent"
+                           Grid.Row="0"
+                           Grid.Column="0"/>
+                <Button Text="X"
+                        Grid.Column="1"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="20"
+                        CornerRadius="0"
+                        Command="{Binding CancelSearchCommand}"
+                        CommandParameter="Origin"/>
+
+                <SearchBar x:Name="destinationSearchBar"
+                           Placeholder="Enter Destination"
+                           Text="{Binding DestinationText, Mode=TwoWay}"
+                           SearchCommand="{Binding SearchLocationCommand}"
+                           SearchCommandParameter="Destination"
+                           BackgroundColor="Transparent"
+                           CancelButtonColor="Transparent"
+                           Grid.Row="1"
+                           Grid.Column="0"/>
+                <Button Text="X"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        BackgroundColor="Transparent"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        FontSize="20"
+                        CornerRadius="0"
+                        Command="{Binding CancelSearchCommand}"
+                        CommandParameter="Destination"/>
+                <Button Text="Get Routes"
+                        Grid.Row="2"
+                        Grid.ColumnSpan="2"
+                        Command="{Binding GetRoutesCommand}"
+                        CommandParameter="{Binding Map, Source={x:Reference mapControl}}"/>
                 <ActivityIndicator HorizontalOptions="Start"
-                   IsRunning="{Binding IsBusy}"
-                   IsVisible="{Binding IsBusy}"
-                   VerticalOptions="Center"/>
-                <ListView x:Name="searchResults"
-                          ItemsSource="{Binding SearchResults}"
-                          Grid.Row="1"
-                          HeightRequest="140"
-                          VerticalOptions="Start"
-                          BackgroundColor="White"/>
-            </StackLayout>
+                       IsRunning="{Binding IsBusy}"
+                       IsVisible="{Binding IsBusy}"
+                       VerticalOptions="Center"
+                       BackgroundColor="Blue"
+                       Grid.RowSpan="2" Grid.Column="1"
+                                   Color="White"/>
+            </Grid>
+            <!--<Button Text="Use Current Location"
+                    Command="{Binding GetLocationCommand}"
+                    CommandParameter="Origin"
+                    Grid.Row="1"/>-->
+            <CollectionView x:Name="searchResults"
+                  ItemsSource="{Binding SearchResults}"
+                  SelectionMode="None"
+                  Grid.Row="1"
+                  VerticalOptions="Start"
+                  BackgroundColor="White"
+                  WidthRequest="340"
+                  HeightRequest="300"
+                  Margin="20">
+                <CollectionView.Triggers>
+                    <DataTrigger TargetType="CollectionView"
+           Binding="{Binding SearchResults.Count}"
+           Value="0">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </CollectionView.Triggers>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:LocationDetails">
+                        <ScrollView>
+                            <Frame CornerRadius="0">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding Source={RelativeSource AncestorType={x:Type viewModel:NavigatingViewModel}}, Path=SelectLocationCommand}"
+CommandParameter="{Binding .}"/>
+                                </Frame.GestureRecognizers>
+                                <Label Text="{Binding Name}"/>
+                            </Frame>
+                        </ScrollView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </Grid>
     </Grid>
 </ContentPage>

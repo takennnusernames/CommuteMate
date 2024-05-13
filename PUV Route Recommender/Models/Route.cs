@@ -68,8 +68,10 @@ namespace CommuteMate.Models
         public List<Street> streets {  get; set; }
         public Queue<Route> puvs { get; set; }
         public IEnumerable<Edge<Coordinate>> puvShortestPaths { get; set; }
+        public IEnumerable<Edge<Coordinate>> walkingPath { get; set; }
         public double totalFare { get; set; }
-        public double totalDistance { get; set; }
+        public double totalWalkingDistance { get; set; }
+        public double totalPuvRideDistance { get; set; }
 
     }
 

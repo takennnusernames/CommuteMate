@@ -223,6 +223,25 @@ namespace CommuteMate.Services
 
         }
 
+        public UndirectedGraph<Coordinate, Edge<Coordinate>> CoordinatesToGraph(List<Coordinate> coordinates)
+        {
+            var graph = new UndirectedGraph<Coordinate, Edge<Coordinate>>();
+
+            for (int i = 0; i < coordinates.Count - 1; i++)
+            {
+                var start = coordinates[i];
+                var end = coordinates[i + 1];
+                if (!graph.ContainsVertex(start))
+                    graph.AddVertex(start);
+                if (!graph.ContainsVertex(end))
+                    graph.AddVertex(end);
+                if (!graph.ContainsEdge(new Edge<Coordinate>(start, end)))
+                    graph.AddEdge(new Edge<Coordinate>(start, end));
+            }
+            return graph;
+
+        }
+
         public IEnumerable<Edge<Coordinate>> GetShortetstPath(UndirectedGraph<Coordinate, Edge<Coordinate>> graph, Coordinate origin, Coordinate destination)
         {
             // Find the shortest path between vertices 0 and 5
@@ -245,14 +264,9 @@ namespace CommuteMate.Services
 
             // Print the shortest path
             if (shortestPath != null)
-            {
                 return shortestPath;
-            }
-            else
-            {
-                Console.WriteLine("No path found.");
-                throw new System.Exception("Error: no path");
-            }
+
+            return null;
         }
     }
 }

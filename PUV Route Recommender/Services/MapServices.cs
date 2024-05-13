@@ -17,54 +17,123 @@ using Mapsui.Nts.Extensions;
 using System.Text;
 using QuickGraph;
 using Coordinate = NetTopologySuite.Geometries.Coordinate;
-using NetTopologySuite.LinearReferencing;
-using Svg;
-using NetTopologySuite.Operation.Distance;
+using ExCSS;
+using Mapsui.Providers.Wms;
+using System.Collections.Generic;
 using Point = NetTopologySuite.Geometries.Point;
+using BruTile.Wms;
+using Exception = System.Exception;
+using System;
+using System.Linq;
+using System.Net;
 
 namespace CommuteMate.Services
 {
     public class MapServices : IMapServices
     {
-        HttpClient _httpClient;
+        readonly HttpClient _httpClient;
         CancellationTokenSource _cancellationTokenSource;
         IRouteService _routeService;
         IStreetService _streetService;
         IOverpassApiServices _overpassApiServices;
-        public MapServices(IRouteService routeService, IStreetService streetService, IOverpassApiServices overpassApiServices) 
+        IGeolocation _geolocation;
+        public MapServices(IRouteService routeService, IStreetService streetService, IOverpassApiServices overpassApiServices, IGeolocation geolocation) 
         {
             _httpClient = new HttpClient();
             _cancellationTokenSource = new CancellationTokenSource();
             _routeService = routeService;
             _streetService = streetService;
             _overpassApiServices = overpassApiServices;
+            _geolocation = geolocation;
         }
 
-        public async Task<Map> CreateMapAsync()
+        public Task<Map> CreateMapAsync()
         {
-            var map = new Map();
-            map.Layers.Add(Tiling.OpenStreetMap.CreateTileLayer());
+            try
+            {
+                var map = new Map();
 
-            var panBounds = GetLimitsOfCebuCity();
-            map.Layers.Add(CreatePanBoundsLayer(panBounds));
+                map.Layers.Add(Tiling.OpenStreetMap.CreateTileLayer());
 
-            map.Navigator.Limiter = new ViewportLimiterKeepWithinExtent();
-            map.Navigator.RotationLock = true;
-            map.Navigator.OverridePanBounds = panBounds;
-            map.Home = n => n.ZoomToBox(panBounds);
-            return await Task.FromResult(map);
+                var panBounds = GetLimitsOfCebuCity();
+                map.Layers.Add(CreatePanBoundsLayer(panBounds));
+
+                map.Navigator.Limiter = new ViewportLimiterKeepWithinExtent();
+                map.Navigator.RotationLock = true;
+                map.Navigator.OverridePanBounds = panBounds;
+                map.Home = n => n.ZoomToBox(panBounds);
+
+                return Task.FromResult(map);
+            }
+            catch
+            {
+                throw new System.Exception("Failed to Create Map");
+            }
         }
-        public async Task<Location> GetLocationAsync(string addresss)
+
+        public async Task<Map> AddPin(Map map, LocationDetails location)
         {
-                var geoLocation = await Geocoding.Default.GetLocationsAsync(addresss);
-                Location location = geoLocation?.FirstOrDefault();
-                return location;
+
+            var point = new Point(SphericalMercator.FromLonLat(location.Coordinate.X,location.Coordinate.Y).ToCoordinate());
+            var testPoint = new Point(location.Coordinate);
+            var testPoint2 = new Point(location.Coordinate.Y,location.Coordinate.X);
+
+            var layer = new MemoryLayer
+            {
+                Features = new[] { new GeometryFeature { Geometry = point } },
+                Style = SymbolStyles.CreatePinStyle()
+            };
+            map.Layers.Add(layer);
+
+            map.Home = n => n.CenterOnAndZoomTo(layer.Extent!.Centroid, 9);
+            await Task.Delay(100);
+
+            return map;
+
         }
-        public async Task<List<string>> SearchLocationAsync(string input)
+
+
+        public async Task<LocationDetails> GetCurrentLocationAsync()
+        {
+            var location = await _geolocation.GetLocationAsync(new GeolocationRequest
+            {
+                DesiredAccuracy = GeolocationAccuracy.Medium,
+                Timeout = TimeSpan.FromSeconds(30)
+            });
+
+            if (location != null)
+            {
+                var latitude = location.Latitude;
+                var longitude = location.Longitude;
+
+                var minX = 123.77;
+                var minY = 10.25;
+                var maxX = 123.9309;
+                var maxY = 10.4953;
+
+                if (latitude >= minY && latitude <= maxY && longitude >= minX && longitude <= maxX)
+                {
+                    LocationDetails details = new LocationDetails
+                    {
+                        Coordinate = new Coordinate(latitude, longitude),
+                        Name = new string(latitude.ToString() + "," + longitude.ToString())
+                    };
+
+                    return details;
+                }
+                else
+                    return null;
+            }
+            else
+            {
+                throw new Exception("Unable to find Location");
+            }
+        }
+        public async Task<List<LocationDetails>> SearchLocationAsync(string input)
         {
             await _cancellationTokenSource.CancelAsync();
             _cancellationTokenSource = new CancellationTokenSource();
-            List<string> locationNames = [];
+            List<LocationDetails> locationList = [];
             string url = "https://nominatim.openstreetmap.org/search";
             var minX = 123.77;
             var minY = 10.25;
@@ -77,10 +146,67 @@ namespace CommuteMate.Services
                 var locations = await response.Content.ReadFromJsonAsync<List<LocationDTO>>();
                 foreach ( var location in locations )
                 {
-                    locationNames.Add(location.display_name);
+                    Coordinate coordinate = new Coordinate(double.Parse(location.lon), double.Parse(location.lat));
+                    locationList.Add(new LocationDetails
+                    {
+                        Name = location.display_name,
+                        Coordinate = coordinate
+                    });
                 }
             }
-            return locationNames;
+            return locationList;
+
+        }
+
+        public async Task<List<LocationDetails>> GoogleSearchLocationAsync(string input)
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://places.googleapis.com/v1/places:searchText");
+            request.Headers.Add("X-Goog-Api-Key", "AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
+            request.Headers.Add("X-Goog-FieldMask", "places.displayName,places.location");
+            double latitude = 10.25;
+            double longitude = 123.77;
+            double highLatitude = 10.4953;
+            double highLongitude = 123.9309;
+
+            var json = $@"{{
+                  ""textQuery"" : ""{input}"",
+                  ""locationBias"": {{
+                        ""rectangle"": {{
+                            ""low"": {{
+                                ""latitude"": {latitude},
+                                ""longitude"": {longitude}
+                                }},
+                            ""high"": {{
+                                ""latitude"": {highLatitude},
+                                ""longitude"": {highLongitude}
+                                }}
+                            }}
+                    }}
+                }}";
+
+            var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+            request.Content = content;
+            var response = await _httpClient.SendAsync(request, _cancellationTokenSource.Token);
+            response.EnsureSuccessStatusCode();
+
+            List<LocationDetails> locationList = [];
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseData = await response.Content.ReadFromJsonAsync<GoogleLocationDTO>();
+                foreach (var place in responseData.places)
+                {
+                    Coordinate coordinate = new Coordinate(place.location.longitude, place.location.latitude);
+                    locationList.Add(new LocationDetails
+                    {
+                        Name = place.displayName.text,
+                        Coordinate = coordinate
+                    });
+                }
+            }
+            return locationList;
 
         }
 
@@ -93,7 +219,7 @@ namespace CommuteMate.Services
                 _cancellationTokenSource = new CancellationTokenSource();
 
                 //OpenRouteService Directions 
-                var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/driving-car/geojson");
+                var orsRequest = new HttpRequestMessage(HttpMethod.Post, "https://api.openrouteservice.org/v2/directions/foot-walking/geojson");
                 orsRequest.Headers.Add("Authorization", "Bearer 5b3ce3597851110001cf6248d82ffd7c0abb468cbe0cd0bf61653d82");
                 var coordinates = new double[][] {
                 [origin.X, origin.Y],
@@ -120,92 +246,201 @@ namespace CommuteMate.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error in getting Direction:", ex.Message);
-                throw;
+                throw new Exception(ex.Message);
             }
         }
         public async Task<List<PathData>> GetOptions(Feature feature)
         {
             Console.WriteLine("Getting Path");
-            //List<RouteAction> paths = [];
-            var streetList = await _overpassApiServices.GeometryToStreetListAsync(feature.geometry);
-
-            //remove redunduncy of streets
-            var streets = streetList.Select(tuple => tuple.Item1).GroupBy(s => s.Name).Select(g => g.First()).ToList();
-
-            var routesQueues = await GetRoutesQueue(streets);
-            var pathOptions = await CreatePath(streets, routesQueues);
-            var options = new List<PathData>();
-            foreach (var option in pathOptions)
+            try
             {
-                options.Add(await CreatePathData(option.Item1,option.Item2,option.Item3));
-            }
-            return options;
-        }
-        public async Task<List<(List<Street>, Queue<Route>, List<IEnumerable<Edge<Coordinate>>>)>> CreatePath(List<Street> streets, Queue<List<RouteQueue>> routesQueues)
-        {
-            List< (List<Street>, Queue<Route>, List<IEnumerable<Edge<Coordinate>>>)> pathOptions = [];
-            if (routesQueues.Count == 0)
-            {
-                pathOptions.Add((streets, new Queue<Route>(), new List<IEnumerable<Edge<Coordinate>>>()));
-                return pathOptions;
-            }
+                var streetList = await _overpassApiServices.GeometryToStreetListAsync(feature.geometry);
 
-            var routesQueue = routesQueues.Dequeue();
-            var bestRoutes = await GetBestRoute(routesQueue);
+                //remove redunduncy of streets
+                var streets = streetList.Select(tuple => tuple.Item1).GroupBy(s => s.Osm_Id).Select(g => g.First()).ToList();
 
-            foreach (var route in bestRoutes)
-            {
-                var puvRoute = route.Item2;
-                var puvPath = route.Item1;
+                var routesQueues = await GetRoutesQueue(streetList.Select(s => s.Item1).ToList());
 
-                var streetStart = streets.FindIndex(s => s.Osm_Id.Equals(puvRoute.startStreet.Osm_Id));
-                if (streetStart == -1)
-                    continue;
+                var pathOptions = await CreatePath(streetList.Select(s => s.Item1).ToList(), routesQueues);
 
-                var streetEnd = streets.FindIndex(s => s.Osm_Id.Equals(puvRoute.endStreet.Osm_Id));
-                if (streetEnd == -1)
-                    continue;
+                var minStreetCount = pathOptions.Min(o => o.Item1.Count);
+                var bestWalkOptions = pathOptions.Where(o => o.Item1.Count == minStreetCount).ToList();
 
-                var newStreets = new List<Street>(streets);
-                var newRoutesQueues = new Queue<List<RouteQueue>>(routesQueues);
-                //remove streets to be changed by puv route
-                newStreets.RemoveRange(streetStart, streetEnd - streetStart);
+                var minPuvCount = pathOptions.Min(o => o.Item2.Count);
+                var bestPuvOptions = pathOptions.Where(o => o.Item2.Count == minPuvCount).ToList();
 
-                var createdPaths = await CreatePath(newStreets, newRoutesQueues);
+                List<PathData> options = [];
 
-                // Append the current PUV route to each created path
-                if(createdPaths.Count > 0)
-                    foreach (var createdPath in createdPaths)
-                    {
-                        createdPath.Item2.Enqueue(puvRoute.route);
-                        createdPath.Item3.Add(puvPath);
-                        pathOptions.Add(createdPath);
-                    }
-                else
+                foreach (var option in bestPuvOptions)
                 {
-                    Queue<Route> routeList = new();
-                    routeList.Enqueue(puvRoute.route);
-                    List < IEnumerable < Edge < Coordinate >>> paths = [puvPath];
-                    pathOptions.Add((newStreets, routeList, paths));
+                    Queue<Route> routes = new();
+                    Queue<List<Coordinate>> coordinateQueue = new();
+                    List<Coordinate> coordinates = [];
+
+                    var route = option.Item2.Dequeue();
+                    var lastCoordinate = streetList.FirstOrDefault(s => s.Item1 == route.startStreet).Item2;
+                    foreach (var street in option.Item1)
+                    {
+                        var index = streetList.FindIndex(s => s.Item1 == street);
+                        var coordinate = streetList.FirstOrDefault(s => s.Item1 == street).Item2;
+                        if(coordinate!=default)
+                            if(!coordinates.Contains(coordinate))
+                                coordinates.Add(coordinate);
+
+                        var nextCoordinate = streetList.ElementAtOrDefault(index+1).Item2;
+                        if (nextCoordinate != default)
+                            if (!coordinates.Contains(nextCoordinate)) 
+                                coordinates.Add(nextCoordinate);
+
+                        if (coordinate == lastCoordinate)
+                        {
+                            coordinateQueue.Enqueue(coordinates);
+                            routes.Enqueue(route.route);
+                            if(option.Item2.Count > 0)
+                            {
+                                route = option.Item2.Dequeue();
+                                lastCoordinate = streetList.FirstOrDefault(s => s.Item1 == route.startStreet).Item2;
+                            }
+                            coordinates = [];
+                        }
+                    }
+                    coordinateQueue.Enqueue(coordinates);
+                    options.Add(await CreatePathData(streets, coordinateQueue, routes, option.Item3));
+                }
+
+                foreach (var option in bestWalkOptions)
+                {
+                    Queue<Route> routes = new();
+                    Queue<List<Coordinate>> coordinateQueue = new();
+                    List<Coordinate> coordinates = [];
+                    if (option.Item2.Count == 0)
+                        continue;
+
+                    var route = option.Item2.Dequeue();
+
+                    var lastCoordinate = streetList.FirstOrDefault(s => s.Item1 == route.startStreet).Item2;
+                    foreach (var street in option.Item1)
+                    {
+                        var index = streetList.FindIndex(s => s.Item1 == street);
+                        var coordinate = streetList.FirstOrDefault(s => s.Item1 == street).Item2;
+                        if (coordinate != default)
+                            if (!coordinates.Contains(coordinate))
+                                coordinates.Add(coordinate);
+
+                        var nextCoordinate = streetList.ElementAtOrDefault(index + 1).Item2;
+                        if (nextCoordinate != default)
+                            if (!coordinates.Contains(nextCoordinate))
+                                coordinates.Add(nextCoordinate);
+
+                        if (coordinate == lastCoordinate)
+                        {
+                            coordinateQueue.Enqueue(coordinates);
+                            routes.Enqueue(route.route);
+                            if (option.Item2.Count > 0)
+                            {
+                                route = option.Item2.Dequeue();
+                                lastCoordinate = streetList.FirstOrDefault(s => s.Item1 == route.startStreet).Item2;
+                            }
+                            coordinates = [];
+                        }
+                    }
+                    coordinateQueue.Enqueue(coordinates);
+                    options.Add(await CreatePathData(streets, coordinateQueue, routes, option.Item3));
+                }
+                    return options;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error in GetOptions Method: {ex.Message}");
+                return null;
+            }
+        }
+        public async Task<List<(List<Street>, Queue<RouteQueue>, List<IEnumerable<Edge<Coordinate>>>)>> CreatePath(List<Street> streets, Queue<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>> routesQueues)
+        {
+            List< (List<Street>, Queue<RouteQueue>, List<IEnumerable<Edge<Coordinate>>>)> pathOptions = [];
+            
+
+            while(routesQueues.Count > 0)
+            {
+                var routesQueue = routesQueues.Dequeue();
+                foreach (var route in routesQueue)
+                {
+                    var puvRoute = route.Item2;
+                    if (route.Item1 == null)
+                        continue;
+                    var puvPath = route.Item1;
+
+                    var streetStart = streets.FindIndex(s => s.Osm_Id.Equals(puvRoute.startStreet.Osm_Id));
+                    if (streetStart == -1)
+                        continue;
+
+                    var streetEnd = streets.FindIndex(s => s.Osm_Id.Equals(puvRoute.endStreet.Osm_Id));
+                    if (streetEnd == -1)
+                        continue;
+
+                    //remove streets to be changed by puv route
+                    //var newStreets = streets.Take(streetStart + 1).ToList();
+                    //newStreets.AddRange(streets.Skip(streetEnd + 1));
+
+                    var newStreets = new List<Street>(streets);
+                    newStreets.RemoveRange(streetStart + 1, (streetEnd - streetStart));
+
+                    List<(List<Street>, Queue<RouteQueue>, List<IEnumerable<Edge<Coordinate>>>)> createdPaths = [];
+                    if (routesQueues.Count == 0)
+                    {
+                        Queue<RouteQueue> routeList = new();
+                        routeList.Enqueue(puvRoute);
+                        List<IEnumerable<Edge<Coordinate>>> paths = [puvPath];
+                        pathOptions.Add((newStreets, routeList, paths));
+                        return pathOptions;
+                    }
+                    else
+                        createdPaths = await CreatePath(newStreets, new Queue<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>>(routesQueues));
+
+                    // Append the current PUV route to each created path
+                    if (createdPaths.Count > 0)
+                        foreach (var createdPath in createdPaths)
+                        {
+                            createdPath.Item2.Enqueue(puvRoute);
+                            createdPath.Item3.Add(puvPath);
+                            pathOptions.Add(createdPath);
+                        }
+                    else
+                    {
+                        Queue<RouteQueue> routeList = new();
+                        routeList.Enqueue(puvRoute);
+                        List<IEnumerable<Edge<Coordinate>>> paths = [puvPath];
+                        pathOptions.Add((newStreets, routeList, paths));
+                    }
                 }
             }
             return pathOptions;
         }
-        public Task<PathData> CreatePathData(List<Street> walking, Queue<Route> puvs, List<IEnumerable<Edge<Coordinate>>> shortestPaths)
+        public Task<PathData> CreatePathData(List<Street> streets, Queue<List<Coordinate>> walking, Queue<Route> puvs, List<IEnumerable<Edge<Coordinate>>> shortestPaths)
         {
             double totalWalkingDistance = 0;
-
-            foreach (var street in walking)
+            List<Edge<Coordinate>> completeWalkingPath = new();
+            foreach(var walk in walking)
             {
-                List<Coordinate> coordinates = street.Coordinates;
-                double totalLength = CalculateTotalLength(coordinates);
+                var graph = _routeService.CoordinatesToGraph(walk);
+                double pathDistance = 0;
+                foreach (var edge in graph.Edges)
+                {
+                    List<Coordinate> coordinates = [];
+                    coordinates.Add(edge.Source);
+                    coordinates.Add(edge.Target);
 
-                totalWalkingDistance += totalLength;
+                    double totalLength = CalculateTotalLength(coordinates);
+
+                    pathDistance += totalLength;
+
+                    completeWalkingPath.Add(edge);
+                }
+                totalWalkingDistance += pathDistance;
             }
-
             double totalRidingDistance = 0;
-            foreach(var path in shortestPaths)
+            List< Edge < Coordinate >> completePuvPath = new();
+            foreach (var path in shortestPaths)
             {
                 double pathDistance = 0;
                 foreach(var edge in path)
@@ -217,12 +452,14 @@ namespace CommuteMate.Services
                     double totalLength = CalculateTotalLength(coordinates);
 
                     pathDistance += totalLength;
+
+                    completePuvPath.Add(edge);
                 }
                 totalRidingDistance += pathDistance;
             }
 
-            double totalPathDistance = totalWalkingDistance + totalRidingDistance;
-            double totalFare = 12.00;
+            double totalFare = Constants.traditionalPuvMinimumFare;
+            //change per PUV
             if(totalRidingDistance > 5)
             {
                 var succeedingDistance = (int)totalRidingDistance% 5;
@@ -231,22 +468,25 @@ namespace CommuteMate.Services
             }
 
             PathData pathData = new PathData {
-                streets = walking,
+                streets = streets,
                 puvs = puvs,
+                walkingPath = completeWalkingPath,
+                puvShortestPaths = completePuvPath,
                 totalFare = totalFare,
-                totalDistance = totalPathDistance
+                totalWalkingDistance = totalWalkingDistance,
+                totalPuvRideDistance = totalRidingDistance
             };
             return Task.FromResult(pathData);
 
         }
-        public async Task<Queue<List<RouteQueue>>> GetRoutesQueue(List<Street> streets)
+        public async Task<Queue<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>>> GetRoutesQueue(List<Street> streetList)
         {
             Console.WriteLine("Getting RoutesQueue");
             //queue for puv route and number of streets that it intersects
-            Queue<Street> walkQueue = new();
             Queue<List<RouteQueue>> routesQueue = new();
 
-            foreach (var street in streets)
+            var streets = streetList.GroupBy(s => s.Name).Select(g => g.First()).ToList();
+            foreach (var street in streetList)
             {
                 //get puv routes that pass through the street
                 var relatedRoutes = await _overpassApiServices.RetrieveRelatedRoutes(street.Osm_Id);
@@ -264,10 +504,13 @@ namespace CommuteMate.Services
                             if (tuple != default)
                             {
                                 var index = routeList.IndexOf(tuple);
+                                int intersect = 0;
+                                if (tuple.endStreet.Name != street.Name)
+                                    intersect =  1;
                                 var updatedTuple = new RouteQueue
                                 {
                                     route = tuple.route,
-                                    intersectCount = tuple.intersectCount + 1,
+                                    intersectCount = tuple.intersectCount + intersect,
                                     startStreet = tuple.startStreet,
                                     endStreet = street
                                 };
@@ -278,58 +521,101 @@ namespace CommuteMate.Services
                             routes.Add(new RouteQueue
                             {
                                 route = route,
-                                intersectCount = 0,
+                                intersectCount = 1,
                                 startStreet = street,
                                 endStreet = street
                             });
                     }
                     //create the queue for the routes
                     if (routes.Count > 0)
+                    {
                         routesQueue.Enqueue(routes);
-                }
-                else
-                {
-                    walkQueue.Enqueue(street);
+                    }
                 }
             }
-            return routesQueue;
+
+            var newRoutesQueue = new Queue<List<RouteQueue>>();
+            //remove all route with only one intersect
+            while (routesQueue.Count > 0)
+            {
+                var q = routesQueue.Dequeue();
+                var newQ = q.Where(r => r.intersectCount != 1).ToList();
+
+
+                //foreach (var route in newQ)
+                //{
+                //    if (route.startStreet == route.endStreet)
+                //        continue;
+                //    var newEnd = lastStreets.Find(s => s.Name == route.endStreet.Name);
+                //    route.endStreet = newEnd;
+                //}
+
+                if (newQ.Count > 0)
+                    newRoutesQueue.Enqueue(newQ);
+            }
+
+            var bestRoutesQueue = new Queue<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>>();
+            while (newRoutesQueue.Count > 0)
+            {
+                var q = newRoutesQueue.Dequeue();
+                var bestRoutes = await GetBestRoute(q);
+                if (bestRoutes.Count < 1)
+                    continue;
+                bestRoutesQueue.Enqueue(bestRoutes);
+            }
+            return bestRoutesQueue;
         }
 
         public async Task<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>> GetBestRoute(List<RouteQueue> routes)
         {
             Console.WriteLine("Getting Best Route");
-            List<(IEnumerable<Edge<Coordinate>>, RouteQueue) > bestRoute = [];
-            var highestIntersectRoute = routes
-                                        .GroupBy(r => r.intersectCount) // Group tuples by their integer value
-                                        .OrderByDescending(group => group.Key) // Order groups by descending integer value
-                                        .FirstOrDefault() // Select the first (i.e., highest) group
-                                        .ToList();
-            //iterate each route
-            foreach (var route in highestIntersectRoute)
+            try
             {
-                //get all streets for the route
-                var relatedStreets = await _overpassApiServices.RetrieveStreetWithCoordinatesAsync(route.route.Osm_Id);
-                var graph = await _routeService.StreetToGraph(relatedStreets, route.route.Osm_Id);
+                List<(IEnumerable<Edge<Coordinate>>, RouteQueue)> bestRoute = [];
+                var highestIntersectRoute = routes
+                                            .GroupBy(r => r.intersectCount) // Group tuples by their integer value
+                                            .OrderByDescending(group => group.Key) // Order groups by descending integer value
+                                            .FirstOrDefault() // Select the first (i.e., highest) group
+                                            .ToList();
+                //iterate each route
 
-                //start of puv
-                var startStreet = route.startStreet;
-                var routeStart = relatedStreets.Where(r => r.Osm_Id == startStreet.Osm_Id).FirstOrDefault();
-                //end of puv
-                var endStreet = route.endStreet;
-                var routeEnd = relatedStreets.Where(r => r.Osm_Id == endStreet.Osm_Id).FirstOrDefault();
+                foreach (var route in highestIntersectRoute)
+                {
+                    //get all streets for the route
+                    var relatedStreets = await _overpassApiServices.RetrieveStreetWithCoordinatesAsync(route.route.Osm_Id);
+                    var graph = await _routeService.StreetToGraph(relatedStreets, route.route.Osm_Id);
 
-                var shortestPath = _routeService.GetShortetstPath(graph, routeStart.Coordinates.First(), routeEnd.Coordinates.Last());
+                    //start of puv
+                    var startStreet = route.startStreet;
+                    var routeStart = relatedStreets.Where(r => r.Osm_Id == startStreet.Osm_Id).FirstOrDefault();
+                    //end of puv
 
-                bestRoute.Add(new(shortestPath, route));
 
-            }
+                    var endStreet = route.endStreet;
+                    var routeEnd = relatedStreets.Where(r => r.Osm_Id == endStreet.Osm_Id).FirstOrDefault();
 
-            bestRoute = bestRoute
+                    if (startStreet.Osm_Id == endStreet.Osm_Id)
+                        continue;
+                    var shortestPath = _routeService.GetShortetstPath(graph, routeStart.Coordinates.First(), routeEnd.Coordinates.Last());
+                    if (shortestPath != null)
+                        bestRoute.Add(new(shortestPath, route));
+
+                }
+
+                if (bestRoute.Count > 1)
+                {
+                    bestRoute = [.. bestRoute
                 .GroupBy(r => r.Item1.Count())
                 .OrderByDescending(group => group.Key)
-                .FirstOrDefault().ToList();
+                .FirstOrDefault()];
+                }
 
-            return bestRoute;
+                return bestRoute;
+            }
+            catch(WebException ex)
+            {
+                throw new Exception($"Error in BestRoute: {ex.Message}");
+            }
 
         }
         public string LineStringToWKT(LineString lineString)
@@ -350,11 +636,18 @@ namespace CommuteMate.Services
             return wktBuilder.ToString();
         }
 
-        public async Task<Map> addLineString(Map map, string WKTString)
+        public async Task<Map> addLineString(Map map, string WKTString, string style)
         {
-            var lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
+            ILayer lineStringLayer;
+            if (style == "straight")
+                lineStringLayer = CreateLineStringLayer(WKTString, CreateStraightLineStringStyle("orange"));
+            else if(style == "dotted")
+                lineStringLayer = CreateLineStringLayer(WKTString, CreateStraightLineStringStyle("black"));
+            else
+                lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
+
             map.Layers.Add(lineStringLayer);
-            map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 200);
+            map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 9);
             return await Task.FromResult(map);
         }
 
@@ -375,6 +668,33 @@ namespace CommuteMate.Services
             {
                 Console.WriteLine("Error inc addLineString: ", ex.Message);
                 throw;
+            }
+        }
+
+        public async Task addPath(Map map, IEnumerable<Edge<Coordinate>> path, string style)
+        {
+            var components = new Dictionary<Coordinate, List<Edge<Coordinate>>>();
+            foreach (var edge in path)
+            {
+                if (!components.TryGetValue(edge.Source, out var list))
+                {
+                    list = new List<Edge<Coordinate>>();
+                    components.Add(edge.Source, list);
+                }
+                list.Add(edge);
+            }
+
+            // Draw each connected component separately
+            foreach (var component in components.Values)
+            {
+                var coordinates = new List<Coordinate>();
+                foreach (var edge in component)
+                {
+                    coordinates.Add(edge.Source);
+                    coordinates.Add(edge.Target);
+                }
+                string lineString = await _streetService.StreetListToWkt(coordinates);
+                await addLineString(map, lineString, style);
             }
         }
         public static ILayer CreateLineStringLayer(string WKTString, IStyle style = null)
@@ -400,6 +720,30 @@ namespace CommuteMate.Services
                 throw;
             }
         }
+
+        public static ILayer CreatePinLayer(string WKTString, IStyle style = null)
+        {
+            try
+            {
+                var lineString = (LineString)new WKTReader().Read(WKTString);
+                //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
+                lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
+
+                return new MemoryLayer
+                {
+                    Features = new[] { new GeometryFeature { Geometry = lineString } },
+                    Name = "LineStringLayer",
+                    Style = style
+
+                };
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inc CreateLineStringLayer: ", ex.Message);
+                throw;
+            }
+        }
         public static IStyle CreateLineStringStyle()
         {
             try
@@ -409,16 +753,54 @@ namespace CommuteMate.Services
                     Fill = null,
                     Outline = null,
 #pragma warning disable CS8670 // Object or collection initializer implicitly dereferences possibly null member.
-                    Line = { Color = Color.FromString("YellowGreen"), Width = 4 }
+                    Line = { Color = Color.FromString("green"), Width = 4 }
                 };
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error inc CreateLineStringStyle: ", ex.Message);
+                Console.WriteLine("Error inc CreateStraightLineStringStyle: ", ex.Message);
                 throw;
             }
         }
 
+       
+        public static IStyle CreateStraightLineStringStyle(string color)
+        {
+            try
+            {
+                return new VectorStyle
+                {
+                    Fill = null,
+                    Outline = null,
+#pragma warning disable CS8670 // Object or collection initializer implicitly dereferences possibly null member.
+                    Line = { Color = Color.FromString(color), Width = 4 }
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inc CreateStraightLineStringStyle: ", ex.Message);
+                throw;
+            }
+        }
+
+        public static IStyle CreateDottedLineStringStyle(string color)
+        {
+            try
+            {
+                return new VectorStyle
+                {
+                    Fill = null,
+                    Outline = null,
+#pragma warning disable CS8670 // Object or collection initializer implicitly dereferences possibly null member.
+                    Line = { Color = Color.FromString(color), Width = 4 }
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inc CreateStraightLineStringStyle: ", ex.Message);
+                throw;
+            }
+        }
 
 
         //latitude longitude

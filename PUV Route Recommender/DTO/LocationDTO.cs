@@ -43,5 +43,27 @@ namespace CommuteMate.DTO
         public List<string> boundingbox { get; set; }
     }
 
+    public class DisplayName
+    {
+        public string text { get; set; }
+        public string languageCode { get; set; }
+    }
+
+    public class GoogleLocation
+    {
+        public double latitude { get; set; }
+        public double longitude { get; set; }
+    }
+
+    public class Place
+    {
+        public GoogleLocation location { get; set; }
+        public DisplayName displayName { get; set; }
+    }
+
+    public class GoogleLocationDTO
+    {
+        public List<Place> places { get; set; }
+    }
 
 }

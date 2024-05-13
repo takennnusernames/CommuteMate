@@ -24,11 +24,12 @@ public partial class NavigatingPage : ContentPage
 		InitializeComponent();
         _mapServices = mapServices;
         BindingContext = viewModel;
+        viewModel.mapControl = mapControl;
+        viewModel.CreateMapCommand.ExecuteAsync(mapControl.Map);
     }
-    protected override async void OnAppearing()
-    {
-        base.OnAppearing();
-        mapControl.Map = await _mapServices.CreateMapAsync();
-    }
-    
+    //protected override async void OnAppearing()
+    //{
+    //    base.OnAppearing();
+    //}
+
 }

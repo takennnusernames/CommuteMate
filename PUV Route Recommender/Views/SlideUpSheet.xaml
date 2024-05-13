@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<the49:BottomSheet xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
+             x:Class="CommuteMate.Views.SlideUpSheet"
+             xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+             xmlns:model="clr-namespace:CommuteMate.Models"
+             x:DataType="viewModel:NavigatingViewModel"
+             Padding="16, 32" Background="LightGray" CornerRadius="20" HandleColor="DarkGray" HasHandle="true">
+
+    <CollectionView x:Name="pathOptions"
+                  ItemsSource="{Binding PathOptions}"
+                  SelectionMode="None"
+                  Grid.Row="1"
+                  VerticalOptions="Start"
+                  BackgroundColor="White"
+                  WidthRequest="340"
+                  HeightRequest="300"
+                  Margin="20"
+>
+        <CollectionView.Triggers>
+            <DataTrigger TargetType="CollectionView"
+           Binding="{Binding PathOptions.Count}"
+           Value="0">
+                <Setter Property="IsVisible" Value="False" />
+            </DataTrigger>
+        </CollectionView.Triggers>
+        <CollectionView.ItemTemplate>
+            <DataTemplate x:DataType="model:PathData">
+                <ScrollView>
+                    <Frame CornerRadius="0">
+                        <Frame.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding Source={x:Reference pathOptions}, Path=BindingContext.SelectPathCommand}"
+                                                          CommandParameter="{Binding .}"/>
+                        </Frame.GestureRecognizers>
+                        <Grid Padding="0"
+                                      ColumnDefinitions="125, *">
+                            <VerticalStackLayout Grid.ColumnSpan="2"
+                                                         Padding="10">
+                                <Label Style="{StaticResource LargeLabel}" Text="{Binding puvs.Count, StringFormat='Number of PUVs to ride: {0}'}"/>
+                                <CollectionView ItemsSource="{Binding puvs}"
+                                                  SelectionMode="None">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:Route">
+                                            <Label Text="{Binding Code, StringFormat='PUV: {0}'}"/>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
+                                <Label Style="{StaticResource LargeLabel}" Text="{Binding totalFare, StringFormat='Total Fare: P{0}' }"/>
+                                <Label Style="{StaticResource MediumLabel}" Text="{Binding totalWalkingDistance, StringFormat='Total Walking Distance: {0:F2} KM' }"/>
+                                <Label Style="{StaticResource MediumLabel}" Text="{Binding totalPuvRideDistance, StringFormat='Total PUV Ride Distance: {0:F2} KM' }"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </Frame>
+                </ScrollView>
+            </DataTemplate>
+        </CollectionView.ItemTemplate>
+
+    </CollectionView>
+
+    
+</the49:BottomSheet>

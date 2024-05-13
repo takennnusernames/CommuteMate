@@ -11,6 +11,7 @@ using System.Linq;
 using Microsoft.Maui.Controls;
 using NetTopologySuite.LinearReferencing;
 using NetTopologySuite.Operation.Distance;
+using System.Net;
 
 
 namespace CommuteMate.Services
@@ -230,6 +231,7 @@ namespace CommuteMate.Services
 
         public async Task<List<Route>> RetrieveRelatedRoutes(long OsmId)
         {
+            Console.WriteLine("Retrieving Related Routes");
             try
             {
                 await _cancellationTokenSource.CancelAsync();
@@ -240,13 +242,22 @@ namespace CommuteMate.Services
                 way({OsmId});
                 rel(bw)[""route""=""bus""];
                 out geom;";
-                var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(query)}", _cancellationTokenSource.Token);
-                response.EnsureSuccessStatusCode();
-                var responseData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
+                OSMDataDTO responseData;
+                using (var request = new HttpRequestMessage(HttpMethod.Get, url))
+                {
+                    var content = new StringContent(query, System.Text.Encoding.UTF8, "application/json");
+                    request.Content = content;
+
+                    using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, _cancellationTokenSource.Token);
+                    if (!response.IsSuccessStatusCode)
+                        throw new Exception($"HttpRequest Failed: {response.StatusCode}");
+                    using var stream = await response.Content.ReadAsStreamAsync();
+                    responseData = await JsonSerializer.DeserializeAsync<OSMDataDTO>(stream);
+                }
                 List<Route> relatedRoutes = [];
                 foreach (var data in responseData.elements)
                 {
-                    Route route = new Route
+                    Route route = new()
                     {
                         Osm_Id = data.id,
                         Code = data.tags.TryGetValue("ref", out string code) ? code : "No Code",
@@ -259,16 +270,22 @@ namespace CommuteMate.Services
 
                 return relatedRoutes;
             }
+            catch (WebException ex)
+            {
+                // Handle the exception here
+                throw new Exception($"Network Error: {ex.Message}");
+            }
             catch (Exception ex)
             {
                 Console.WriteLine("Error in RetrievRelatedRoutes: ", ex.Message);
-                throw;
+                return null;
             }
 
         }
 
         public async Task<List<Street>> RetrieveRelatedStreetsAsync(long OsmId)
         {
+            Console.WriteLine("Retrieving Streets");
             try
             {
                 await _cancellationTokenSource.CancelAsync();
@@ -355,30 +372,41 @@ namespace CommuteMate.Services
                 response.EnsureSuccessStatusCode();
                 var responseData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
                 List<StreetWithCoordinates>relatedStreets = [];
-                foreach(var element in responseData.elements)
+                if (responseData != null && responseData.elements != null)
                 {
-                    foreach (var member in element.members)
+                    foreach (var element in responseData.elements)
                     {
-                        var points = new List<Coordinate>();
-                        foreach (var coordinate in member.geometry)
+                        if (element.members != null)
                         {
-                            points.Add(new Coordinate(coordinate.lon, coordinate.lat));
+                            foreach (var member in element.members)
+                            {
+                                if (member.geometry != null)
+                                {
+                                    var points = new List<Coordinate>();
+                                    foreach (var coordinate in member.geometry)
+                                    {
+                                        points.Add(new Coordinate(coordinate.lon, coordinate.lat));
+                                    }
+                                    StreetWithCoordinates street = new StreetWithCoordinates
+                                    {
+                                        Osm_Id = member.@ref,
+                                        Role = member.role,
+                                        Coordinates = new List<Coordinate>()
+                                    };
+                                    street.Coordinates.AddRange(points);
+                                    relatedStreets.Add(street);
+                                }
+                            }
                         }
-                        StreetWithCoordinates street = new StreetWithCoordinates
-                        {
-                            Osm_Id = member.@ref,
-                            Role = member.role,
-                            Coordinates = []
-                        };
-                        street.Coordinates.AddRange(points);
-                        relatedStreets.Add(street);
                     }
                 }
+                if (relatedStreets.Count == 0)
+                    throw new Exception("Error");
                 return relatedStreets;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in RetrieveRelatedStret: {ex.Message}", ex.Message);
+                Console.WriteLine($"Error in RetrieveRelatedStreetCoordinates: {ex.Message}", ex.Message);
                 throw;
             }
         }
@@ -388,26 +416,35 @@ namespace CommuteMate.Services
             Console.WriteLine("Converting Geometry");
             try
             {
+                List<(Street street, Coordinate)> streetList = [];
+                HashSet<double> addedStreets = [];
 
-                List<(Street street, Coordinate)> streetList = new();
-                HashSet<double> addedStreets = new HashSet<double>();
-                //test
                 var minX = geometry.coordinates.Min(coord => coord.First());
                 var minY = geometry.coordinates.Min(coord => coord.Last());
                 var maxX = geometry.coordinates.Max(coord => coord.First());
                 var maxY = geometry.coordinates.Max(coord => coord.Last());
 
-                string url = "https://overpass-api.de/api/interpreter";
                 string overPassQuery = $@"
                 [out:json];
                 way({minY}, {minX}, {maxY}, {maxX})[""highway""];
                 out geom;
                 ";
-                var response = await _httpClient.GetAsync($"{url}?data={Uri.EscapeDataString(overPassQuery)}");
-                response.EnsureSuccessStatusCode();
-                var responseData = await response.Content.ReadFromJsonAsync<OSMDataDTO>();
+                OSMDataDTO responseData;
+                using (var request = new HttpRequestMessage(HttpMethod.Get, "https://overpass-api.de/api/interpreter"))
+                {
+                    var content = new StringContent(overPassQuery, System.Text.Encoding.UTF8, "application/json");
+                    request.Content = content;
+
+                    using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+
+                    if (!response.IsSuccessStatusCode)
+                        throw new Exception($"HttpRequest Failed {response.StatusCode}");
+
+                    using var stream = await response.Content.ReadAsStreamAsync();
+                    responseData = await JsonSerializer.DeserializeAsync<OSMDataDTO>(stream);
+                }
                 var ways = responseData.elements;
-                //test
+
                 foreach (var coordinate in geometry.coordinates)
                 {
                     var point = new Coordinate(coordinate.First(), coordinate.Last());
@@ -443,12 +480,14 @@ namespace CommuteMate.Services
                         addedStreets.Add(street.Osm_Id);
                     }
                 }
+                Console.WriteLine($"{addedStreets.ToList()}");
                 return streetList;
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error in GeometryToStreet:", ex.Message);
-                throw;
+                await Shell.Current.DisplayAlert("Netwrok Error", "Check Your Internet Connection", "OK");
+                return null;
             }
         }
         LineString CreateLineString(List<OSMCoordinate> coordinates)

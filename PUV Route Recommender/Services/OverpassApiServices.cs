@@ -12,6 +12,9 @@ using Microsoft.Maui.Controls;
 using NetTopologySuite.LinearReferencing;
 using NetTopologySuite.Operation.Distance;
 using System.Net;
+using System.Text;
+using Mapsui.Providers.Wms;
+using System.IO;
 
 
 namespace CommuteMate.Services
@@ -253,6 +256,58 @@ namespace CommuteMate.Services
                         throw new Exception($"HttpRequest Failed: {response.StatusCode}");
                     using var stream = await response.Content.ReadAsStreamAsync();
                     responseData = await JsonSerializer.DeserializeAsync<OSMDataDTO>(stream);
+                }
+                List<Route> relatedRoutes = [];
+                foreach (var data in responseData.elements)
+                {
+                    Route route = new()
+                    {
+                        Osm_Id = data.id,
+                        Code = data.tags.TryGetValue("ref", out string code) ? code : "No Code",
+                        Name = data.tags.TryGetValue("name", out string name) ? name : "No Name",
+                        StreetNameSaved = false,
+                        Streets = []
+                    };
+                    relatedRoutes.Add(route);
+                }
+
+                return relatedRoutes;
+            }
+            catch (WebException ex)
+            {
+                // Handle the exception here
+                throw new Exception($"Network Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in RetrievRelatedRoutes: ", ex.Message);
+                return null;
+            }
+
+        }
+
+        public async Task<List<Route>> RetrieveRelatedRoutes(List<string> queries)
+        {
+            Console.WriteLine("Retrieving Related Routes");
+            try
+            {
+                string requestBody = string.Join("\n", queries);
+                string url = "https://overpass-api.de/api/interpreter?data=[out:json];(";
+                OSMDataDTO responseData;
+                using (var request = new HttpRequestMessage(HttpMethod.Get, url + requestBody + ");out geom;"))
+                {
+                    using var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                    if (!response.IsSuccessStatusCode)
+                        throw new Exception($"HttpRequest Failed: {response.StatusCode}");
+                    using var stream = await response.Content.ReadAsStreamAsync();
+                    {
+                        using (var streamReader = new StreamReader(stream))
+                        {
+                            string responseContent = await streamReader.ReadToEndAsync();
+                            Console.WriteLine(responseContent); // Output the response content for inspection
+                            responseData = JsonSerializer.Deserialize<OSMDataDTO>(responseContent);
+                        }
+                    }
                 }
                 List<Route> relatedRoutes = [];
                 foreach (var data in responseData.elements)

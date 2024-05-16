@@ -486,53 +486,57 @@ namespace CommuteMate.Services
             Queue<List<RouteQueue>> routesQueue = new();
 
             var streets = streetList.GroupBy(s => s.Name).Select(g => g.First()).ToList();
+
+            List<string> queries = [];
             foreach (var street in streetList)
             {
+                queries.Add($@"way({street.Osm_Id});rel(bw)[""route""=""bus""];");
                 //get puv routes that pass through the street
-                var relatedRoutes = await _overpassApiServices.RetrieveRelatedRoutes(street.Osm_Id);
-                if (relatedRoutes.Count > 0)
-                {
-                    List<RouteQueue> routes = new();
-                    foreach (var route in relatedRoutes)
-                    {
-                        //check if route is already in the queue
-                        if (routesQueue.Any(q => q.Any(r => r.route.Osm_Id == route.Osm_Id)))
-                        {
-                            var routeList = routesQueue.FirstOrDefault(q => q.Any(l => l.route.Equals(route)));
-                            //increase count of route to determine best route
-                            var tuple = routeList.FirstOrDefault(item => item.route.Equals(route));
-                            if (tuple != default)
-                            {
-                                var index = routeList.IndexOf(tuple);
-                                int intersect = 0;
-                                if (tuple.endStreet.Name != street.Name)
-                                    intersect =  1;
-                                var updatedTuple = new RouteQueue
-                                {
-                                    route = tuple.route,
-                                    intersectCount = tuple.intersectCount + intersect,
-                                    startStreet = tuple.startStreet,
-                                    endStreet = street
-                                };
-                                routeList[index] = updatedTuple;
-                            }
-                        }
-                        else
-                            routes.Add(new RouteQueue
-                            {
-                                route = route,
-                                intersectCount = 1,
-                                startStreet = street,
-                                endStreet = street
-                            });
-                    }
-                    //create the queue for the routes
-                    if (routes.Count > 0)
-                    {
-                        routesQueue.Enqueue(routes);
-                    }
-                }
             }
+
+            var relatedRoutes = await _overpassApiServices.RetrieveRelatedRoutes(queries);
+            //if (relatedRoutes.Count > 0)
+            //{
+            //    List<RouteQueue> routes = new();
+            //    foreach (var route in relatedRoutes)
+            //    {
+            //        //check if route is already in the queue
+            //        if (routesQueue.Any(q => q.Any(r => r.route.Osm_Id == route.Osm_Id)))
+            //        {
+            //            var routeList = routesQueue.FirstOrDefault(q => q.Any(l => l.route.Equals(route)));
+            //            //increase count of route to determine best route
+            //            var tuple = routeList.FirstOrDefault(item => item.route.Equals(route));
+            //            if (tuple != default)
+            //            {
+            //                var index = routeList.IndexOf(tuple);
+            //                int intersect = 0;
+            //                if (tuple.endStreet.Name != street.Name)
+            //                    intersect = 1;
+            //                var updatedTuple = new RouteQueue
+            //                {
+            //                    route = tuple.route,
+            //                    intersectCount = tuple.intersectCount + intersect,
+            //                    startStreet = tuple.startStreet,
+            //                    endStreet = street
+            //                };
+            //                routeList[index] = updatedTuple;
+            //            }
+            //        }
+            //        else
+            //            routes.Add(new RouteQueue
+            //            {
+            //                route = route,
+            //                intersectCount = 1,
+            //                startStreet = street,
+            //                endStreet = street
+            //            });
+            //    }
+            //    //create the queue for the routes
+            //    if (routes.Count > 0)
+            //    {
+            //        routesQueue.Enqueue(routes);
+            //    }
+            //}
 
             var newRoutesQueue = new Queue<List<RouteQueue>>();
             //remove all route with only one intersect

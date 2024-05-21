@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
-             xmlns:model="clr-namespace:CommuteMate.Models"
+             xmlns:model ="clr-namespace:CommuteMate.Models"
              x:Class="CommuteMate.Views.RoutesView"
              x:DataType="viewModel:RoutesViewModel"
              Title="{Binding Title}">
@@ -32,7 +32,8 @@
                                   ColumnDefinitions="125, *">
                                 <VerticalStackLayout Grid.ColumnSpan="2"
                                                      Padding="10">
-                                    <Label Style="{StaticResource LargeLabel}" Text="{Binding Code}"/>
+
+                                    <Label Style="{StaticResource LargeLabel}" Text="{Binding Code, StringFormat='Route: {0}'}"/>
                                     <Label Style="{StaticResource MediumLabel}" Text="{Binding Name}"/>
                                 </VerticalStackLayout>
                             </Grid>
@@ -43,19 +44,14 @@
         </CollectionView>
 
         <Button
+            x:Name="GetRoutesButton"
+            BindingContext="{Binding}"
             Grid.Row="1"
-            Grid.Column="0"
+            Grid.ColumnSpan="2"
             Margin="9"
             Command="{Binding GetRoutesCommand}"
             IsEnabled="{Binding IsNotBusy}"
             Text="Get Routes"/>
-        <Button
-            Grid.Row="1"
-            Grid.Column="1"
-            Margin="9"
-            Command="{Binding GetDataCommand}"
-            IsEnabled="{Binding IsNotBusy}"
-            Text="Get Data"/>
 
         <ActivityIndicator
             Grid.RowSpan="2"

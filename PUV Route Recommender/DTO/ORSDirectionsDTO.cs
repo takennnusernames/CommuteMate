@@ -57,8 +57,8 @@ namespace CommuteMate.DTO
     {
         public int transfers { get; set; }
         public int fare { get; set; }
-        public List<Segment> segments { get; set; }
-        public Summary summary { get; set; }
+        public List<OrsSegment> segments { get; set; }
+        public OrsSummary summary { get; set; }
         public List<int> way_points { get; set; }
     }
 
@@ -71,14 +71,14 @@ namespace CommuteMate.DTO
     }
 
 
-    public class Segment
+    public class OrsSegment
     {
         public double distance { get; set; }
         public double duration { get; set; }
-        public List<Step> steps { get; set; }
+        public List<OrsStep> steps { get; set; }
     }
 
-    public class Step
+    public class OrsStep
     {
         public double distance { get; set; }
         public double duration { get; set; }
@@ -88,7 +88,7 @@ namespace CommuteMate.DTO
         public List<int> way_points { get; set; }
     }
 
-    public class Summary
+    public class OrsSummary
     {
         public double distance { get; set; }
         public double duration { get; set; }

@@ -21,11 +21,13 @@ namespace CommuteMate.ViewModels
         //dependecy injections
         readonly IMapServices _mapServices;
         readonly IConnectivity _connectivity;
-        public NavigatingViewModel(IMapServices mapServices, IConnectivity connectivity)
+        readonly ICommuteMateApiService _commuteMateApiService;
+        public NavigatingViewModel(IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
         {
             Title = "Map";
             _mapServices = mapServices;
             _connectivity = connectivity;
+            _commuteMateApiService = commuteMateApiService;
         }
 
         //properties
@@ -48,7 +50,7 @@ namespace CommuteMate.ViewModels
 
 
         [ObservableProperty]
-        ObservableCollection<PathData> pathOptions = new();
+        ObservableCollection<RoutePath> pathOptions = new();
 
         public MapControl mapControl { get; set; }
         public SearchBar searchBar { get; set; }
@@ -239,10 +241,8 @@ namespace CommuteMate.ViewModels
                     var origin = OriginLocation.Coordinate;
                     var destination = DestinationLocation.Coordinate;
 
-                    var directions = await _mapServices.GetDirectionsAsync(origin, destination);
+                    var options = await _commuteMateApiService.GetPath(origin, destination);
                     //(Route, Path, Fare, Distance)
-                    var feature = directions.features.FirstOrDefault();
-                    var options = await _mapServices.GetOptions(feature);
                     foreach (var option in options)
                         PathOptions.Add(option);
 

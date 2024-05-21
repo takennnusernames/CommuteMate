@@ -1,15 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using SkiaSharp.Views.Maui.Controls.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
-using Microsoft.Extensions.Configuration;
-using System.Reflection;
 using CommuteMate.Interfaces;
 using CommuteMate.Services;
 using CommuteMate.Views;
 using CommuteMate.Repositories;
-using SQLite;
 using The49.Maui.BottomSheet;
+using CommuteMate.ApiClient.IoC;
 
 namespace CommuteMate
 {
@@ -29,7 +25,8 @@ namespace CommuteMate
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-
+            var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5005" : "http://localhost/5005";
+            builder.Services.AddCommuteMateApiClientService(x => x.ApiBaseAddress = baseUrl);
 #if DEBUG
 		builder.Logging.AddDebug();
 #endif
@@ -51,11 +48,12 @@ namespace CommuteMate
             builder.Services.AddSingleton<IRouteService, RouteService>();
             builder.Services.AddSingleton<IStreetService, StreetService>();
             builder.Services.AddSingleton<IMapServices, MapServices>();
+            builder.Services.AddSingleton<ICommuteMateApiService, CommuteMateApiService>();
 
 
             //ViewModels
             builder.Services.AddSingleton<RoutesViewModel>();
-            builder.Services.AddTransient<RouteInfoViewModel>();
+            builder.Services.AddSingleton<RouteInfoViewModel>();
             builder.Services.AddTransient<NavigatingViewModel>();
 
             //Views
@@ -67,13 +65,13 @@ namespace CommuteMate
             //Sheet
             builder.Services.AddTransient<SlideUpSheet>();
 
-            var dbContext = new CommuteMateDbContext();
+//            var dbContext = new CommuteMateDbContext();
 
-#if DEBUG
-            dbContext.Database.EnsureDeleted();
-#endif
-            dbContext.Database.EnsureCreated();
-            dbContext.Dispose();
+//#if DEBUG
+//            dbContext.Database.EnsureDeleted();
+//#endif
+//            dbContext.Database.EnsureCreated();
+//            dbContext.Dispose();
 
             return builder.Build();
         }

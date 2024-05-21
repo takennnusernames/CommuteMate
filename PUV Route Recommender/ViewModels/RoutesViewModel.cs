@@ -1,4 +1,6 @@
-﻿using CommuteMate.Interfaces;
+﻿using CommuteMate.ApiClient;
+using ApiRoute = CommuteMate.ApiClient.Models.ApiModels.Route;
+using CommuteMate.Interfaces;
 using CommuteMate.Views;
 using System;
 using System.Collections.Generic;
@@ -13,19 +15,26 @@ namespace CommuteMate.ViewModels
         readonly IOverpassApiServices _overpassApiServices;
         readonly IConnectivity _connectivity;
         readonly IRouteService _routeService;
+        readonly ICommuteMateApiService _commuteMateApiService;
+        readonly CommuteMateApiClientService _apiClient;
         public RoutesViewModel(
             IOverpassApiServices overpassApiServices, 
             IConnectivity connectivity,
-            IRouteService routeService) 
+            IRouteService routeService,
+            ICommuteMateApiService commuteMateApiService,
+            CommuteMateApiClientService apiClientService) 
         {
             Title = "Route List";
             _overpassApiServices = overpassApiServices;
             _connectivity = connectivity;
             _routeService = routeService;
+            _apiClient = apiClientService;
+            _commuteMateApiService = commuteMateApiService;
         }
 
         //properties
         public ObservableCollection<Route> Routes { get; } = [];
+        public Button getRoutesButton { get; set; }
         //commands
         [RelayCommand]
         async Task GetRoutesAsync()
@@ -35,7 +44,13 @@ namespace CommuteMate.ViewModels
             try
             {
                 IsBusy = true;
-                var routes = await _routeService.GetAllRoutesAsync();
+                if (_connectivity.NetworkAccess != NetworkAccess.Internet)
+                {
+                    await Shell.Current.DisplayAlert("No connectivity!",
+                        $"Please check internet and try again.", "OK");
+                    return;
+                }
+                var routes = await _commuteMateApiService.GetRoutes();
 
                 if(Routes.Count != 0)
                     Routes.Clear();
@@ -47,6 +62,8 @@ namespace CommuteMate.ViewModels
 
                 foreach (var route in routes)
                     Routes.Add(route);
+
+                getRoutesButton.IsEnabled = false;
             }
             catch (Exception ex)
             {
@@ -58,29 +75,6 @@ namespace CommuteMate.ViewModels
             {
                 IsBusy = false;
             }
-        }
-
-        [RelayCommand]
-        async Task GetDataAsync()
-        {
-            if (IsBusy)
-                return;
-            try
-            {
-                IsBusy = true;
-                await _overpassApiServices.RetrieveOverpassRoutesAsync();
-                await Shell.Current.DisplayAlert("Success!", "Data Retrieved", "OK");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Unable to get routes: {ex.Message}");
-                await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
-            }
-            finally
-            {
-                IsBusy = false;
-            }
-
         }
 
         [RelayCommand]
@@ -91,15 +85,18 @@ namespace CommuteMate.ViewModels
             try
             {
                 IsBusy = true;
-                if (!route.StreetNameSaved)
+                if (_connectivity.NetworkAccess != NetworkAccess.Internet)
                 {
-                    await _overpassApiServices.RetrieveOverpassRouteStreetNamesAsync(route.Osm_Id, route.RouteId);
+                    await Shell.Current.DisplayAlert("No connectivity!",
+                        $"Please check internet and try again.", "OK");
+                    return;
                 }
-                var streets = route.Streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
+                var streets = await _commuteMateApiService.GetRouteStreets(route.Osm_Id) ?? throw new Exception("streets is null");
+                var streetNames = streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
                 RouteInfo routeInfo = new RouteInfo
                 {
                     RouteName = route.Name,
-                    StreetNames = streets
+                    StreetNames = streetNames
                 };
                 await Shell.Current.GoToAsync($"{nameof(RoutesInfoPage)}", true,
                     new Dictionary<string, object>

@@ -7,21 +7,27 @@
              x:DataType="viewModel:RouteInfoViewModel"
              Title="{Binding Title}">
     <ScrollView>
-        <Grid RowDefinitions="Auto,Auto,*">
+        <Grid RowDefinitions="Auto,Auto,*" 
+              ColumnDefinitions="Auto,Auto"
+              Padding="10">
             <Label Grid.Row="0"
+                   Grid.Column="0"
                    TextColor="Black"
                    Text="{Binding Route.RouteName}"
-                   Style="{StaticResource LargeLabel}"/>
+                   Style="{StaticResource LargeLabel}"
+                   BackgroundColor="white"/>
             <CollectionView
-                BackgroundColor="Transparent"
-                Grid.ColumnSpan="2"
+                BackgroundColor="Wheat"
+                Grid.Row="1"
+                Grid.Column="0"
                 ItemsSource="{Binding Route.StreetNames}"
                 SelectionMode="None">
+
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
                         <Grid Padding="10">
-                            <VerticalStackLayout Grid.ColumnSpan="2"
-                                 Padding="10">
+                            <VerticalStackLayout Grid.ColumnSpan="2" BackgroundColor="Yellow"
+                                 Padding="5" HorizontalOptions="Center">
                                 <Label Style="{StaticResource MediumLabel}" Text="{Binding .}"/>
                             </VerticalStackLayout>
                         </Grid>

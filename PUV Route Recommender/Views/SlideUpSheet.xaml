@@ -26,7 +26,7 @@
             </DataTrigger>
         </CollectionView.Triggers>
         <CollectionView.ItemTemplate>
-            <DataTemplate x:DataType="model:PathData">
+            <DataTemplate x:DataType="model:RoutePath">
                 <ScrollView>
                     <Frame CornerRadius="0">
                         <Frame.GestureRecognizers>
@@ -37,18 +37,18 @@
                                       ColumnDefinitions="125, *">
                             <VerticalStackLayout Grid.ColumnSpan="2"
                                                          Padding="10">
-                                <Label Style="{StaticResource LargeLabel}" Text="{Binding puvs.Count, StringFormat='Number of PUVs to ride: {0}'}"/>
-                                <CollectionView ItemsSource="{Binding puvs}"
+                                <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.PUVCodes.Count, StringFormat='Number of PUVs to ride: {0}'}"/>
+                                <CollectionView ItemsSource="{Binding Summary.PUVCodes}"
                                                   SelectionMode="None">
                                     <CollectionView.ItemTemplate>
-                                        <DataTemplate x:DataType="model:Route">
-                                            <Label Text="{Binding Code, StringFormat='PUV: {0}'}"/>
+                                        <DataTemplate>
+                                            <Label Text="{Binding ., StringFormat='PUV: {0}'}"/>
                                         </DataTemplate>
                                     </CollectionView.ItemTemplate>
                                 </CollectionView>
-                                <Label Style="{StaticResource LargeLabel}" Text="{Binding totalFare, StringFormat='Total Fare: P{0}' }"/>
-                                <Label Style="{StaticResource MediumLabel}" Text="{Binding totalWalkingDistance, StringFormat='Total Walking Distance: {0:F2} KM' }"/>
-                                <Label Style="{StaticResource MediumLabel}" Text="{Binding totalPuvRideDistance, StringFormat='Total PUV Ride Distance: {0:F2} KM' }"/>
+                                <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.TotalFare, StringFormat='Total Fare: {0}' }"/>
+                                <Label Style="{StaticResource MediumLabel}" Text="{Binding Summary.TotalDistance, StringFormat='Total Distance: {0:F2}' }"/>
+                                <Label Style="{StaticResource MediumLabel}" Text="{Binding Summary.TotalDuration, StringFormat='Total Route Duration: {0:F2}' }"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Frame>

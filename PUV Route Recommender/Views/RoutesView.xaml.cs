@@ -10,5 +10,6 @@ public partial class RoutesView : ContentPage
     {
         InitializeComponent();
         BindingContext = viewModel;
+        viewModel.getRoutesButton = GetRoutesButton;
     }
 }

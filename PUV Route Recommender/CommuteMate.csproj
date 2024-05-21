@@ -53,6 +53,10 @@
     <None Remove="Resources\Images\home_icon.png" />
     <None Remove="Resources\Images\list_icon.svg" />
     <None Remove="Resources\Raw\OSM_Test_Data.osm" />
+    <None Remove="Resources\xml\network_security_config.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\xml\network_security_config.xml" />
   </ItemGroup>
   <ItemGroup>
     <MauiSplashScreen Include="Resources\AppIcon\commutemate.svg" />
@@ -78,6 +82,9 @@
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
     <PackageReference Include="The49.Maui.BottomSheet" Version="8.0.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Api\CommuteMate.ApiClient\CommuteMate.ApiClient.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Views\SlideUpSheet.xaml.cs">

@@ -26,10 +26,9 @@ public partial class NavigatingPage : ContentPage
         BindingContext = viewModel;
         viewModel.mapControl = mapControl;
         viewModel.CreateMapCommand.ExecuteAsync(mapControl.Map);
+        viewModel.originSearchBar = originSearchBar;
+        viewModel.destinationSearchBar = destinationSearchBar;
+
     }
-    //protected override async void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //}
 
 }

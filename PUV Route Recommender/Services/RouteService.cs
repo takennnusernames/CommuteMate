@@ -20,14 +20,20 @@ namespace CommuteMate.Services
             _routeRepository = routeRepository;
             _streetService = streetService;
         }
-        public async Task<Route> InsertRouteAsync(Route route)
+        public async Task<Route> InsertRouteAsync(Route newRoute)
         {
-            return await _routeRepository.InsertRouteAsync(route);
+            var route = await _routeRepository.GetRouteByIdAsync(newRoute.RouteId);
+            if (route is not null)
+                return await _routeRepository.InsertRouteAsync(newRoute);
+            else
+                return route;
         }
         public async Task<List<Route>> GetAllRoutesAsync()
         {
             var routes = await _routeRepository.GetAllRoutesAsync();
-            return routes.ToList();
+            if (routes is not null)
+                return routes.ToList();
+            return null;
         }
         public async Task<List<Street>> GetRouteStreets(int id)
         {

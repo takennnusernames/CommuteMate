@@ -87,15 +87,18 @@
     <ProjectReference Include="..\..\Api\CommuteMate.ApiClient\CommuteMate.ApiClient.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Views\SlideUpSheet.xaml.cs">
-      <DependentUpon>SlideUpSheet.xaml</DependentUpon>
+    <Compile Update="Views\SlideUpSheets\RoutePathSelection.xaml.cs">
+      <DependentUpon>RoutePathSelection.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\RoutesView.xaml.cs">
       <DependentUpon>RoutesView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <MauiXaml Update="Views\SlideUpSheet.xaml">
+    <MauiXaml Update="Views\SlideUpSheets\RoutePathDetails.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\SlideUpSheets\RoutePathSelection.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\InfoPage.xaml">

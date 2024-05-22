@@ -17,21 +17,6 @@ namespace CommuteMate.Models
         public string Name { get; set; }
         public bool StreetNameSaved { get; set; }
         public virtual ICollection<Street> Streets { get; set; }
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-                return false;
-
-            var otherRoute = (Route)obj;
-            return RouteId == otherRoute.RouteId && Osm_Id == otherRoute.Osm_Id;
-            // Add other relevant property comparisons if needed
-        }
-
-        public override int GetHashCode()
-        {
-            return RouteId.GetHashCode() ^ Osm_Id.GetHashCode();
-            // Combine hash codes of relevant properties
-        }
     }
     public class Street
     {

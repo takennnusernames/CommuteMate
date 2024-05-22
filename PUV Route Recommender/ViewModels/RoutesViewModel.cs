@@ -37,6 +37,38 @@ namespace CommuteMate.ViewModels
         public Button getRoutesButton { get; set; }
         //commands
         [RelayCommand]
+        async Task ShowRoutesAsync()
+        {
+            if (IsBusy)
+                return;
+            try
+            {
+                IsBusy = true;
+                var routes = await _routeService.GetAllRoutesAsync();
+
+                if (Routes.Count != 0)
+                    Routes.Clear();
+
+                if (routes.Count == 0 || routes is null)
+                {
+                    throw new Exception("empty route");
+                }
+
+                foreach (var route in routes)
+                    Routes.Add(route);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get routes: {ex.Message}");
+                await Shell.Current.DisplayAlert("Alert!", "Press Retrieve Routes button to Load Routes", "OK");
+
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
+        [RelayCommand]
         async Task GetRoutesAsync()
         {
             if (IsBusy)

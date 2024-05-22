@@ -1,4 +1,5 @@
-﻿namespace CommuteMate.Models
+﻿using NetTopologySuite.Geometries;
+namespace CommuteMate.Models
 {
     public class PathAction
     {
@@ -9,11 +10,13 @@
     {
         public List<RouteStep> Steps { get; set; }
         public PathSummary Summary { get; set; }
+        public List<Geometry> RouteGeometry { get; set; }
     }
     public class RouteStep
     {
         public string Action { get; set; }
         public string Instruction { get; set; }
+        public Geometry StepGeometry { get; set; }
     }
     public class PathSummary
     {

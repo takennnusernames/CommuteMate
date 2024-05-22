@@ -20,6 +20,6 @@ namespace CommuteMate.Interfaces
         Task<List<Street>> RetrieveRelatedStreetsAsync(long OsmId);
         Task<List<StreetWithNode>> RetrieveStreetWithNodesAsync(long OsmId);
         Task<List<StreetWithCoordinates>> RetrieveStreetWithCoordinatesAsync(long OsmId);
-        Task<List<(Street, Coordinate)>> GeometryToStreetListAsync(DTO.Geometry geometry);
+        Task<List<(Street, Coordinate)>> GeometryToStreetListAsync(DTO.OrsGeometry geometry);
     }
 }

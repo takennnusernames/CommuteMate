@@ -2,11 +2,16 @@
 <the49:BottomSheet xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
-             x:Class="CommuteMate.Views.SlideUpSheet"
+             x:Class="CommuteMate.Views.SlideUpSheets.RoutePathSelection"
              xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
              xmlns:model="clr-namespace:CommuteMate.Models"
              x:DataType="viewModel:NavigatingViewModel"
-             Padding="16, 32" Background="LightGray" CornerRadius="20" HandleColor="DarkGray" HasHandle="true">
+                   Padding="16, 32" 
+                   Background="LightGray" 
+                   CornerRadius="20" 
+                   HandleColor="DarkGray" 
+                   HasHandle="True"
+                   HasBackdrop="True">
 
     <CollectionView x:Name="pathOptions"
                   ItemsSource="{Binding PathOptions}"
@@ -48,7 +53,7 @@
                                 </CollectionView>
                                 <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.TotalFare, StringFormat='Total Fare: {0}' }"/>
                                 <Label Style="{StaticResource MediumLabel}" Text="{Binding Summary.TotalDistance, StringFormat='Total Distance: {0:F2}' }"/>
-                                <Label Style="{StaticResource MediumLabel}" Text="{Binding Summary.TotalDuration, StringFormat='Total Route Duration: {0:F2}' }"/>
+                                <Label Style="{StaticResource MediumLabel}" Text="{Binding Summary.TotalDuration, StringFormat='Estimated Travel Time: {0:F2}' }"/>
                             </VerticalStackLayout>
                         </Grid>
                     </Frame>

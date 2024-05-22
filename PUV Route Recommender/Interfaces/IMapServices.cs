@@ -19,6 +19,8 @@ namespace CommuteMate.Interfaces
         string LineStringToWKT(LineString lineString);
         Task<Map> addLineString(Map map, string WKTString, string style);
         Task<Map> addLineString(Map map, List<string> WKTStrings);
+        Task<Map> addLineString(Map map, NetTopologySuite.Geometries.Geometry lineString, string style);
         Task addPath(Map map, IEnumerable<Edge<Coordinate>> path, string style);
+        Task<Map> addGeometry(Map map, Geometry geometry, string style);
     }
 }

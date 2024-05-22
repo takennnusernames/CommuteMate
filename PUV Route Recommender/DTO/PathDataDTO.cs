@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using Geometry = NetTopologySuite.Geometries.Geometry;
+using CommuteMate.Utilities;
 
 namespace CommuteMate.DTO
 {
@@ -13,8 +11,13 @@ namespace CommuteMate.DTO
     public class PathFeatures
     {
         public Property properties { get; set; } = new();
-        public Geometry geometry { get; set; }
+        public List<Geometry> geometry { get; set; }
     }
+    //public class Geometry
+    //{
+    //    public List<List<object>> coordinates { get; set; }
+    //    public string type { get; set; }
+    //}
     public class Property
     {
         public List<Segment> segments { get; set; } = new();
@@ -42,6 +45,7 @@ namespace CommuteMate.DTO
         public string instruction { get; set; } = "";
         public string from { get; set; } = "";
         public string to { get; set; } = "";
+        public Geometry geometry { get; set; }
     }
     public class StreetGeometry
     {

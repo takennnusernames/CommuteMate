@@ -12,8 +12,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CommuteMate.ApiClient", "..
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{A3843B10-C758-49F9-B1EF-A22F4784132B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.ApiConsumer", "Test.ApiConsumer\Test.ApiConsumer.csproj", "{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,12 +32,6 @@ Global
 		{05E5F56D-A55C-41C2-AF72-F1B56235A2E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05E5F56D-A55C-41C2-AF72-F1B56235A2E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05E5F56D-A55C-41C2-AF72-F1B56235A2E0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -48,7 +40,6 @@ Global
 		{2AC39CFC-8708-453C-9F66-D3E70AD3DBA9} = {A3843B10-C758-49F9-B1EF-A22F4784132B}
 		{CB96FDD4-E6F9-447F-B524-39D5582E5146} = {1CDDAC23-3D69-4AC3-BC7E-AC5B0577F504}
 		{05E5F56D-A55C-41C2-AF72-F1B56235A2E0} = {1CDDAC23-3D69-4AC3-BC7E-AC5B0577F504}
-		{E8F4BAA7-AFC0-47D9-B443-E90CFFB50F92} = {A3843B10-C758-49F9-B1EF-A22F4784132B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {210077EE-3E16-4639-942A-9B7F0E91C0FF}

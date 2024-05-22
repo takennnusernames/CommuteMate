@@ -1,22 +1,23 @@
 ﻿using CommuteMate.DTO;
 using CommuteMate.Interfaces;
-using HarfBuzzSharp;
 using NetTopologySuite.Geometries;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
+using CommuteMate.Utilities;
 
 namespace CommuteMate.Services
 {
     public class CommuteMateApiService : ICommuteMateApiService
     {
         HttpClient _client;
-        public CommuteMateApiService()
+        IMapServices _mapServices;
+        IStreetService _streetService;
+        IRouteService _routeService;
+        public CommuteMateApiService(IMapServices mapServices, IStreetService streetService, IRouteService routeService)
         {
+            _routeService = routeService;
+            _streetService = streetService;
+            _mapServices = mapServices;
             _client = new HttpClient();
             _client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
         }
@@ -26,13 +27,15 @@ namespace CommuteMate.Services
             List<Route> routes = [];
             foreach(var data in responseData)
             {
-                routes.Add(new Route
+                var route = new Route
                 {
                     RouteId = data.Id,
                     Osm_Id = data.OsmId,
                     Code = data.RouteCode,
                     Name = data.RouteName
-                });
+                };
+                route = await _routeService.InsertRouteAsync(route);
+                routes.Add(route);
             }
             return routes;
         }
@@ -81,9 +84,15 @@ namespace CommuteMate.Services
                 var response = await _client.PostAsync("/pathRequest/", content);
                 if (response.IsSuccessStatusCode)
                 {
-                    var responseData = await response.Content.ReadFromJsonAsync<PathDataDTO>();
+                    var options = new JsonSerializerOptions
+                    {
+                        Converters = { new GeometryConverter() }
+                    };
+
+                    var responseData = await response.Content.ReadFromJsonAsyncWithCustomConverter<PathDataDTO>(options);
+
                     //var responseData = JsonSerializer.Deserialize<List<PathDataDTO>>(responseContent);
-                    foreach(var path in responseData.features)
+                    foreach (var path in responseData.features)
                     {
                         var properties = path.properties;
                         var walking = properties.segments[0];
@@ -91,7 +100,9 @@ namespace CommuteMate.Services
                         var walkingQueue = new Queue<Step>(walking.steps);
                         var ridingQueue = new Queue<Step>(riding.steps);
                         var steps = new List<RouteStep>();
-                        //get steps
+
+                        Queue<NetTopologySuite.Geometries.Geometry> geometries = [];
+                        //create steps
                         while (walkingQueue.Count > 0)
                         {
                             var walk = walkingQueue.Dequeue();
@@ -107,12 +118,16 @@ namespace CommuteMate.Services
                                 duration = walk.ToString() + "Hour/s";
                             string action = walk.instruction + distance;
                             string instruction = "from" + walk.from + "to" + walk.to + "for" + duration;
+
+
+                            //var walkGeom = _mapServices.ConvertToNtsGeometry(walk.geometry);
                             steps.Add(new RouteStep
                             {
                                 Action = action,
-                                Instruction = instruction
+                                Instruction = instruction,
+                                StepGeometry = walk.geometry
                             });
-
+                            //geometries.Enqueue(walkGeom);
                             if (ridingQueue.Count > 0)
                             {
                                 var ride = ridingQueue.Dequeue();
@@ -128,15 +143,18 @@ namespace CommuteMate.Services
                                     rideDuration = ride.ToString() + "Hour/s";
                                 string rideAction = ride.instruction + distance;
                                 string rideInstruction = "from" + ride.from + "to" + ride.to + "for" + duration;
+                                //var rideGeom = _mapServices.ConvertToNtsGeometry(ride.geometry);
                                 steps.Add(new RouteStep
                                 {
                                     Action = rideAction,
-                                    Instruction = rideInstruction
+                                    Instruction = rideInstruction,
+                                    StepGeometry = ride.geometry
                                 });
+                                //geometries.Enqueue(rideGeom);
                             }
                         }
 
-                        //get summary
+                        //create summary
                         string totalDistance;
                         if (properties.summary.distance < 1)
                             totalDistance = (properties.summary.distance * 100).ToString() + "Meter/s";
@@ -144,9 +162,9 @@ namespace CommuteMate.Services
                             totalDistance = properties.summary.distance.ToString() + "KiloMeter/s";
                         string totalDuration;
                         if (properties.summary.duration < 1)
-                            totalDuration = (properties.summary.duration * 60).ToString() + "Meter/s";
+                            totalDuration = (properties.summary.duration * 60).ToString() + "Minutes/s";
                         else
-                            totalDuration = properties.summary.duration.ToString() + "KiloMeter/s";
+                            totalDuration = properties.summary.duration.ToString() + "Hour/s";
 
                         var totalFare = "P" + properties.summary.fare.ToString();
                         var summary = new PathSummary
@@ -160,7 +178,8 @@ namespace CommuteMate.Services
                         routePaths.Add(new RoutePath
                         {
                             Steps = steps,
-                            Summary = summary
+                            Summary = summary,
+                            RouteGeometry = path.geometry
                         });
                     }
                     return routePaths;

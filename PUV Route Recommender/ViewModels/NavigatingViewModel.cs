@@ -12,7 +12,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Mapsui.UI.Maui;
-using CommuteMate.Views;
+using CommuteMate.Views.SlideUpSheets;
+using NetTopologySuite.Features;
 
 namespace CommuteMate.ViewModels
 {
@@ -22,12 +23,20 @@ namespace CommuteMate.ViewModels
         readonly IMapServices _mapServices;
         readonly IConnectivity _connectivity;
         readonly ICommuteMateApiService _commuteMateApiService;
-        public NavigatingViewModel(IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
+        readonly IStreetService _streetService;
+        readonly RoutePathSelection selection;
+        readonly RoutePathDetails details;
+        public NavigatingViewModel(IStreetService streetService, IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
         {
             Title = "Map";
+            _streetService = streetService;
             _mapServices = mapServices;
             _connectivity = connectivity;
             _commuteMateApiService = commuteMateApiService;
+
+
+            selection = new RoutePathSelection(this);
+            details = new RoutePathDetails(this);
         }
 
         //properties
@@ -48,12 +57,14 @@ namespace CommuteMate.ViewModels
         [ObservableProperty]
         ObservableCollection<LocationDetails> searchResults = new();
 
-
         [ObservableProperty]
         ObservableCollection<RoutePath> pathOptions = new();
 
         public MapControl mapControl { get; set; }
-        public SearchBar searchBar { get; set; }
+        public SearchBar originSearchBar { get; set; }
+        public SearchBar destinationSearchBar { get; set; }
+
+
 
         [RelayCommand]
         async Task CreateMap()
@@ -171,8 +182,8 @@ namespace CommuteMate.ViewModels
                 foreach (var location in locations)
                     SearchResults.Add(location);
 
-                if (searchBar.IsSoftInputShowing())
-                    await searchBar.HideSoftInputAsync(System.Threading.CancellationToken.None);
+                if (originSearchBar.IsSoftInputShowing())
+                    await originSearchBar.HideSoftInputAsync(System.Threading.CancellationToken.None);
                 Source = source;
             }
             catch (Exception ex)
@@ -246,8 +257,7 @@ namespace CommuteMate.ViewModels
                     foreach (var option in options)
                         PathOptions.Add(option);
 
-                    var page = new SlideUpSheet(this);
-                    await page.ShowAsync();
+                    await selection.ShowAsync();
                 }
                 catch (Exception ex)
                 {
@@ -267,12 +277,18 @@ namespace CommuteMate.ViewModels
         }
 
         [RelayCommand]
-        async Task SelectPath(PathData pathData)
+        async Task SelectPath(RoutePath path)
         {
 
-            await _mapServices.addPath(mapControl.Map, pathData.walkingPath, "dotted");
-            await _mapServices.addPath(mapControl.Map, pathData.puvShortestPaths, "straight");
-            PathOptions.Clear();
+            foreach(var step in path.Steps)
+            {
+
+                if (step.Action.Contains("Walk"))
+                    await _mapServices.addGeometry(mapControl.Map, step.StepGeometry, "dotted");
+                else if (step.Action.Contains("Ride"))
+                    await _mapServices.addGeometry(mapControl.Map, step.StepGeometry, "straight");
+            }
+            await selection.DismissAsync();
             mapControl.Map = mapControl.Map;
         }
     }

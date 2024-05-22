@@ -35,10 +35,10 @@ namespace CommuteMate.DTO
         public List<double> bbox { get; set; }
         public string type { get; set; }
         public Properties properties { get; set; }
-        public Geometry geometry { get; set; }
+        public OrsGeometry geometry { get; set; }
     }
 
-    public class Geometry
+    public class OrsGeometry
     {
         public List<List<double>> coordinates { get; set; }
         public string type { get; set; }

@@ -6,6 +6,8 @@ using CommuteMate.Views;
 using CommuteMate.Repositories;
 using The49.Maui.BottomSheet;
 using CommuteMate.ApiClient.IoC;
+using System.Text.Json.Serialization;
+using CommuteMate.Utilities;
 
 namespace CommuteMate
 {
@@ -58,12 +60,12 @@ namespace CommuteMate
 
             //Views
             builder.Services.AddSingleton<RoutesView>();
-            builder.Services.AddTransient<RoutesInfoPage>();
+            builder.Services.AddSingleton<RoutesInfoPage>();
             builder.Services.AddSingleton<NavigatingPage>();
             builder.Services.AddTransient<MethodTests>();
 
             //Sheet
-            builder.Services.AddTransient<SlideUpSheet>();
+            builder.Services.AddTransient<RoutePathSelection>();
 
 //            var dbContext = new CommuteMateDbContext();
 

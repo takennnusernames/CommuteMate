@@ -13,6 +13,8 @@ namespace CommuteMate.Repositories
         {
             _dbContext = dbContext;
         }
+
+        public static List<Route> _routes = new List<Route>();
         //create
         public async Task<Route> InsertRouteAsync(Route route)
         {
@@ -28,13 +30,15 @@ namespace CommuteMate.Repositories
                 throw;
             }
         }
-
         //read
         public async Task<IEnumerable<Route>> GetAllRoutesAsync()
         {
             try
             {
-                return await _dbContext.Routes.Include(r => r.Streets).ToListAsync();
+                var routes = _dbContext.Routes;
+                if(routes is not null)
+                    return await Task.FromResult(routes);
+                return null;
             }
             catch (Exception ex)
             {
@@ -73,6 +77,8 @@ namespace CommuteMate.Repositories
         public async Task<Route> GetRouteByIdAsync(int id)
         {
             var route = await _dbContext.Routes.Where(r => r.RouteId == id).Include(r => r.Streets).FirstOrDefaultAsync();
+            if (route == default)
+                return null;
             return route;
                 //try
                 //{

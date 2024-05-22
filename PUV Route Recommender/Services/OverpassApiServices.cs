@@ -466,9 +466,9 @@ namespace CommuteMate.Services
             }
         }
 
-        public async Task<List<(Street, Coordinate)>> GeometryToStreetListAsync(DTO.Geometry geometry)
+        public async Task<List<(Street, Coordinate)>> GeometryToStreetListAsync(DTO.OrsGeometry geometry)
         {
-            Console.WriteLine("Converting Geometry");
+            Console.WriteLine("Converting OrsGeometry");
             try
             {
                 List<(Street street, Coordinate)> streetList = [];

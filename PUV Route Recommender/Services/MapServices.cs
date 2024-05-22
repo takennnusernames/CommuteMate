@@ -26,6 +26,8 @@ using Exception = System.Exception;
 using System;
 using System.Linq;
 using System.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CommuteMate.Services
 {
@@ -210,6 +212,7 @@ namespace CommuteMate.Services
 
         }
 
+        //remove
         public async Task<ORSDirectionsDTO> GetDirectionsAsync(Coordinate origin, Coordinate destination)
         {
             Console.WriteLine("Getting Directions");
@@ -249,6 +252,7 @@ namespace CommuteMate.Services
                 throw new Exception(ex.Message);
             }
         }
+        //remove
         public async Task<List<PathData>> GetOptions(Feature feature)
         {
             Console.WriteLine("Getting Path");
@@ -355,6 +359,7 @@ namespace CommuteMate.Services
                 return null;
             }
         }
+        //remove
         public async Task<List<(List<Street>, Queue<RouteQueue>, List<IEnumerable<Edge<Coordinate>>>)>> CreatePath(List<Street> streets, Queue<List<(IEnumerable<Edge<Coordinate>>, RouteQueue)>> routesQueues)
         {
             List< (List<Street>, Queue<RouteQueue>, List<IEnumerable<Edge<Coordinate>>>)> pathOptions = [];
@@ -416,6 +421,7 @@ namespace CommuteMate.Services
             }
             return pathOptions;
         }
+        //remove
         public Task<PathData> CreatePathData(List<Street> streets, Queue<List<Coordinate>> walking, Queue<Route> puvs, List<IEnumerable<Edge<Coordinate>>> shortestPaths)
         {
             double totalWalkingDistance = 0;
@@ -640,6 +646,7 @@ namespace CommuteMate.Services
             return wktBuilder.ToString();
         }
 
+       
         public async Task<Map> addLineString(Map map, string WKTString, string style)
         {
             ILayer lineStringLayer;
@@ -649,6 +656,74 @@ namespace CommuteMate.Services
                 lineStringLayer = CreateLineStringLayer(WKTString, CreateStraightLineStringStyle("black"));
             else
                 lineStringLayer = CreateLineStringLayer(WKTString, CreateLineStringStyle());
+
+            map.Layers.Add(lineStringLayer);
+            map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 9);
+            return await Task.FromResult(map);
+        }
+
+        public async Task<Map> addGeometry(Map map, Geometry geometry, string style)
+        {
+            ILayer lineStringLayer;
+
+            if (geometry.GeometryType.Equals("MultiLineString"))
+            {
+                var multiLineString = (MultiLineString)geometry;
+                var lineStrings = multiLineString.Geometries.Select(line =>
+                {
+                    var coordinates = ((LineString)line).Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray();
+                    return new LineString(coordinates);
+                }).ToArray();
+                foreach (var lineString in lineStrings)
+                {
+                    if (style == "straight")
+                        lineStringLayer = CreateLineStringLayer(lineString, CreateStraightLineStringStyle("orange"));
+                    else if (style == "dotted")
+                        lineStringLayer = CreateLineStringLayer(lineString, CreateStraightLineStringStyle("black"));
+                    else
+                        lineStringLayer = CreateLineStringLayer(lineString, CreateLineStringStyle());
+
+                    map.Layers.Add(lineStringLayer);
+                }
+
+                return await Task.FromResult(map);
+            }
+            else if (geometry.GeometryType.Equals("LineString"))
+            {
+                var lineString = new LineString(geometry.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
+
+                if (style == "straight")
+                    lineStringLayer = CreateLineStringLayer(lineString, CreateStraightLineStringStyle("orange"));
+                else if (style == "dotted")
+                    lineStringLayer = CreateLineStringLayer(lineString, CreateDottedLineStringStyle("black"));
+                else
+                    lineStringLayer = CreateLineStringLayer(lineString, CreateLineStringStyle());
+
+                map.Layers.Add(lineStringLayer);
+
+                return await Task.FromResult(map);
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported geometry type: " + geometry.GeometryType);
+            }
+
+
+
+        }
+
+        public async Task<Map> addLineString(Map map, NetTopologySuite.Geometries.Geometry lineString, string style)
+        {
+            ILayer lineStringLayer;
+            if (style == "straight")
+                lineStringLayer = CreateLineStringLayer(lineString, CreateStraightLineStringStyle("orange"));
+            else if (style == "dotted")
+                lineStringLayer = CreateLineStringLayer(lineString, CreateStraightLineStringStyle("black"));
+            else
+                lineStringLayer = CreateLineStringLayer(lineString, CreateLineStringStyle());
+
+
+            
 
             map.Layers.Add(lineStringLayer);
             map.Home = n => n.CenterOnAndZoomTo(lineStringLayer.Extent!.Centroid, 9);
@@ -701,12 +776,22 @@ namespace CommuteMate.Services
                 await addLineString(map, lineString, style);
             }
         }
+        public async Task addPath(Map map, List<NetTopologySuite.Geometries.Geometry> geometries, string style)
+        {
+            foreach(var geometry in geometries)
+            {
+                if(geometry.GeometryType == "LineString")
+                {
+                    await addLineString(map, geometry, style);
+                }
+            }             
+        }
         public static ILayer CreateLineStringLayer(string WKTString, IStyle style = null)
         {
             try
             {
                 var lineString = (LineString)new WKTReader().Read(WKTString);
-                //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
+                //geometry = new LineString(geometry.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
                 lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
 
                 return new MemoryLayer
@@ -725,12 +810,50 @@ namespace CommuteMate.Services
             }
         }
 
+        public static ILayer CreateLineStringLayer(LineString lineString, IStyle style = null)
+        {
+            try
+            {
+                return new MemoryLayer
+                {
+                    Features = new[] { new GeometryFeature { Geometry = lineString } },
+                    Name = "LineStringLayer",
+                    Style = style
+                };
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in CreateLineStringLayer: ", ex.Message);
+                throw;
+            }
+        }
+
+        public static ILayer CreateLineStringLayer(Geometry lineString, IStyle style = null)
+        {
+            try
+            {
+                return new MemoryLayer
+                {
+                    Features = new[] { new GeometryFeature { Geometry = lineString } },
+                    Name = "LineStringLayer",
+                    Style = style
+                };
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in CreateLineStringLayer: ", ex.Message);
+                throw;
+            }
+        }
+
         public static ILayer CreatePinLayer(string WKTString, IStyle style = null)
         {
             try
             {
                 var lineString = (LineString)new WKTReader().Read(WKTString);
-                //lineString = new LineString(lineString.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
+                //geometry = new LineString(geometry.Coordinates.Select(v => new Coordinate(v.Y, v.X)).ToArray());
                 lineString = new LineString(lineString.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).ToArray());
 
                 return new MemoryLayer

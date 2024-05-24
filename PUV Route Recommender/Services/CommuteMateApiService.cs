@@ -19,7 +19,8 @@ namespace CommuteMate.Services
             _streetService = streetService;
             _mapServices = mapServices;
             _client = new HttpClient();
-            _client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
+            _client.BaseAddress = new Uri("http://10.0.2.2:5005");
+            //_client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
         }
         public async Task<List<Route>> GetRoutes()
         {
@@ -108,16 +109,16 @@ namespace CommuteMate.Services
                             var walk = walkingQueue.Dequeue();
                             string distance;
                             if (walk.distance < 1)
-                                distance = (walk.distance * 100).ToString() + "Meter/s";
+                                distance = (walk.distance * 100).ToString() + " Meter/s";
                             else
-                                distance = walk.ToString() + "KiloMeter/s";
+                                distance = walk.ToString() + " KiloMeter/s";
                             string duration;
                             if (walk.duration < 1)
-                                duration = (walk.duration * 60).ToString() + "Minutes/s";
+                                duration = (walk.duration * 60).ToString() + " Minutes/s";
                             else
-                                duration = walk.ToString() + "Hour/s";
+                                duration = walk.ToString() + " Hour/s";
                             string action = walk.instruction + distance;
-                            string instruction = "from" + walk.from + "to" + walk.to + "for" + duration;
+                            string instruction = "From " + walk.from + " to " + walk.to + " for " + duration;
 
 
                             //var walkGeom = _mapServices.ConvertToNtsGeometry(walk.geometry);
@@ -133,16 +134,16 @@ namespace CommuteMate.Services
                                 var ride = ridingQueue.Dequeue();
                                 string rideDistance;
                                 if (ride.distance < 1)
-                                    rideDistance = (ride.distance * 100).ToString() + "Meter/s";
+                                    rideDistance = (ride.distance * 100).ToString() + " Meter/s";
                                 else
-                                    rideDistance = ride.ToString() + "KiloMeter/s";
+                                    rideDistance = ride.ToString() + " KiloMeter/s";
                                 string rideDuration;
                                 if (ride.duration < 1)
-                                    rideDuration = (ride.duration * 60).ToString() + "Minutes/s";
+                                    rideDuration = (ride.duration * 60).ToString() + " Minutes/s";
                                 else
-                                    rideDuration = ride.ToString() + "Hour/s";
+                                    rideDuration = ride.ToString() + " Hour/s";
                                 string rideAction = ride.instruction + distance;
-                                string rideInstruction = "from" + ride.from + "to" + ride.to + "for" + duration;
+                                string rideInstruction = "From " + ride.from + " to " + ride.to + " for " + duration;
                                 //var rideGeom = _mapServices.ConvertToNtsGeometry(ride.geometry);
                                 steps.Add(new RouteStep
                                 {

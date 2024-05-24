@@ -3,10 +3,12 @@ using SkiaSharp.Views.Maui.Controls.Hosting;
 using CommuteMate.Interfaces;
 using CommuteMate.Services;
 using CommuteMate.Views;
+using CommuteMate.Views.SlideUpSheets;
 using CommuteMate.Repositories;
 using The49.Maui.BottomSheet;
 using CommuteMate.ApiClient.IoC;
 using System.Text.Json.Serialization;
+using Maui.GoogleMaps.Hosting;
 using CommuteMate.Utilities;
 
 namespace CommuteMate
@@ -29,8 +31,12 @@ namespace CommuteMate
                 });
             var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5005" : "http://localhost/5005";
             builder.Services.AddCommuteMateApiClientService(x => x.ApiBaseAddress = baseUrl);
+
+            builder.UseGoogleMaps();
+            //builder.UseGoogleMaps("AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
+
 #if DEBUG
-		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
             // Database
             builder.Services.AddDbContext<CommuteMateDbContext>();
@@ -65,7 +71,9 @@ namespace CommuteMate
             builder.Services.AddTransient<MethodTests>();
 
             //Sheet
-            builder.Services.AddTransient<RoutePathSelection>();
+            builder.Services.AddSingleton<RoutePathSelection>();
+            builder.Services.AddTransient<RoutePathDetails>();
+            builder.Services.AddSingleton<TestSheet>();
 
 //            var dbContext = new CommuteMateDbContext();
 

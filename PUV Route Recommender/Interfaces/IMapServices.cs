@@ -2,6 +2,7 @@
 using CommuteMate.DTO;
 using Location = Microsoft.Maui.Devices.Sensors.Location;
 using Map = Mapsui.Map;
+using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
 using QuickGraph;
 
 namespace CommuteMate.Interfaces
@@ -9,6 +10,7 @@ namespace CommuteMate.Interfaces
     public interface IMapServices
     {
         Task<Map> CreateMapAsync();
+        Task CreateGoogleMapAsync(GoogleMap map);
         Task<Map> AddPin(Map map, LocationDetails location);
         Task<LocationDetails> GetCurrentLocationAsync();
         Task<List<LocationDetails>> SearchLocationAsync(string input);

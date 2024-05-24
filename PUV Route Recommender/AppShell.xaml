@@ -5,15 +5,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:CommuteMate"
     xmlns:views="clr-namespace:CommuteMate.Views"
+    xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
     Shell.FlyoutBehavior="Disabled">
-
     <TabBar>
         <ShellContent
             Title="Home"
             ContentTemplate="{DataTemplate views:NavigatingPage}"
             Route="NavigatingPage" 
             Icon="home_icon.png"/>
-        
+
         <ShellContent
             Title="Routes"
             ContentTemplate="{DataTemplate views:RoutesView}"
@@ -33,5 +33,4 @@
             Icon="list_icon.svg"/>
 
     </TabBar>
-
 </Shell>

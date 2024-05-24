@@ -1,19 +1,7 @@
 ﻿using Mapsui.Layers;
-using Mapsui.Nts;
-using Mapsui.Projections;
-using Mapsui.Styles;
-using Microsoft.Maui.Networking;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.IO;
 using CommuteMate.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Mapsui.UI.Maui;
 using CommuteMate.Views.SlideUpSheets;
-using NetTopologySuite.Features;
 
 namespace CommuteMate.ViewModels
 {
@@ -59,6 +47,9 @@ namespace CommuteMate.ViewModels
 
         [ObservableProperty]
         ObservableCollection<RoutePath> pathOptions = new();
+
+        [ObservableProperty]
+        RoutePath currentPath = new();
 
         public MapControl mapControl { get; set; }
         public SearchBar originSearchBar { get; set; }
@@ -248,12 +239,20 @@ namespace CommuteMate.ViewModels
 
                 try
                 {
+                    var layers = mapControl.Map.Layers.OfType<MemoryLayer>().ToList();
+                    foreach(var layer in layers)
+                    {
+                        mapControl.Map.Layers.Remove(layer);
+                    }
 
                     var origin = OriginLocation.Coordinate;
                     var destination = DestinationLocation.Coordinate;
 
                     var options = await _commuteMateApiService.GetPath(origin, destination);
                     //(Route, Path, Fare, Distance)
+                    if (PathOptions.Count != 0)
+                        PathOptions.Clear();
+
                     foreach (var option in options)
                         PathOptions.Add(option);
 
@@ -279,17 +278,19 @@ namespace CommuteMate.ViewModels
         [RelayCommand]
         async Task SelectPath(RoutePath path)
         {
-
+            CurrentPath = path;
             foreach(var step in path.Steps)
             {
-
                 if (step.Action.Contains("Walk"))
                     await _mapServices.addGeometry(mapControl.Map, step.StepGeometry, "dotted");
                 else if (step.Action.Contains("Ride"))
                     await _mapServices.addGeometry(mapControl.Map, step.StepGeometry, "straight");
             }
             await selection.DismissAsync();
+            await details.ShowAsync();
             mapControl.Map = mapControl.Map;
         }
+
+        
     }
 }

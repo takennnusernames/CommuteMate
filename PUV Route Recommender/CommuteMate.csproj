@@ -116,8 +116,12 @@
     <MauiXaml Update="Views\RoutesView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="Views\SlideUpSheets\TestSheet.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Views\VehicleInfoPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
   </ItemGroup>
+  <ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadUnhandledDeviceExceptionCommuteMateHideInfoBar="True" /></VisualStudio></ProjectExtensions>
 </Project>

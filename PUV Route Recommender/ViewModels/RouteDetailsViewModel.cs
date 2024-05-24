@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace CommuteMate.ViewModels
 {
-    internal class RouteDetailsViewModel
+    public class RouteDetailsViewModel
     {
+        public RouteDetailsViewModel()
+        {
+            
+        }
     }
 }

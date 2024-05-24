@@ -28,6 +28,9 @@ using System.Linq;
 using System.Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Microsoft.Maui.Maps;
+using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
+using Microsoft.Maui.Controls.Maps;
 
 namespace CommuteMate.Services
 {
@@ -73,6 +76,24 @@ namespace CommuteMate.Services
             }
         }
 
+        public Task CreateGoogleMapAsync(GoogleMap map)
+        {
+            Location location = new Location(10.3157, 123.8854);
+            MapSpan mapSpan = new MapSpan(location, 0.05, 0.05);
+            map = new GoogleMap(mapSpan);
+
+            // Add a pin to the center of Cebu City
+            var pin = new Pin
+            {
+                Type = PinType.Place,
+                Location = new Location(10.3157, 123.8854),
+                Label = "Cebu City",
+                Address = "Philippines"
+            };
+            map.Pins.Add(pin);
+
+            return Task.FromResult(map);
+        }
         public async Task<Map> AddPin(Map map, LocationDetails location)
         {
 
@@ -83,6 +104,7 @@ namespace CommuteMate.Services
             var layer = new MemoryLayer
             {
                 Features = new[] { new GeometryFeature { Geometry = point } },
+                Name = "PinLayer",
                 Style = SymbolStyles.CreatePinStyle()
             };
             map.Layers.Add(layer);
@@ -705,7 +727,12 @@ namespace CommuteMate.Services
             }
             else
             {
-                throw new ArgumentException("Unsupported geometry type: " + geometry.GeometryType);
+                var point = new Point(geometry.Coordinates.Select(v => SphericalMercator.FromLonLat(v.Y, v.X).ToCoordinate()).FirstOrDefault());
+                
+                lineStringLayer = CreatePointLayer(point, CreatePointStyle("blue"));
+                map.Layers.Add(lineStringLayer);
+
+                return await Task.FromResult(map);
             }
 
 
@@ -829,6 +856,25 @@ namespace CommuteMate.Services
             }
         }
 
+        public static ILayer CreatePointLayer(Point point, IStyle style = null)
+        {
+            try
+            {
+                return new MemoryLayer
+                {
+                    Features = new[] { new GeometryFeature { Geometry = point } },
+                    Name = "PointLayer",
+                    Style = style
+                };
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error in CreateLineStringLayer: ", ex.Message);
+                throw;
+            }
+        }
+
         public static ILayer CreateLineStringLayer(Geometry lineString, IStyle style = null)
         {
             try
@@ -911,6 +957,25 @@ namespace CommuteMate.Services
         }
 
         public static IStyle CreateDottedLineStringStyle(string color)
+        {
+            try
+            {
+                return new VectorStyle
+                {
+                    Fill = null,
+                    Outline = null,
+#pragma warning disable CS8670 // Object or collection initializer implicitly dereferences possibly null member.
+                    Line = { Color = Color.FromString(color), Width = 4 }
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error inc CreateStraightLineStringStyle: ", ex.Message);
+                throw;
+            }
+        }
+
+        public static IStyle CreatePointStyle(string color)
         {
             try
             {

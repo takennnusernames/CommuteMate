@@ -9,9 +9,46 @@
              Padding="16, 32" Background="LightGray" CornerRadius="20" HandleColor="Black" HasHandle="true">
     
     <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+        <!--<Button Text="Back" 
+                Command="{Binding BackCommand}" 
+                HorizontalOptions="Start" 
+                VerticalOptions="Start" 
+                BackgroundColor="Transparent"
+                TextColor="Black"/>-->
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" 
+              ColumnDefinitions="Auto,Auto"
+              Padding="10">
+            <Label Grid.Row="0"
+                   Grid.Column="0"
+                   TextColor="Black"
+                   Text="{Binding CurrentPath.Summary.TotalFare, StringFormat='P{0}'}"
+                   Style="{StaticResource LargeLabel}"
+                   BackgroundColor="white"/>
+            <Label Text="{Binding OriginText, StringFormat='Origin: {0}'}"
+                   Grid.Row="1"
+                   Style="{StaticResource MediumLabel}"/>
+            <CollectionView
+                BackgroundColor="Wheat"
+                Grid.Row="2"
+                Grid.Column="0"
+                ItemsSource="{Binding CurrentPath.Steps}"
+                SelectionMode="None">
+
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:RouteStep">
+                        <Grid Padding="10">
+                            <VerticalStackLayout Grid.ColumnSpan="2" BackgroundColor="Yellow"
+                         Padding="5" HorizontalOptions="Center">
+                                <Label Style="{StaticResource SmallLabel}" Text="{Binding Action}"/>
+                                <Label Style="{StaticResource SmallLabel}" Text="{Binding Instruction}"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <Label Text="{Binding DestinationText, StringFormat='Destination: {0}'}"
+                   Grid.Row="3"
+                   Style="{StaticResource MediumLabel}"/>
+        </Grid>
     </VerticalStackLayout>
 </the49:BottomSheet>

@@ -31,6 +31,9 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Maui.Maps;
 using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.ApplicationModel;
+using NetTopologySuite.GeometriesGraph;
+using Colors = Microsoft.Maui.Graphics.Colors;
 
 namespace CommuteMate.Services
 {
@@ -80,7 +83,7 @@ namespace CommuteMate.Services
         {
             Location location = new Location(10.3157, 123.8854);
             MapSpan mapSpan = new MapSpan(location, 0.05, 0.05);
-            map = new GoogleMap(mapSpan);
+            map.MoveToRegion(mapSpan);
 
             // Add a pin to the center of Cebu City
             var pin = new Pin
@@ -91,9 +94,104 @@ namespace CommuteMate.Services
                 Address = "Philippines"
             };
             map.Pins.Add(pin);
-
             return Task.FromResult(map);
         }
+
+        public async Task<Pin> AddGooglePin(Location location, GoogleMap map, string label)
+        {
+            var pin = new Pin
+            {
+                Type = PinType.Place,
+                Location = location,
+                Label = label,
+                Address = location.Longitude.ToString() + ", " + location.Latitude.ToString()
+            };
+            map.Pins.Add(pin);
+            return await Task.FromResult(pin);
+
+        }
+        public Task<Pin> AddGooglePin(LocationDetails location, GoogleMap map)
+        {
+            var pin = new Pin
+            {
+                Type = PinType.Place,
+                Location = new Location
+                {
+                    Latitude = location.Coordinate.Y,
+                    Longitude = location.Coordinate.X
+                },
+                Label = location.Name,
+                Address = location.Coordinate.X.ToString() + ", " + location.Coordinate.Y.ToString()
+            };
+            map.Pins.Add(pin);
+            return Task.FromResult(pin);
+        }
+        public Task RemoveGooglePin(Pin pin, GoogleMap map)
+        {
+            map.Pins.Remove(pin);
+            return Task.FromResult(map);
+        }
+        public Task AddGooglePolyline(Geometry geometry, GoogleMap map, string action)
+        {
+            List<Location> locations = [];
+            if (geometry.GeometryType.Equals("MultiLineString"))
+            {
+                var multiLineString = (MultiLineString)geometry;
+
+                foreach (var lineString in multiLineString.Geometries)
+                {
+                    if(lineString.GeometryType == "Point")
+                    {
+                        var point = (Point)geometry;
+                        locations.Add(new Location(point.X, point.Y));
+                    }
+                    else
+                    {
+                        locations.AddRange(ConvertLineStringToLocations((LineString)lineString));
+                    }
+                }
+            }
+            else if (geometry.GeometryType.Equals("LineString"))
+            {
+                locations.AddRange(ConvertLineStringToLocations((LineString)geometry));
+            }
+            else
+            {
+                var point = (Point)geometry;
+                locations.Add(new Location(point.X, point.Y));
+            }
+            var polyline = new Polyline();
+            if (action.Contains("Walk"))
+            {
+                polyline.StrokeColor = Colors.Black;
+                polyline.StrokeWidth = 3;
+            }
+            else if (action.Contains("Ride"))
+            {
+                polyline.StrokeColor = Colors.Orange;
+                polyline.StrokeWidth = 6;
+            }
+            
+            foreach (var position in locations)
+            {
+                polyline.Geopath.Add(position);
+            }
+            map.MapElements.Add(polyline);
+
+            return Task.FromResult(map);
+
+        }
+
+        IEnumerable<Location> ConvertLineStringToLocations(LineString lineString)
+        {
+            List<Location> locations = [];
+            foreach (var coordinate in lineString.Coordinates)
+            {
+                locations.Add(new Location(coordinate.X, coordinate.Y));
+            }
+            return locations;
+        }
+
         public async Task<Map> AddPin(Map map, LocationDetails location)
         {
 
@@ -212,25 +310,32 @@ namespace CommuteMate.Services
 
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
             request.Content = content;
-            var response = await _httpClient.SendAsync(request, _cancellationTokenSource.Token);
-            response.EnsureSuccessStatusCode();
-
-            List<LocationDetails> locationList = [];
-
-            if (response.IsSuccessStatusCode)
+            try
             {
-                var responseData = await response.Content.ReadFromJsonAsync<GoogleLocationDTO>();
-                foreach (var place in responseData.places)
+                var response = await _httpClient.SendAsync(request, _cancellationTokenSource.Token);
+                response.EnsureSuccessStatusCode();
+
+                List<LocationDetails> locationList = [];
+
+                if (response.IsSuccessStatusCode)
                 {
-                    Coordinate coordinate = new Coordinate(place.location.longitude, place.location.latitude);
-                    locationList.Add(new LocationDetails
+                    var responseData = await response.Content.ReadFromJsonAsync<GoogleLocationDTO>();
+                    foreach (var place in responseData.places)
                     {
-                        Name = place.displayName.text,
-                        Coordinate = coordinate
-                    });
+                        Coordinate coordinate = new Coordinate(place.location.longitude, place.location.latitude);
+                        locationList.Add(new LocationDetails
+                        {
+                            Name = place.displayName.text,
+                            Coordinate = coordinate
+                        });
+                    }
                 }
+                return locationList;
             }
-            return locationList;
+            catch (Exception ex)
+            {
+                throw new Exception("Error in Searching Location", ex);
+            }
 
         }
 

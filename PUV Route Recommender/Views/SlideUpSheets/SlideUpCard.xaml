@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<the49:BottomSheet xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:model="clr-namespace:CommuteMate.Models"
+                   xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+                   xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
+                   x:Class="CommuteMate.Views.SlideUpSheets.SlideUpCard"
+                   Padding="18, 5" BackgroundColor="Orange" CornerRadius="20" HasBackdrop="True">
+    <the49:BottomSheet.Detents>
+        <the49:RatioDetent Ratio="0.45"/>
+    </the49:BottomSheet.Detents>
+    <AbsoluteLayout x:Name="MainLayout">
+
+        <BoxView Color="White" HeightRequest="5" WidthRequest="45" CornerRadius="100" 
+                 AbsoluteLayout.LayoutBounds="0.5, 0, 45, 5" AbsoluteLayout.LayoutFlags="PositionProportional"/>
+        <VerticalStackLayout x:Name="PrioritySelection" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+
+            <FlexLayout HorizontalOptions="Center" HeightRequest="40">
+                <Label Text="Select Priority" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20"/>
+            </FlexLayout>
+            <Button Text="Fare" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
+            <Button Text="Duration" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
+            <Button Text="Distance" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
+            <Button Text="Number of Rides" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
+
+        </VerticalStackLayout>
+
+        <VerticalStackLayout x:Name="RouteSelection" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="12">
+            <FlexLayout HorizontalOptions="Center" HeightRequest="40">
+                <Button Text="Back" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center"/>
+                <Label Text="Priority: Fare" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="9,0"/>
+                <Button Text="Go" Clicked="RouteSelected" HorizontalOptions="End" VerticalOptions="Center"/>
+            </FlexLayout>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout x:Name="RouteDetails" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="12">
+            <FlexLayout HorizontalOptions="Center" HeightRequest="40">
+                <Button Text="Back" Clicked="BackToRouteSelect" HorizontalOptions="Start" VerticalOptions="Center"/>
+                <Label Text="Route Details" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="9,0"/>
+                <Button Text="Go" Clicked="RouteSelected" HorizontalOptions="End" VerticalOptions="Center"/>
+            </FlexLayout>
+        </VerticalStackLayout>
+    </AbsoluteLayout>
+</the49:BottomSheet>

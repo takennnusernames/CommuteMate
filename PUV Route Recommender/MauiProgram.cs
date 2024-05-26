@@ -8,7 +8,6 @@ using CommuteMate.Repositories;
 using The49.Maui.BottomSheet;
 using CommuteMate.ApiClient.IoC;
 using System.Text.Json.Serialization;
-using Maui.GoogleMaps.Hosting;
 using CommuteMate.Utilities;
 
 namespace CommuteMate
@@ -29,11 +28,6 @@ namespace CommuteMate
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
-            var baseUrl = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5005" : "http://localhost/5005";
-            builder.Services.AddCommuteMateApiClientService(x => x.ApiBaseAddress = baseUrl);
-
-            builder.UseGoogleMaps();
-            //builder.UseGoogleMaps("AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -73,6 +67,7 @@ namespace CommuteMate
             //Sheet
             builder.Services.AddSingleton<RoutePathSelection>();
             builder.Services.AddTransient<RoutePathDetails>();
+            builder.Services.AddSingleton<SlideUpCard>();
             builder.Services.AddSingleton<TestSheet>();
 
 //            var dbContext = new CommuteMateDbContext();

@@ -4,6 +4,7 @@ using NetTopologySuite.Geometries;
 using System.Net.Http.Json;
 using System.Text;
 using CommuteMate.Utilities;
+using Point = NetTopologySuite.Geometries.Point;
 
 namespace CommuteMate.Services
 {
@@ -19,8 +20,8 @@ namespace CommuteMate.Services
             _streetService = streetService;
             _mapServices = mapServices;
             _client = new HttpClient();
-            _client.BaseAddress = new Uri("http://10.0.2.2:5005");
-            //_client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
+            //_client.BaseAddress = new Uri("http://10.0.2.2:5005");
+            _client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
         }
         public async Task<List<Route>> GetRoutes()
         {
@@ -83,6 +84,8 @@ namespace CommuteMate.Services
             {
                 List<RoutePath> routePaths = [];
                 var response = await _client.PostAsync("/pathRequest/", content);
+                response.EnsureSuccessStatusCode();
+
                 if (response.IsSuccessStatusCode)
                 {
                     var options = new JsonSerializerOptions
@@ -117,7 +120,7 @@ namespace CommuteMate.Services
                                 duration = (walk.duration * 60).ToString() + " Minutes/s";
                             else
                                 duration = walk.ToString() + " Hour/s";
-                            string action = walk.instruction + distance;
+                            string action = walk.instruction + " (" + distance + ")";
                             string instruction = "From " + walk.from + " to " + walk.to + " for " + duration;
 
 
@@ -128,10 +131,20 @@ namespace CommuteMate.Services
                                 Instruction = instruction,
                                 StepGeometry = walk.geometry
                             });
+
+                            steps.Add(new RouteStep
+                            {
+                                Action = "Pickup",
+                                Instruction = "Wait for PUV",
+                                StepGeometry = new Point(walk.geometry.Coordinates.Last())
+                            });
+
                             //geometries.Enqueue(walkGeom);
                             if (ridingQueue.Count > 0)
                             {
+
                                 var ride = ridingQueue.Dequeue();
+
                                 string rideDistance;
                                 if (ride.distance < 1)
                                     rideDistance = (ride.distance * 100).ToString() + " Meter/s";
@@ -142,14 +155,21 @@ namespace CommuteMate.Services
                                     rideDuration = (ride.duration * 60).ToString() + " Minutes/s";
                                 else
                                     rideDuration = ride.ToString() + " Hour/s";
-                                string rideAction = ride.instruction + distance;
-                                string rideInstruction = "From " + ride.from + " to " + ride.to + " for " + duration;
+                                string rideAction = ride.instruction + "PUV" + ride.code + " (" + rideDistance + ")";
+                                string rideInstruction = "From " + ride.from + " to " + ride.to + " for " + rideDuration;
                                 //var rideGeom = _mapServices.ConvertToNtsGeometry(ride.geometry);
                                 steps.Add(new RouteStep
                                 {
                                     Action = rideAction,
                                     Instruction = rideInstruction,
                                     StepGeometry = ride.geometry
+                                });
+
+                                steps.Add(new RouteStep
+                                {
+                                    Action = "Drop off",
+                                    Instruction = "Wait for PUV",
+                                    StepGeometry = new Point(walk.geometry.Coordinates.Last())
                                 });
                                 //geometries.Enqueue(rideGeom);
                             }
@@ -194,7 +214,7 @@ namespace CommuteMate.Services
             catch(Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                return null;
+                throw new Exception($"Error in Getting Available Routes:", ex);
             }
         }
     }

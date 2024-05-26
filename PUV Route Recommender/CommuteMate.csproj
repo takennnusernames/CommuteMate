@@ -116,6 +116,9 @@
     <MauiXaml Update="Views\RoutesView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="Views\SlideUpSheets\SlideUpCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Views\SlideUpSheets\TestSheet.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

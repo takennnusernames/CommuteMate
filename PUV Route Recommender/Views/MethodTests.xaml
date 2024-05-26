@@ -31,6 +31,7 @@
                 HorizontalOptions="End"
                 Margin="0,0,16,16"
                 x:Name="TestButton"
+                IsVisible="True"
                 />
             <Button
             Text="Test Direction"
@@ -39,11 +40,6 @@
         </VerticalStackLayout>
 
         <BoxView HeightRequest="50" IsVisible="Hidden" VerticalOptions="End" x:Name="tabBar"/>
-        <sheets:TestSheet x:Name="testSheet" Margin="0,0,0,50" BackgroundColor="Red" VerticalOptions="EndAndExpand" Dismissed="BottomSheet_Dismissed">
-            <sheets:TestSheet.Detents>
-                <the49:AnchorDetent Anchor="{x:Reference tabBar}"/>
-            </sheets:TestSheet.Detents>
-        </sheets:TestSheet>
 
 
     </Grid>

@@ -12,7 +12,17 @@
  
 
     <Grid>
-        <mapsui:MapControl x:Name="mapControl" BindingContext="{Binding}"/>
+        <!--<mapsui:MapControl x:Name="mapControl" BindingContext="{Binding}"/>-->
+        <maps:Map x:Name="map" MapType="Street" MapClicked="map_MapClicked" ItemsSource="{Binding Positions}">
+            <maps:Map.ItemTemplate>
+                <DataTemplate x:DataType="maps:Pin">
+                    <maps:Pin Location="{Binding Location}"
+                              Address="{Binding Address}"
+                              Label="{Binding Label}"
+                              MarkerClicked="Pin_MarkerClicked"/>
+                </DataTemplate>
+            </maps:Map.ItemTemplate>
+        </maps:Map>
         <Grid RowDefinitions="*,*,*"
               WidthRequest="360"
               HeightRequest="600"
@@ -32,62 +42,121 @@
                     <ColumnDefinition Width="40"/>
                 </Grid.ColumnDefinitions>
 
-                <SearchBar x:Name="originSearchBar"
-                           BindingContext="{Binding}"
-                           Placeholder="Enter Origin"
-                           Text="{Binding OriginText, Mode=TwoWay}"
-                           SearchCommand="{Binding SearchLocationCommand}"
-                           SearchCommandParameter="Origin"
-                           BackgroundColor="Transparent"
-                           CancelButtonColor="Transparent"
-                           Grid.Row="0"
-                           Grid.Column="0"/>
-                <Button Text="X"
-                        Grid.Column="1"
-                        BackgroundColor="Transparent"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        FontSize="20"
-                        CornerRadius="0"
-                        Command="{Binding CancelSearchCommand}"
-                        CommandParameter="Origin"/>
+                <AbsoluteLayout Grid.ColumnSpan="2" Margin="6">
+                    <SearchBar x:Name="originSearchBar"
+                               BindingContext="{Binding}"
+                               Placeholder="Enter Origin"
+                               Text="{Binding OriginText, Mode=TwoWay}"
+                               SearchCommand="{Binding SearchLocationCommand}"
+                               SearchCommandParameter="Origin"
+                               BackgroundColor="White"
+                               CancelButtonColor="Transparent"
+                               Grid.Row="0"
+                               Grid.Column="0"
+                               TextColor="Black"
+                               AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, AutoSize"
+                               AbsoluteLayout.LayoutFlags="WidthProportional" 
+                               
+                               Focused="originSearchBar_Focused"
+                               Unfocused="originSearchBar_Unfocused"/>
 
-                <SearchBar x:Name="destinationSearchBar"
-                           Placeholder="Enter Destination"
-                           Text="{Binding DestinationText, Mode=TwoWay}"
-                           SearchCommand="{Binding SearchLocationCommand}"
-                           SearchCommandParameter="Destination"
-                           BackgroundColor="Transparent"
-                           CancelButtonColor="Transparent"
-                           Grid.Row="1"
-                           Grid.Column="0"/>
-                <Button Text="X"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        BackgroundColor="Transparent"
-                        TextColor="White"
-                        FontAttributes="Bold"
-                        FontSize="20"
-                        CornerRadius="0"
-                        Command="{Binding CancelSearchCommand}"
-                        CommandParameter="Destination"/>
-                <Button Text="Get Routes"
-                        Grid.Row="2"
-                        Grid.ColumnSpan="2"
-                        Command="{Binding GetRoutesCommand}"
-                        CommandParameter="{Binding Map, Source={x:Reference mapControl}}"/>
-                <ActivityIndicator HorizontalOptions="Start"
+                    <BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
+                               AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
+                               AbsoluteLayout.LayoutFlags="PositionProportional" />
+                    <Button x:Name="originCancel"
+                            Text="X"
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            TextColor="black"
+                            BindingContext="{Binding}"
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            CornerRadius="0"
+                            Command="{Binding CancelSearchCommand}"
+                            CommandParameter="Origin"
+                            HorizontalOptions="End"
+                            IsVisible="False"
+                            AbsoluteLayout.LayoutBounds="1, 0, AutoSize, AutoSize"
+                            AbsoluteLayout.LayoutFlags="PositionProportional" />
+                </AbsoluteLayout>
+
+                <AbsoluteLayout Grid.ColumnSpan="2" Margin="6"
+                        AbsoluteLayout.LayoutBounds="1, 0, 1, 0.5"
+                        AbsoluteLayout.LayoutFlags="All"
+                            Grid.Row="1"
+                            Grid.Column="0">
+                    <SearchBar x:Name="destinationSearchBar"
+                               Placeholder="Enter Destination"
+                               Text="{Binding DestinationText, Mode=TwoWay}"
+                               SearchCommand="{Binding SearchLocationCommand}"
+                               SearchCommandParameter="Destination"
+                               BackgroundColor="White"
+                               CancelButtonColor="Transparent"
+                               Grid.Row="1"
+                               Grid.Column="0"
+                               AbsoluteLayout.LayoutBounds="0, 0, 1, AutoSize"
+                               AbsoluteLayout.LayoutFlags="WidthProportional"
+                               
+                               Focused="destinationSearchBar_Focused"
+                               Unfocused="destinationSearchBar_Unfocused"/>
+
+                    <BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
+                               AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
+                               AbsoluteLayout.LayoutFlags="PositionProportional" />
+                    <Button x:Name="destinationCancel"
+                            Text="X"
+                            BackgroundColor="Transparent"
+                            TextColor="Black"
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            CornerRadius="0"
+                            Command="{Binding CancelSearchCommand}"
+                            CommandParameter="Destination"
+                            IsVisible="False"
+                            AbsoluteLayout.LayoutBounds="1, 0, AutoSize, AutoSize"
+                            AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                </AbsoluteLayout>
+
+                <AbsoluteLayout Grid.Row="2" Grid.ColumnSpan="2">
+                    <VerticalStackLayout AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
+                                         AbsoluteLayout.LayoutFlags="WidthProportional">
+                        <Button x:Name="GetLocationButton"
+                                Text="Use Current Location"
+                                Margin="9"
+                                Command="{Binding GetLocationCommand}"
+                                CommandParameter="Origin"
+                                IsVisible="False"/>
+
+                        <Button x:Name="GetRoutesButton"
+                                Margin="9"
+                                Text="Get Routes"
+                                Command="{Binding GetRoutesCommand}"
+                                IsVisible="False"/>
+                    </VerticalStackLayout>
+                </AbsoluteLayout>
+                
+            </Grid>
+            <Button
+                    Text="Show"
+                    Command="{Binding ShowCardCommand}"
+                    Grid.Row="1"
+                    CornerRadius="50"
+                    HeightRequest="44" 
+                    WidthRequest="44" 
+                    VerticalOptions="CenterAndExpand" 
+                    HorizontalOptions="End"
+                    Margin="0,0,0,0"
+                    x:Name="ShowDetailsButton"
+                    IsVisible="True"
+                    />
+
+            <ActivityIndicator HorizontalOptions="Center"
                        IsRunning="{Binding IsBusy}"
                        IsVisible="{Binding IsBusy}"
                        VerticalOptions="Center"
-                       BackgroundColor="Blue"
-                       Grid.RowSpan="2" Grid.Column="1"
-                                   Color="White"/>
-            </Grid>
-            <!--<Button Text="Use Current Location"
-                    Command="{Binding GetLocationCommand}"
-                    CommandParameter="Origin"
-                    Grid.Row="1"/>-->
+                       BackgroundColor="Transparent"
+                               Color="Blue"
+                       Grid.RowSpan="2" Grid.Column="1"/>
             <CollectionView x:Name="searchResults"
                   ItemsSource="{Binding SearchResults}"
                   SelectionMode="None"

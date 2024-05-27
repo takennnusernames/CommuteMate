@@ -59,6 +59,8 @@ public partial class NavigatingPage : ContentPage
     private void originSearchBar_Focused(object sender, FocusEventArgs e)
     {
         originCancel.IsVisible = true;
+        var viewModel = BindingContext as NavigatingViewModel;
+        viewModel.Source = "Origin";
         GetLocationButton.IsVisible = true;
     }
 
@@ -73,6 +75,8 @@ public partial class NavigatingPage : ContentPage
     private void destinationSearchBar_Focused(object sender, FocusEventArgs e)
     {
         destinationCancel.IsVisible = true;
+        var viewModel = BindingContext as NavigatingViewModel;
+        viewModel.Source = "Destination";
         GetLocationButton.IsVisible = true;
     }
 

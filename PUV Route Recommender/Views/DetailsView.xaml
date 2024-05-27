@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+             xmlns:model="clr-namespace:CommuteMate.Models"
+             xmlns:local="clr-namespace:CommuteMate.Views"
+             x:Class="CommuteMate.Views.DetailsView"
+             x:DataType="viewModel:RoutesViewModel">
+    <VerticalStackLayout Spacing="15">
+        <Frame HeightRequest="45"
+       Padding="0"
+       Style="{StaticResource CardView}"
+               BorderColor="Orange"
+             x:DataType="model:Route">
+            <Frame.GestureRecognizers>
+                <TapGestureRecognizer 
+                    Tapped="TapGestureRecognizer_Tapped"/>
+            </Frame.GestureRecognizers>
+            <Grid Padding="0"
+          ColumnDefinitions="125, *">
+                <HorizontalStackLayout Grid.ColumnSpan="2"
+                             Padding="15,0" HeightRequest="30" Spacing="5">
+                    <Grid ColumnDefinitions="90,*">
+                        <HorizontalStackLayout Grid.Column="0" >
+                            <Image Source="vehicle_icon.png"/>
+                            <Label Text="{Binding Code}" VerticalOptions="Center" Margin="12,0"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" HorizontalOptions="End">
+                            <Image Source="route_icon.png"/>
+                            <Label Text="{Binding Name}" VerticalOptions="Center"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                </HorizontalStackLayout>
+            </Grid>
+        </Frame>
+        <Frame x:Name="StreetFrame" IsVisible="False" Padding="0" BackgroundColor="White" BorderColor="Black" Margin="0,-45,0,0" 
+               CornerRadius="20" WidthRequest="345">
+            <CollectionView
+                        Margin="0,20,0,0" BackgroundColor="Yellow"
+                        x:Name="StreetCollection"
+                        Grid.Row="1"
+                        Grid.Column="0"
+                        SelectionMode="None"
+                    ItemsSource="{Binding .}"
+                HeightRequest="200">
+
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                        <Grid Padding="10">
+                            <Label Style="{StaticResource MediumLabel}" Text="{Binding}" HorizontalTextAlignment="Center"/>
+                        </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+        </Frame>
+    </VerticalStackLayout>
+</ContentView>

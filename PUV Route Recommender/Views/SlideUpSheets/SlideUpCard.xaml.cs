@@ -1,32 +1,58 @@
+using Microsoft.Maui.Controls;
 using The49.Maui.BottomSheet;
 
 namespace CommuteMate.Views.SlideUpSheets;
 
 public partial class SlideUpCard : BottomSheet
 {
-	public SlideUpCard(NavigatingViewModel viewModel)
+    MediumDetent medium;
+    FullscreenDetent full;
+
+    public SlideUpCard(NavigatingViewModel viewModel)
 	{
         InitializeComponent();
         BindingContext = viewModel;
+        full = new FullscreenDetent();
+        medium = new MediumDetent();
     }
 
     private async void PrioritySelected(object sender, EventArgs e)
     {
+        var button = (Button)sender;
+        var viewModel = BindingContext as NavigatingViewModel;
+        await viewModel.PrioritySelect(button.Text);
+        this.Detents.Add(medium);
         await SlideToView(RouteSelection,PrioritySelection, true);
     }
 
     private async void RouteSelected(object sender, EventArgs e)
     {
+        var frame = (Frame)sender;
+        var route = (RoutePath)frame.BindingContext;
+
+        // Find the parent CollectionView
+        var collectionView = GetParentCollectionView(frame);
+        if (collectionView != null)
+        {
+            var viewModel = collectionView.BindingContext as NavigatingViewModel;
+            if (viewModel != null)
+            {
+                await viewModel.SelectPath(route);
+            }
+        }
+        this.Detents.Add(full);
         await SlideToView(RouteDetails, RouteSelection, true);
     }
 
     private async void BackToPrioritySelect(object sender, EventArgs e)
     {
+        this.Detents.Remove(medium);
         await SlideToView(PrioritySelection, RouteSelection, false);
     }
 
     private async void BackToRouteSelect(object sender, EventArgs e)
     {
+        this.Detents.Remove(full);
         await SlideToView(RouteSelection, RouteDetails, false);
     }
     private async Task TransitionToView(View newView, View oldView)
@@ -53,5 +79,24 @@ public partial class SlideUpCard : BottomSheet
         await Task.WhenAll(slideOutTask, slideInTask);
 
         oldView.IsVisible = false;
+    }
+
+    private CollectionView GetParentCollectionView(Element element)
+    {
+        Element parent = element.Parent;
+        while (parent != null && !(parent is CollectionView))
+        {
+            parent = parent.Parent;
+        }
+        return parent as CollectionView;
+    }
+
+    private void BottomSheet_Dismissed(object sender, DismissOrigin e)
+    {
+        var viewModel = BindingContext as NavigatingViewModel;
+        if (viewModel != null)
+        {
+            viewModel.ShowSlideUpButton(e);
+        }
     }
 }

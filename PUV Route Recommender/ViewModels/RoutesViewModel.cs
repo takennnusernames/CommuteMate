@@ -16,25 +16,34 @@ namespace CommuteMate.ViewModels
         readonly IConnectivity _connectivity;
         readonly IRouteService _routeService;
         readonly ICommuteMateApiService _commuteMateApiService;
-        readonly CommuteMateApiClientService _apiClient;
         public RoutesViewModel(
             IOverpassApiServices overpassApiServices, 
             IConnectivity connectivity,
             IRouteService routeService,
-            ICommuteMateApiService commuteMateApiService,
-            CommuteMateApiClientService apiClientService) 
+            ICommuteMateApiService commuteMateApiService) 
         {
             Title = "Route List";
             _overpassApiServices = overpassApiServices;
             _connectivity = connectivity;
             _routeService = routeService;
-            _apiClient = apiClientService;
             _commuteMateApiService = commuteMateApiService;
+            _isStreetFrameVisible = false;
         }
-
         //properties
         public ObservableCollection<Route> Routes { get; } = [];
+
+        public ObservableCollection<string> Streets { get; } = [];
         public Button getRoutesButton { get; set; }
+        private bool _isStreetFrameVisible;
+        public bool IsStreetFrameVisible
+        {
+            get => _isStreetFrameVisible;
+            set
+            {
+                _isStreetFrameVisible = value;
+                OnPropertyChanged();
+            }
+        }
         //commands
         [RelayCommand]
         async Task ShowRoutesAsync()
@@ -55,7 +64,12 @@ namespace CommuteMate.ViewModels
                 }
 
                 foreach (var route in routes)
+                {
+                    var parts = route.Name.Split(new[] { ':' }, 2);
+                    var name = parts.Length > 1 ? parts[1] : route.Name;
+                    route.Name = name;
                     Routes.Add(route);
+                }
             }
             catch (Exception ex)
             {
@@ -110,10 +124,10 @@ namespace CommuteMate.ViewModels
         }
 
         [RelayCommand]
-        async Task GoToDetails(Route route)
+        public async Task<List<string>> GoToDetails(Route route)
         {
             if (IsBusy)
-                return;
+                return null;
             try
             {
                 IsBusy = true;
@@ -121,30 +135,23 @@ namespace CommuteMate.ViewModels
                 {
                     await Shell.Current.DisplayAlert("No connectivity!",
                         $"Please check internet and try again.", "OK");
-                    return;
+                    return null;
                 }
                 var streets = await _commuteMateApiService.GetRouteStreets(route.Osm_Id) ?? throw new Exception("streets is null");
                 var streetNames = streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
-                RouteInfo routeInfo = new RouteInfo
-                {
-                    RouteName = route.Name,
-                    StreetNames = streetNames
-                };
-                await Shell.Current.GoToAsync($"{nameof(RoutesInfoPage)}", true,
-                    new Dictionary<string, object>
-                    {
-                        {"Route", routeInfo}
-                    });
+
+                
+                return streetNames;
             }
             catch (Exception ex)
             {
                 await Shell.Current.DisplayAlert("Error! Unable to retrieve information", ex.Message, "OK");
+                return null;
             }
             finally
             {
                 IsBusy = false;
             }
-            if (route == null) return;
             
         }
     }

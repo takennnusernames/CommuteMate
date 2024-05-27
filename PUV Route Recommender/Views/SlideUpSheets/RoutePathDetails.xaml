@@ -7,14 +7,8 @@
              xmlns:model="clr-namespace:CommuteMate.Models"
              x:DataType="viewModel:NavigatingViewModel"
              Padding="16, 32" Background="LightGray" CornerRadius="20" HandleColor="Black" HasHandle="true">
-    
+
     <VerticalStackLayout>
-        <!--<Button Text="Back" 
-                Command="{Binding BackCommand}" 
-                HorizontalOptions="Start" 
-                VerticalOptions="Start" 
-                BackgroundColor="Transparent"
-                TextColor="Black"/>-->
         <Grid RowDefinitions="Auto,Auto,Auto,Auto" 
               ColumnDefinitions="Auto,Auto"
               Padding="10">
@@ -34,7 +28,8 @@
                 Grid.Column="0"
                 ItemsSource="{Binding CurrentPath.Steps}"
                 SelectionMode="None"
-                Margin="15">
+                  HeightRequest="600"
+                WidthRequest="325">
 
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:RouteStep">
@@ -52,8 +47,8 @@
                                     </Image.Triggers>
                                 </Image>-->
                                     <CheckBox/>
-                                    <VerticalStackLayout Grid.ColumnSpan="2" BackgroundColor="Yellow"
-Padding="5" Margin="10" HorizontalOptions="Center" HeightRequest="69" WidthRequest="300">
+                                    <VerticalStackLayout Grid.ColumnSpan="2"
+Padding="5" Margin="10" HorizontalOptions="Center" WidthRequest="240">
                                         <Label Style="{StaticResource SmallLabel}" Text="{Binding Action}"/>
                                         <Label Style="{StaticResource SmallLabel}" Text="{Binding Instruction}"/>
                                     </VerticalStackLayout>

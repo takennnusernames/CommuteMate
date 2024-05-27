@@ -27,14 +27,11 @@
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\commutemate.svg" Color="#512BD4" />
-    <MauiIcon Include="Resources\Images\home_icon.png" />
-    <MauiIcon Include="Resources\Images\list_icon.svg" />
-    <MauiIcon Include="Resources\Images\routes_icon.png" />
     <!-- Splash Screen -->
     <!--<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128, 128" />-->
     <MauiSplashScreen Include="Resources\Splash\commutematesplash.svg" Color="white" />
     <!-- Images -->
-    <MauiImage Include="Resources\Images\*" />
+    <MauiImage Include="Resources\Images\* " />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
@@ -42,19 +39,19 @@
     <MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Remove="Platforms\Android\Resources\values\styles.xml" />
+    <None Remove="Resources\Images\back_icon.png" />
+    <None Remove="Resources\Images\destination_icon.png" />
+    <None Remove="Resources\Images\details_icon.png" />
+    <None Remove="Resources\Images\fare_icon.png" />
+    <None Remove="Resources\Images\info_icon.png" />
+    <None Remove="Resources\Images\origin_icon.png" />
+    <None Remove="Resources\Images\riding_icon.png" />
+    <None Remove="Resources\Images\route_icon.png" />
+    <None Remove="Resources\Images\search_icon.png" />
+    <None Remove="Resources\Images\vehicle_icon.png" />
+    <None Remove="Resources\Images\walking_icon.png" />
   </ItemGroup>
-  <ItemGroup>
-    <MauiImage Remove="Resources\Images\home_icon.png" />
-    <MauiImage Remove="Resources\Images\list_icon.svg" />
-    <MauiImage Remove="Resources\Images\routes_icon.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Resources\Images\home_icon.png" />
-    <None Remove="Resources\Images\list_icon.svg" />
-    <None Remove="Resources\Raw\OSM_Test_Data.osm" />
-    <None Remove="Resources\xml\network_security_config.xml" />
-  </ItemGroup>
+  
   <ItemGroup>
     <AndroidResource Include="Resources\xml\network_security_config.xml" />
   </ItemGroup>
@@ -95,6 +92,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <MauiXaml Update="Views\DetailsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Views\SlideUpSheets\RoutePathDetails.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>

@@ -21,16 +21,16 @@
             Icon="routes_icon.png"/>
 
         <ShellContent
-            Title="List"
+            Title="PUVs"
             ContentTemplate="{DataTemplate views:InfoPage}"
             Route="InforPage" 
-            Icon="list_icon.svg"/>
+            Icon="vehicle_icon.svg"/>
 
-        <ShellContent
+        <!--<ShellContent
             Title="Main"
             ContentTemplate="{DataTemplate views:MethodTests}"
             Route="MethodTests" 
-            Icon="list_icon.svg"/>
+            Icon="dotnet_bot.svg"/>-->
 
     </TabBar>
 </Shell>

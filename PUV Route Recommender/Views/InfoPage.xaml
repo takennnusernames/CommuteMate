@@ -1,31 +1,50 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:model="clr-namespace:CommuteMate.Models"
+             xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
              x:Class="CommuteMate.Views.InfoPage"
+             x:DataType="viewModel:VehicleInfoViewModel"
              Title="Vehicle List">
 
-    <ListView 
-        BackgroundColor="Transparent"
-        x:Name="vehicle_list"
-        SeparatorColor="Aqua"
-        RowHeight="60"
-        ItemSelected="vehicle_list_ItemSelected"
-        ItemTapped="vehicle_list_ItemTapped"
-        >
-
+    <!--<ListView x:Name="vehicle_list" BackgroundColor="Red">
         <ListView.ItemTemplate>
-            
             <DataTemplate>
-                
-                <TextCell
-                    Text="{Binding Type}"
-                    Detail="{Binding Route}">
-                </TextCell>
-                
+                <TextCell Text="{Binding Type}"/>
             </DataTemplate>
-            
         </ListView.ItemTemplate>
-        
-    </ListView>
-    
+    </ListView>-->
+
+    <Frame BackgroundColor="Wheat">
+        <Grid RowDefinitions="*,Auto">
+            <CarouselView ItemsSource="{Binding Vehicles}" HeightRequest="600" Background="AliceBlue" IndicatorView="indicatorView">
+                <CarouselView.ItemTemplate>
+                    <DataTemplate x:DataType="model:Vehicle">
+                        <VerticalStackLayout Padding="10" Spacing="20">
+                            <Frame x:Name="VehicleType">
+                                <Label Text="{Binding Type}" HorizontalOptions="Center"/>
+                            </Frame>
+                            <Frame x:Name="VehicleImage">
+                                <Image Source="{Binding VehicleID}"/>
+                            </Frame>
+                            <Frame x:Name="VehicleInformation">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Info.MinimumFare, StringFormat='Minimum Fare: P{0}'}"/>
+                                    <Label Text="{Binding Info.MinimumKM, StringFormat='Minimum Fare is up to the first {0}KM'}"/>
+                                    <Label Text="{Binding Info.FareRate, StringFormat='Succeeding Fare Rate: P{0}/Km'}"/>
+                                    <Label Text="{Binding Info.Comfortability, StringFormat='Comfortability(Based on survey): {0}/10'}"/>
+                                </VerticalStackLayout>
+                            </Frame>
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CarouselView.ItemTemplate>
+            </CarouselView>
+
+            <IndicatorView x:Name="indicatorView"
+                           Grid.Row="1"
+           IndicatorColor="LightGray"
+           SelectedIndicatorColor="DarkGray"
+           HorizontalOptions="Center" />
+        </Grid>
+    </Frame>
 </ContentPage>

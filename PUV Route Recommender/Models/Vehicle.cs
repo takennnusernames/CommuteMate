@@ -8,9 +8,17 @@ namespace CommuteMate.Models
 {
     public class Vehicle
     {
-        public int Vehicle_ID { get; set; }
-        public string Vehicle_Code { get; set; }
-        public string Route {  get; set; }
+        public int VehicleID { get; set; }
         public string Type { get; set; }
+        public VehicleInfo Info { get; set; }
+        public string ImageFileName { get; set; }
+    }
+    public class VehicleInfo
+    {
+        public double MinimumFare { get; set; }
+        public int MinimumKM { get; set; }
+        public double FareRate { get; set; }
+        public double Comfortability { get; set; }
+
     }
 }

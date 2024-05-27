@@ -1,4 +1,5 @@
-﻿using CommuteMate.Models;
+﻿using CommuteMate.Interfaces;
+using CommuteMate.Models;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -8,19 +9,63 @@ using System.Threading.Tasks;
 
 namespace CommuteMate.Repositories
 {
-    public static class VehicleRepository
+    public class VehicleRepository : IVehicleRepository
     {
-        public static List<Vehicle> _vehicles = new List<Vehicle>()
+        public List<Vehicle> _vehicles = new List<Vehicle>()
         {
-            new Vehicle { Vehicle_ID =0, Type="Jeepney", Vehicle_Code="PUV" , Route="testRoute"},
-            new Vehicle { Vehicle_ID =1, Type="Modernized Jeepney", Vehicle_Code="PUV", Route="testRoute"},
-            new Vehicle { Vehicle_ID =2, Type="CiBus", Vehicle_Code="PUV", Route="testRoute"},
-            new Vehicle { Vehicle_ID =3,Type="MyBus", Vehicle_Code="PUV", Route="testRoute"}
+            new Vehicle
+            {
+                VehicleID =0, 
+                Type="Traditional Jeepney", 
+                Info=new VehicleInfo
+                {
+                    MinimumFare = 12.0,
+                    MinimumKM = 4,
+                    Comfortability = 3,
+                    FareRate = 1.80
+                }
+            },
+            new Vehicle
+            {
+                VehicleID =1,
+                Type="Modernized Jeepney",
+                Info=new VehicleInfo
+                {
+                    MinimumFare = 14.0,
+                    MinimumKM = 4,
+                    Comfortability = 6,
+                    FareRate = 1.80
+                }
+            },
+            new Vehicle
+            {
+                VehicleID =2,
+                Type="Modernized Jeepney (Aircon)",
+                Info=new VehicleInfo
+                {
+                    MinimumFare = 14.0,
+                    MinimumKM = 4,
+                    Comfortability = 8,
+                    FareRate = 2.20
+                }
+            },
+            new Vehicle
+            {
+                VehicleID =3,
+                Type="MyBus",
+                Info=new VehicleInfo
+                {
+                    MinimumFare = 30.0,
+                    MinimumKM = 5,
+                    Comfortability = 8,
+                    FareRate = 2.10
+                }
+            }
         };
-        public static List<Vehicle> GetVehicles() => _vehicles;
-        public static Vehicle GetVehicleById(int vehicle_ID)
+        public List<Vehicle> GetVehicles() => _vehicles;
+        public Vehicle GetVehicleById(int vehicle_ID)
         {
-            return _vehicles.FirstOrDefault(x => x.Vehicle_ID == vehicle_ID);
+            return _vehicles.FirstOrDefault(x => x.VehicleID == vehicle_ID);
         }
 
     }

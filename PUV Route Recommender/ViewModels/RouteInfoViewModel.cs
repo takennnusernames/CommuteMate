@@ -12,6 +12,7 @@ namespace CommuteMate.ViewModels
         [ObservableProperty]
         private RouteInfo route;
 
+
     }
 
 }

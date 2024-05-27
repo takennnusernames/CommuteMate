@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace CommuteMate.Models
 {
-    public class RouteInfo
+    public partial class RouteInfo
     {
         public string RouteName { get; set; }
         public List<string> StreetNames { get; set; }
+        
     }
 }

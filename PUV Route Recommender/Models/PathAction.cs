@@ -20,9 +20,9 @@ namespace CommuteMate.Models
     }
     public class PathSummary
     {
-        public string TotalDistance { get; set; }
-        public string TotalDuration { get; set; }
-        public string TotalFare {  get; set; }
+        public double TotalDistance { get; set; }
+        public double TotalDuration { get; set; }
+        public double TotalFare {  get; set; }
         public List<string> PUVCodes { get; set; }
     }
 }

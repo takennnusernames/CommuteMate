@@ -85,15 +85,6 @@ namespace CommuteMate.Services
             MapSpan mapSpan = new MapSpan(location, 0.05, 0.05);
             map.MoveToRegion(mapSpan);
 
-            // Add a pin to the center of Cebu City
-            var pin = new Pin
-            {
-                Type = PinType.Place,
-                Location = new Location(10.3157, 123.8854),
-                Label = "Cebu City",
-                Address = "Philippines"
-            };
-            map.Pins.Add(pin);
             return Task.FromResult(map);
         }
 
@@ -123,7 +114,10 @@ namespace CommuteMate.Services
                 Label = location.Name,
                 Address = location.Coordinate.X.ToString() + ", " + location.Coordinate.Y.ToString()
             };
+
+            MapSpan mapSpan = new MapSpan(pin.Location, 0.05, 0.05);
             map.Pins.Add(pin);
+            map.MoveToRegion(mapSpan);
             return Task.FromResult(pin);
         }
         public Task RemoveGooglePin(Pin pin, GoogleMap map)
@@ -131,7 +125,7 @@ namespace CommuteMate.Services
             map.Pins.Remove(pin);
             return Task.FromResult(map);
         }
-        public Task AddGooglePolyline(Geometry geometry, GoogleMap map, string action)
+        public async Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action)
         {
             List<Location> locations = [];
             if (geometry.GeometryType.Equals("MultiLineString"))
@@ -178,7 +172,7 @@ namespace CommuteMate.Services
             }
             map.MapElements.Add(polyline);
 
-            return Task.FromResult(map);
+            return polyline;
 
         }
 

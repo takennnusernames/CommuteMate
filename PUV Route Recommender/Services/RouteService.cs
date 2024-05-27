@@ -23,7 +23,7 @@ namespace CommuteMate.Services
         public async Task<Route> InsertRouteAsync(Route newRoute)
         {
             var route = await _routeRepository.GetRouteByIdAsync(newRoute.RouteId);
-            if (route is not null)
+            if (route is null)
                 return await _routeRepository.InsertRouteAsync(newRoute);
             else
                 return route;
@@ -32,7 +32,7 @@ namespace CommuteMate.Services
         {
             var routes = await _routeRepository.GetAllRoutesAsync();
             if (routes is not null)
-                return routes.ToList();
+                return routes;
             return null;
         }
         public async Task<List<Street>> GetRouteStreets(int id)

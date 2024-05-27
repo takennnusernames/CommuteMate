@@ -56,13 +56,17 @@
                                TextColor="Black"
                                AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, AutoSize"
                                AbsoluteLayout.LayoutFlags="WidthProportional" 
-                               
                                Focused="originSearchBar_Focused"
                                Unfocused="originSearchBar_Unfocused"/>
 
-                    <BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
+                    <!--<BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
                                AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
-                               AbsoluteLayout.LayoutFlags="PositionProportional" />
+                               AbsoluteLayout.LayoutFlags="PositionProportional" />-->
+                    <Frame Padding="0" WidthRequest="50" HeightRequest="47" BackgroundColor="Black" CornerRadius="0">
+                        <Image Source="origin_icon.png" WidthRequest="40" HeightRequest="40"
+AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
+AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                    </Frame>
                     <Button x:Name="originCancel"
                             Text="X"
                             Grid.Column="1"
@@ -100,9 +104,11 @@
                                Focused="destinationSearchBar_Focused"
                                Unfocused="destinationSearchBar_Unfocused"/>
 
-                    <BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
-                               AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
-                               AbsoluteLayout.LayoutFlags="PositionProportional" />
+                    <Frame Padding="0" WidthRequest="50" HeightRequest="47" BackgroundColor="Black" CornerRadius="0">
+                        <Image Source="destination_icon.png" WidthRequest="40" HeightRequest="40"
+AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
+AbsoluteLayout.LayoutFlags="PositionProportional"/>
+                    </Frame>
                     <Button x:Name="destinationCancel"
                             Text="X"
                             BackgroundColor="Transparent"
@@ -124,7 +130,6 @@
                                 Text="Use Current Location"
                                 Margin="9"
                                 Command="{Binding GetLocationCommand}"
-                                CommandParameter="Origin"
                                 IsVisible="False"/>
 
                         <Button x:Name="GetRoutesButton"
@@ -136,18 +141,17 @@
                 </AbsoluteLayout>
                 
             </Grid>
-            <Button
-                    Text="Show"
+            <ImageButton
+                    Source="details_icon.png"
                     Command="{Binding ShowCardCommand}"
                     Grid.Row="1"
-                    CornerRadius="50"
                     HeightRequest="44" 
                     WidthRequest="44" 
                     VerticalOptions="CenterAndExpand" 
                     HorizontalOptions="End"
                     Margin="0,0,0,0"
                     x:Name="ShowDetailsButton"
-                    IsVisible="True"
+                    IsVisible="False"
                     />
 
             <ActivityIndicator HorizontalOptions="Center"

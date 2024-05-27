@@ -17,6 +17,7 @@ namespace CommuteMate.Models
         public string Name { get; set; }
         public bool StreetNameSaved { get; set; }
         public virtual ICollection<Street> Streets { get; set; }
+
     }
     public class Street
     {

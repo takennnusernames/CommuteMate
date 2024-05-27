@@ -4,16 +4,24 @@
                    xmlns:model="clr-namespace:CommuteMate.Models"
                    xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
                    xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"
+                   xmlns:utils="clr-namespace:CommuteMate.Utilities"
                    x:Class="CommuteMate.Views.SlideUpSheets.SlideUpCard"
-                   Padding="18, 5" BackgroundColor="Orange" CornerRadius="20" HasBackdrop="True">
+                   Padding="18, 5" BackgroundColor="Orange" CornerRadius="20" HasBackdrop="True" HasHandle="True" HandleColor="Gray"
+                   x:DataType="viewModel:NavigatingViewModel" Dismissed="BottomSheet_Dismissed">
     <the49:BottomSheet.Detents>
-        <the49:RatioDetent Ratio="0.45"/>
+        <the49:RatioDetent Ratio="0.40"/>
     </the49:BottomSheet.Detents>
+    <the49:BottomSheet.Resources>
+        <ResourceDictionary>
+            <utils:ActionToSimpleValueConverter x:Key="ActionToSimpleValueConverter"/>
+        </ResourceDictionary>
+    </the49:BottomSheet.Resources>
     <AbsoluteLayout x:Name="MainLayout">
 
-        <BoxView Color="White" HeightRequest="5" WidthRequest="45" CornerRadius="100" 
-                 AbsoluteLayout.LayoutBounds="0.5, 0, 45, 5" AbsoluteLayout.LayoutFlags="PositionProportional"/>
-        <VerticalStackLayout x:Name="PrioritySelection" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All">
+        <!--<BoxView Color="White" HeightRequest="5" WidthRequest="45" CornerRadius="100" 
+                 AbsoluteLayout.LayoutBounds="0.5, 0, 45, 5" AbsoluteLayout.LayoutFlags="PositionProportional"/>-->
+        <VerticalStackLayout x:Name="PrioritySelection" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All"
+                              Padding="15">
 
             <FlexLayout HorizontalOptions="Center" HeightRequest="40">
                 <Label Text="Select Priority" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20"/>
@@ -21,24 +29,115 @@
             <Button Text="Fare" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
             <Button Text="Duration" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
             <Button Text="Distance" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
-            <Button Text="Number of Rides" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
+            <Button Text="Rides" Clicked="PrioritySelected" CornerRadius="20" BackgroundColor="White" TextColor="Black" Margin="9"/>
 
         </VerticalStackLayout>
 
-        <VerticalStackLayout x:Name="RouteSelection" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="12">
+        <VerticalStackLayout x:Name="RouteSelection" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="15">
             <FlexLayout HorizontalOptions="Center" HeightRequest="40">
-                <Button Text="Back" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center"/>
-                <Label Text="Priority: Fare" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="9,0"/>
-                <Button Text="Go" Clicked="RouteSelected" HorizontalOptions="End" VerticalOptions="Center"/>
+                <ImageButton Source="back_icon.png" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center" WidthRequest="30" 
+                             Padding="0" Margin="0"/>
+                <!--<Button Text="Back" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center"/>-->
+                <Label Text="Priority: Fare" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" Margin="-3"/>
             </FlexLayout>
+
+            <CollectionView x:Name="pathOptions"
+                  ItemsSource="{Binding PathOptions}"
+                  SelectionMode="None"
+                  Grid.Row="1"
+                  VerticalOptions="Start"
+                  BackgroundColor="Transparent"
+                  WidthRequest="340"
+                  HeightRequest="300">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="model:RoutePath">
+                        <ScrollView>
+                            <Frame CornerRadius="10" Margin="10" BackgroundColor="White" HeightRequest="180">
+                                <Frame.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="RouteSelected"/>
+                                </Frame.GestureRecognizers>
+                                <Grid Padding="0"
+                                      ColumnDefinitions="125, *">
+                                    <VerticalStackLayout Grid.ColumnSpan="2">
+                                        <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.PUVCodes.Count, StringFormat='Number of PUVs to ride: {0}'}"/>
+                                        <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.TotalFare, StringFormat='Total Fare: P{0}' }" />
+                                        <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.TotalDistance, StringFormat='Total Distance: {0:F2}KM' }"/>
+                                        <Label Style="{StaticResource LargeLabel}" Text="{Binding Summary.TotalDuration, StringFormat='Estimated Travel Time: {0:F2}Hours' }"/>
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Frame>
+                        </ScrollView>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
 
-        <VerticalStackLayout x:Name="RouteDetails" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="12">
+        <VerticalStackLayout x:Name="RouteDetails" IsVisible="False" AbsoluteLayout.LayoutBounds="1,0,1,1" AbsoluteLayout.LayoutFlags="All" Padding="15">
             <FlexLayout HorizontalOptions="Center" HeightRequest="40">
-                <Button Text="Back" Clicked="BackToRouteSelect" HorizontalOptions="Start" VerticalOptions="Center"/>
-                <Label Text="Route Details" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="9,0"/>
-                <Button Text="Go" Clicked="RouteSelected" HorizontalOptions="End" VerticalOptions="Center"/>
+                <ImageButton Source="back_icon.png" Clicked="BackToRouteSelect" HorizontalOptions="Start" VerticalOptions="Center" WidthRequest="30"
+                             Padding="0" Margin="0"/>
+                <Label Text="Route Details" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" />
             </FlexLayout>
+            <VerticalStackLayout BackgroundColor="LightBlue">
+                <Grid RowDefinitions="Auto,Auto,Auto,Auto">
+                    <FlexLayout Grid.Row="0" HorizontalOptions="Center">
+                        <Image Source="fare_icon.png" HeightRequest="40" WidthRequest="40"/>
+                        <Label 
+                            TextColor="Black"
+                            Text="{Binding CurrentPath.Summary.TotalFare, StringFormat='Total Fare P{0}'}"
+                            Style="{StaticResource LargeLabel}"
+                            BackgroundColor="Transparent"
+                            VerticalOptions="Center"/>
+                    </FlexLayout>
+                    <FlexLayout Grid.Row="1" BackgroundColor="Wheat">
+                        <Image Source="origin_icon.png" HeightRequest="50" WidthRequest="50" HorizontalOptions="Center"/>
+                        <Label Text="{Binding OriginText}"
+                   Style="{StaticResource LargeLabel}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </FlexLayout>
+                    <CollectionView
+                BackgroundColor="Wheat"
+                Grid.Row="2"
+                Grid.Column="0"
+                ItemsSource="{Binding CurrentPath.Steps}"
+                SelectionMode="None"
+                WidthRequest="325"
+                        HeightRequest="610">
+
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate x:DataType="model:RouteStep">
+                                <Grid>
+                                    <ScrollView>
+                                        <HorizontalStackLayout>
+                                            <Image HeightRequest="50" WidthRequest="50" VerticalOptions="Center">
+                                                <Image.Triggers>
+                                                    <DataTrigger TargetType="Image" Binding="{Binding Action, Converter={StaticResource ActionToSimpleValueConverter}}" Value="Walk">
+                                                        <Setter Property="Source" Value="walking_icon.png" />
+                                                    </DataTrigger>
+                                                    <DataTrigger TargetType="Image" Binding="{Binding Action, Converter={StaticResource ActionToSimpleValueConverter}}" Value="Ride">
+                                                        <Setter Property="Source" Value="riding_icon.png" />
+                                                    </DataTrigger>
+                                                </Image.Triggers>
+                                            </Image>
+                                            <Frame Padding="0" Margin="0" Style="{StaticResource CardView}">
+                                                <VerticalStackLayout Grid.ColumnSpan="2"
+                     Margin="10" HorizontalOptions="Center" WidthRequest="240">
+                                                    <Label Style="{StaticResource SmallLabel}" Text="{Binding Action}"/>
+                                                    <Label Style="{StaticResource SmallLabel}" Text="{Binding Instruction}"/>
+                                                </VerticalStackLayout>
+                                            </Frame>
+                                        </HorizontalStackLayout>
+                                    </ScrollView>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <HorizontalStackLayout Grid.Row="3" BackgroundColor="Wheat">
+                        <Image Source="destination_icon.png" HeightRequest="50" WidthRequest="50"/>
+                        <Label Text="{Binding DestinationText}"
+                Style="{StaticResource LargeLabel}" HorizontalOptions="Center" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+            </VerticalStackLayout>
         </VerticalStackLayout>
     </AbsoluteLayout>
 </the49:BottomSheet>

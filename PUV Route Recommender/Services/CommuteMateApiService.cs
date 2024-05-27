@@ -110,34 +110,48 @@ namespace CommuteMate.Services
                         while (walkingQueue.Count > 0)
                         {
                             var walk = walkingQueue.Dequeue();
-                            string distance;
+                            string distanceString = "";
+                            double distance = 0;
                             if (walk.distance < 1)
-                                distance = (walk.distance * 100).ToString() + " Meter/s";
+                            {
+                                distance = Math.Round(walk.distance * 100,2);
+                                distanceString = distance.ToString() + " Meter/s";
+                            }
                             else
-                                distance = walk.ToString() + " KiloMeter/s";
+                            {
+                                distance = walk.distance;
+                                distanceString = distance.ToString() + " KiloMeter/s";
+                            }
                             string duration;
                             if (walk.duration < 1)
-                                duration = (walk.duration * 60).ToString() + " Minutes/s";
+                                duration = Math.Ceiling(walk.duration * 60).ToString() + " Minutes/s";
                             else
                                 duration = walk.ToString() + " Hour/s";
-                            string action = walk.instruction + " (" + distance + ")";
+                            string action = walk.instruction + " (" + distanceString + ")";
                             string instruction = "From " + walk.from + " to " + walk.to + " for " + duration;
 
+                            if(distance >= 1)
+                                steps.Add(new RouteStep
+                                {
+                                    Action = action,
+                                    Instruction = instruction,
+                                    StepGeometry = walk.geometry
+                                });
 
-                            //var walkGeom = _mapServices.ConvertToNtsGeometry(walk.geometry);
-                            steps.Add(new RouteStep
-                            {
-                                Action = action,
-                                Instruction = instruction,
-                                StepGeometry = walk.geometry
-                            });
-
-                            steps.Add(new RouteStep
-                            {
-                                Action = "Pickup",
-                                Instruction = "Wait for PUV",
-                                StepGeometry = new Point(walk.geometry.Coordinates.Last())
-                            });
+                            else if(ridingQueue.Count>0)
+                                steps.Add(new RouteStep
+                                {
+                                    Action = "Pickup",
+                                    Instruction = "Wait for PUV at " + walk.to,
+                                    StepGeometry = new Point(walk.geometry.Coordinates.Last())
+                                });
+                            else
+                                steps.Add(new RouteStep
+                                {
+                                    Action = action,
+                                    Instruction = instruction,
+                                    StepGeometry = walk.geometry
+                                });
 
                             //geometries.Enqueue(walkGeom);
                             if (ridingQueue.Count > 0)
@@ -147,15 +161,15 @@ namespace CommuteMate.Services
 
                                 string rideDistance;
                                 if (ride.distance < 1)
-                                    rideDistance = (ride.distance * 100).ToString() + " Meter/s";
+                                    rideDistance = Math.Round(ride.distance * 100,2).ToString() + " Meter/s";
                                 else
-                                    rideDistance = ride.ToString() + " KiloMeter/s";
+                                    rideDistance = ride.distance.ToString() + " KiloMeter/s";
                                 string rideDuration;
                                 if (ride.duration < 1)
-                                    rideDuration = (ride.duration * 60).ToString() + " Minutes/s";
+                                    rideDuration = Math.Ceiling(ride.duration * 60).ToString() + " Minutes/s";
                                 else
                                     rideDuration = ride.ToString() + " Hour/s";
-                                string rideAction = ride.instruction + "PUV" + ride.code + " (" + rideDistance + ")";
+                                string rideAction = ride.instruction + " PUV " + ride.code + " (" + rideDistance + ")";
                                 string rideInstruction = "From " + ride.from + " to " + ride.to + " for " + rideDuration;
                                 //var rideGeom = _mapServices.ConvertToNtsGeometry(ride.geometry);
                                 steps.Add(new RouteStep
@@ -168,31 +182,18 @@ namespace CommuteMate.Services
                                 steps.Add(new RouteStep
                                 {
                                     Action = "Drop off",
-                                    Instruction = "Wait for PUV",
+                                    Instruction = "Pay the fare of P" + ride.fare,
                                     StepGeometry = new Point(walk.geometry.Coordinates.Last())
                                 });
                                 //geometries.Enqueue(rideGeom);
                             }
                         }
 
-                        //create summary
-                        string totalDistance;
-                        if (properties.summary.distance < 1)
-                            totalDistance = (properties.summary.distance * 100).ToString() + "Meter/s";
-                        else
-                            totalDistance = properties.summary.distance.ToString() + "KiloMeter/s";
-                        string totalDuration;
-                        if (properties.summary.duration < 1)
-                            totalDuration = (properties.summary.duration * 60).ToString() + "Minutes/s";
-                        else
-                            totalDuration = properties.summary.duration.ToString() + "Hour/s";
-
-                        var totalFare = "P" + properties.summary.fare.ToString();
                         var summary = new PathSummary
                         {
-                            TotalDistance = totalDistance,
-                            TotalDuration = totalDuration,
-                            TotalFare = totalFare,
+                            TotalDistance = properties.summary.distance,
+                            TotalDuration = properties.summary.duration,
+                            TotalFare = properties.summary.fare,
                             PUVCodes = riding.steps.Select(r => r.code).ToList()
                         };
 

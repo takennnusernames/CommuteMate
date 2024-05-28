@@ -141,18 +141,24 @@ AbsoluteLayout.LayoutFlags="PositionProportional"/>
                 </AbsoluteLayout>
                 
             </Grid>
-            <ImageButton
-                    Source="details_icon.png"
-                    Command="{Binding ShowCardCommand}"
+            <Frame HeightRequest="50"
+                   WidthRequest="50"
+                   CornerRadius="100"
+                   BackgroundColor="White" Padding="0"
                     Grid.Row="1"
-                    HeightRequest="44" 
-                    WidthRequest="44" 
                     VerticalOptions="CenterAndExpand" 
                     HorizontalOptions="End"
-                    Margin="0,0,0,0"
                     x:Name="ShowDetailsButton"
                     IsVisible="False"
+                   Style="{StaticResource CardView}">
+                <ImageButton
+                    Source="details_icon.png"
+                    Command="{Binding ShowCardCommand}"
+                    HeightRequest="44" 
+                    WidthRequest="44" 
+                    Margin="0,0,0,0"
                     />
+            </Frame>
 
             <ActivityIndicator HorizontalOptions="Center"
                        IsRunning="{Binding IsBusy}"

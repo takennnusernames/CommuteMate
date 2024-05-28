@@ -23,7 +23,8 @@ namespace CommuteMate.Repositories
                     MinimumKM = 4,
                     Comfortability = 3,
                     FareRate = 1.80
-                }
+                },
+                ImageFileName="Sample/jeepney_sample2.jpg"
             },
             new Vehicle
             {
@@ -35,7 +36,8 @@ namespace CommuteMate.Repositories
                     MinimumKM = 4,
                     Comfortability = 6,
                     FareRate = 1.80
-                }
+                },
+                ImageFileName="Sample/modern_jeepney_sample2.jpg"
             },
             new Vehicle
             {
@@ -47,7 +49,8 @@ namespace CommuteMate.Repositories
                     MinimumKM = 4,
                     Comfortability = 8,
                     FareRate = 2.20
-                }
+                },
+                ImageFileName="Sample/modern_jeepney_sample.jpg"
             },
             new Vehicle
             {
@@ -59,7 +62,8 @@ namespace CommuteMate.Repositories
                     MinimumKM = 5,
                     Comfortability = 8,
                     FareRate = 2.10
-                }
+                },
+                ImageFileName="Sample/mybus_sample.jpg"
             }
         };
         public List<Vehicle> GetVehicles() => _vehicles;

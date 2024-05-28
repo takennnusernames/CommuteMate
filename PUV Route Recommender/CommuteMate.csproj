@@ -32,6 +32,7 @@
     <MauiSplashScreen Include="Resources\Splash\commutematesplash.svg" Color="white" />
     <!-- Images -->
     <MauiImage Include="Resources\Images\* " />
+    <MauiImage Include="Resources\Images\Sample\* " />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
     <!-- Custom Fonts -->
     <MauiFont Include="Resources\Fonts\*" />
@@ -44,6 +45,7 @@
     <None Remove="Resources\Images\details_icon.png" />
     <None Remove="Resources\Images\fare_icon.png" />
     <None Remove="Resources\Images\info_icon.png" />
+    <None Remove="Resources\Images\jeepney_sample2.jpg" />
     <None Remove="Resources\Images\origin_icon.png" />
     <None Remove="Resources\Images\riding_icon.png" />
     <None Remove="Resources\Images\route_icon.png" />

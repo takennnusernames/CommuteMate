@@ -70,7 +70,7 @@ namespace CommuteMate.ViewModels
         public Button originCancel { get; set; }
         public SearchBar destinationSearchBar { get; set; }
         public Button destinationCancel { get; set; }
-        public ImageButton showDetailsButton { get; set; }
+        public Frame showDetailsButton { get; set; }
         public Button GetLocationButton { get; set; }
         public Button GetRoutesButton { get; set; }
 

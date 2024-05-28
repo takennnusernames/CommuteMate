@@ -20,8 +20,8 @@ namespace CommuteMate.Services
             _streetService = streetService;
             _mapServices = mapServices;
             _client = new HttpClient();
-            //_client.BaseAddress = new Uri("http://10.0.2.2:5005");
-            _client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
+            _client.BaseAddress = new Uri("http://10.0.2.2:5005");
+            //_client.BaseAddress = new Uri("https://commutemateapi.azurewebsites.net/");
         }
         public async Task<List<Route>> GetRoutes()
         {

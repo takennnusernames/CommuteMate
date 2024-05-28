@@ -115,7 +115,7 @@ namespace CommuteMate.Services
                 Address = location.Coordinate.X.ToString() + ", " + location.Coordinate.Y.ToString()
             };
 
-            MapSpan mapSpan = new MapSpan(pin.Location, 0.05, 0.05);
+            MapSpan mapSpan = new MapSpan(pin.Location, 0.01, 0.01);
             map.Pins.Add(pin);
             map.MoveToRegion(mapSpan);
             return Task.FromResult(pin);

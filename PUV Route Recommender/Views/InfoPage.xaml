@@ -15,27 +15,29 @@
         </ListView.ItemTemplate>
     </ListView>-->
 
-    <Frame BackgroundColor="Wheat">
+    <Frame HeightRequest="600" BackgroundColor="Transparent">
         <Grid RowDefinitions="*,Auto">
-            <CarouselView ItemsSource="{Binding Vehicles}" HeightRequest="600" Background="AliceBlue" IndicatorView="indicatorView">
+            <CarouselView ItemsSource="{Binding Vehicles}" HeightRequest="600" IndicatorView="indicatorView" VerticalOptions="Start" BackgroundColor="Transparent">
                 <CarouselView.ItemTemplate>
                     <DataTemplate x:DataType="model:Vehicle">
-                        <VerticalStackLayout Padding="10" Spacing="20">
-                            <Frame x:Name="VehicleType">
-                                <Label Text="{Binding Type}" HorizontalOptions="Center"/>
-                            </Frame>
-                            <Frame x:Name="VehicleImage">
-                                <Image Source="{Binding VehicleID}"/>
-                            </Frame>
-                            <Frame x:Name="VehicleInformation">
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Info.MinimumFare, StringFormat='Minimum Fare: P{0}'}"/>
-                                    <Label Text="{Binding Info.MinimumKM, StringFormat='Minimum Fare is up to the first {0}KM'}"/>
-                                    <Label Text="{Binding Info.FareRate, StringFormat='Succeeding Fare Rate: P{0}/Km'}"/>
-                                    <Label Text="{Binding Info.Comfortability, StringFormat='Comfortability(Based on survey): {0}/10'}"/>
-                                </VerticalStackLayout>
-                            </Frame>
-                        </VerticalStackLayout>
+                        <ScrollView>
+                            <VerticalStackLayout Padding="0,0,0,60" Spacing="20">
+                                <Frame x:Name="VehicleType">
+                                    <Label Text="{Binding Type}" HorizontalOptions="Center"/>
+                                </Frame>
+                                <Frame x:Name="VehicleImage" WidthRequest="300" HeightRequest="400" BackgroundColor="White" Padding="0">
+                                    <Image Source="{Binding ImageFileName}"/>
+                                </Frame>
+                                <Frame x:Name="VehicleInformation">
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Info.MinimumFare, StringFormat='Minimum Fare: P{0}'}"/>
+                                        <Label Text="{Binding Info.MinimumKM, StringFormat='Minimum Fare is up to the first {0}KM'}"/>
+                                        <Label Text="{Binding Info.FareRate, StringFormat='Succeeding Fare Rate: P{0}/Km'}"/>
+                                        <Label Text="{Binding Info.Comfortability, StringFormat='Comfortability(Based on survey): {0}/10'}"/>
+                                    </VerticalStackLayout>
+                                </Frame>
+                            </VerticalStackLayout>
+                        </ScrollView>
                     </DataTemplate>
                 </CarouselView.ItemTemplate>
             </CarouselView>

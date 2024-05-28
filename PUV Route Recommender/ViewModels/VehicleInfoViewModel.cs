@@ -18,14 +18,16 @@ namespace CommuteMate.ViewModels
         public ObservableCollection<Vehicle> Vehicles { get; } = [];
 
         public Task GetVehicles()
-        {
-            List<Vehicle> vehicles = _vehicleRepository.GetVehicles();
-
-            foreach(var vehicle in vehicles)
+        {   
+            if(Vehicles == null)
             {
-                Vehicles.Add(vehicle);
+                List<Vehicle> vehicles = _vehicleRepository.GetVehicles();
+
+                foreach (var vehicle in vehicles)
+                {
+                    Vehicles.Add(vehicle);
+                }
             }
-            //vehicle_list.ItemsSource = vehicles;
             return Task.FromResult(Vehicles);
         }
     }

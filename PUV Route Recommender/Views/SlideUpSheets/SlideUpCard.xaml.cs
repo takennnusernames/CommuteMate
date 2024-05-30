@@ -96,7 +96,7 @@ public partial class SlideUpCard : BottomSheet
         var viewModel = BindingContext as NavigatingViewModel;
         if (viewModel != null)
         {
-            viewModel.ShowSlideUpButton(e);
+            viewModel.ShowSlideUpButton();
         }
     }
 }

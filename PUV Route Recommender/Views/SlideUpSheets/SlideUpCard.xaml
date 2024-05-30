@@ -17,7 +17,15 @@
         </ResourceDictionary>
     </the49:BottomSheet.Resources>
     <AbsoluteLayout x:Name="MainLayout">
-
+        <ActivityIndicator 
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                BackgroundColor="Transparent"
+                Color="Blue"
+                AbsoluteLayout.LayoutBounds="0.5, 0.5, AutoSize, AutoSize"
+                AbsoluteLayout.LayoutFlags="PositionProportional"/>
         <!--<BoxView Color="White" HeightRequest="5" WidthRequest="45" CornerRadius="100" 
                  AbsoluteLayout.LayoutBounds="0.5, 0, 45, 5" AbsoluteLayout.LayoutFlags="PositionProportional"/>-->
         <VerticalStackLayout x:Name="PrioritySelection" AbsoluteLayout.LayoutBounds="0,0,1,1" AbsoluteLayout.LayoutFlags="All"
@@ -98,7 +106,7 @@
                 BackgroundColor="Wheat"
                 Grid.Row="2"
                 Grid.Column="0"
-                ItemsSource="{Binding CurrentPath.Steps}"
+                ItemsSource="{Binding CurrentPathSteps}"
                 SelectionMode="None"
                 WidthRequest="325"
                         HeightRequest="610">
@@ -139,5 +147,7 @@
                 </Grid>
             </VerticalStackLayout>
         </VerticalStackLayout>
+        
+        
     </AbsoluteLayout>
 </the49:BottomSheet>

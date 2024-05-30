@@ -1,5 +1,4 @@
 ﻿using NetTopologySuite.Geometries;
-using QuickGraph;
 using SQLite;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -48,40 +47,7 @@ namespace CommuteMate.Models
         }
     }
 
-    //project objects
-    public class PathData
-    {
-        public List<Street> streets {  get; set; }
-        public Queue<Route> puvs { get; set; }
-        public IEnumerable<Edge<Coordinate>> puvShortestPaths { get; set; }
-        public IEnumerable<Edge<Coordinate>> walkingPath { get; set; }
-        public double totalFare { get; set; }
-        public double totalWalkingDistance { get; set; }
-        public double totalPuvRideDistance { get; set; }
-
-    }
-
-    public class RouteAction
-    {
-        public Street street { get; set; }
-        public string action { get; set; }
-    }
-
-    public class RouteQueueInfo
-    {
-        public Route route { get; set; }
-        public int intersects { get; set; }
-        public Street Start { get; set; }
-        public Street End { get; set; }
-    }
-    public class StreetWithNode
-    {
-        public int StreetId { get; set; }
-        public long Osm_Id { get; set; }
-        public string Name { get; set; }
-        public List<long> Nodes { get; set; }
-        public string NodesAsString => string.Join(", ", Nodes);
-    }
+    //project objects]
     public class StreetWithCoordinates
     {
         public int StreetId { get; set; }
@@ -90,11 +56,4 @@ namespace CommuteMate.Models
         public List<Coordinate> Coordinates { get; set; }
     }
 
-    public class RouteQueue
-    {
-        public Route route { get; set; }
-        public int intersectCount { get; set; }
-        public Street startStreet { get; set; }
-        public Street endStreet { get; set; }
-    }
 }

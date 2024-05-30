@@ -1,14 +1,16 @@
-﻿using Microsoft.Extensions.Logging;
-using SkiaSharp.Views.Maui.Controls.Hosting;
-using CommuteMate.Interfaces;
+﻿using CommuteMate.Interfaces;
+using CommuteMate.Repositories;
 using CommuteMate.Services;
 using CommuteMate.Views;
 using CommuteMate.Views.SlideUpSheets;
-using CommuteMate.Repositories;
+using Microsoft.Extensions.Logging;
+using SkiaSharp.Views.Maui.Controls.Hosting;
 using The49.Maui.BottomSheet;
-using CommuteMate.ApiClient.IoC;
-using System.Text.Json.Serialization;
-using CommuteMate.Utilities;
+#if ANDROID
+using CommuteMate.Platforms.Android;
+#elif IOS
+using CommuteMate.Platforms.iOS;
+#endif
 
 namespace CommuteMate
 {
@@ -28,6 +30,12 @@ namespace CommuteMate
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
+            builder.ConfigureMauiHandlers(handlers =>
+            {
+#if ANDROID || IOS 
+                handlers.AddHandler<Microsoft.Maui.Controls.Maps.Map, CustomMapHandler>();
+#endif
+            });
 
 #if DEBUG
             builder.Logging.AddDebug();
@@ -47,7 +55,6 @@ namespace CommuteMate
             //Services
             builder.Services.AddSingleton<IConnectivity>(Connectivity.Current);
             builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
-            builder.Services.AddSingleton<IOverpassApiServices, OverpassApiServices>();
             builder.Services.AddSingleton<IRouteService, RouteService>();
             builder.Services.AddSingleton<IStreetService, StreetService>();
             builder.Services.AddSingleton<IMapServices, MapServices>();
@@ -56,23 +63,18 @@ namespace CommuteMate
 
             //ViewModels
             builder.Services.AddSingleton<RoutesViewModel>();
-            builder.Services.AddSingleton<RouteInfoViewModel>();
             builder.Services.AddTransient<NavigatingViewModel>();
             builder.Services.AddSingleton<VehicleInfoViewModel>();
 
             //Views
             builder.Services.AddSingleton<RoutesView>();
-            builder.Services.AddSingleton<RoutesInfoPage>();
             builder.Services.AddSingleton<NavigatingPage>();
             builder.Services.AddTransient<MethodTests>();
             builder.Services.AddSingleton<DetailsView>();
             builder.Services.AddSingleton<InfoPage>();
 
             //Sheet
-            builder.Services.AddSingleton<RoutePathSelection>();
-            builder.Services.AddTransient<RoutePathDetails>();
             builder.Services.AddSingleton<SlideUpCard>();
-            builder.Services.AddSingleton<TestSheet>();
 
             var dbContext = new CommuteMateDbContext();
 

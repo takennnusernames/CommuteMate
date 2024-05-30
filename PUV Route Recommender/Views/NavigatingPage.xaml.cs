@@ -1,39 +1,20 @@
-using Mapsui;
-using Mapsui.Extensions;
-using Mapsui.Projections;
-using Mapsui.Tiling;
-using Map = Mapsui.Map;
-using Microsoft.Maui.ApplicationModel;
-using System.Net.Http;
-using Mapsui.Layers;
-using Mapsui.Nts;
-using Mapsui.Styles;
-using NetTopologySuite.Geometries;
-using NetTopologySuite.IO;
-using Color = Mapsui.Styles.Color;
-using Mapsui.Nts.Extensions;
-using CommuteMate.Interfaces;
-using Microsoft.Maui;
 using The49.Maui.BottomSheet;
 
 namespace CommuteMate.Views;
 
 public partial class NavigatingPage : ContentPage
 {
-    private readonly IMapServices _mapServices;
-	public NavigatingPage(NavigatingViewModel viewModel, IMapServices mapServices)
+	public NavigatingPage(NavigatingViewModel viewModel)
 	{
 		InitializeComponent();
-        _mapServices = mapServices;
         BindingContext = viewModel;
-        //viewModel.mapControl = mapControl;
-        viewModel.map = map;
+        viewModel.Map = map;
         viewModel.CreateMapCommand.ExecuteAsync(map);
-        viewModel.originSearchBar = originSearchBar;
-        viewModel.destinationSearchBar = destinationSearchBar;
-        viewModel.originCancel = originCancel;
-        viewModel.destinationCancel = destinationCancel;
-        viewModel.showDetailsButton = ShowDetailsButton;
+        viewModel.OriginSearchBar = originSearchBar;
+        viewModel.DestinationSearchBar = destinationSearchBar;
+        viewModel.OriginCancel = originCancel;
+        viewModel.DestinationCancel = destinationCancel;
+        viewModel.ShowDetailsButton = ShowDetailsButton;
         viewModel.GetRoutesButton = GetRoutesButton;
         viewModel.GetLocationButton = GetLocationButton;
 
@@ -41,10 +22,10 @@ public partial class NavigatingPage : ContentPage
     private void BottomSheet_Dismissed(object sender, DismissOrigin e)
     {
         var viewModel = BindingContext as NavigatingViewModel;
-        viewModel.ShowSlideUpButton(e);
+        viewModel.ShowSlideUpButton();
     }
 
-    private void map_MapClicked(object sender, Microsoft.Maui.Controls.Maps.MapClickedEventArgs e)
+    private void Map_MapClicked(object sender, Microsoft.Maui.Controls.Maps.MapClickedEventArgs e)
     {
         var viewModel = BindingContext as NavigatingViewModel;
         Task.FromResult(viewModel.MapClicked(e));
@@ -56,7 +37,7 @@ public partial class NavigatingPage : ContentPage
         Task.FromResult(viewModel.PinMarkerClicked(sender,e));
     }
 
-    private void originSearchBar_Focused(object sender, FocusEventArgs e)
+    private void OriginSearchBar_Focused(object sender, FocusEventArgs e)
     {
         originCancel.IsVisible = true;
         var viewModel = BindingContext as NavigatingViewModel;
@@ -64,7 +45,7 @@ public partial class NavigatingPage : ContentPage
         GetLocationButton.IsVisible = true;
     }
 
-    private void originSearchBar_Unfocused(object sender, FocusEventArgs e)
+    private void OriginSearchBar_Unfocused(object sender, FocusEventArgs e)
     {
         if(originSearchBar.Text is null || originSearchBar.Text == "")
             originCancel.IsVisible = false;
@@ -72,7 +53,7 @@ public partial class NavigatingPage : ContentPage
         GetLocationButton.IsVisible = false;
     }
 
-    private void destinationSearchBar_Focused(object sender, FocusEventArgs e)
+    private void DestinationSearchBar_Focused(object sender, FocusEventArgs e)
     {
         destinationCancel.IsVisible = true;
         var viewModel = BindingContext as NavigatingViewModel;
@@ -80,7 +61,7 @@ public partial class NavigatingPage : ContentPage
         GetLocationButton.IsVisible = true;
     }
 
-    private void destinationSearchBar_Unfocused(object sender, FocusEventArgs e)
+    private void DestinationSearchBar_Unfocused(object sender, FocusEventArgs e)
     {
         if(destinationSearchBar.Text is null || destinationSearchBar.Text == "")
             destinationCancel.IsVisible = false;

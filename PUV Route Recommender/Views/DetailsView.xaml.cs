@@ -58,10 +58,10 @@ public partial class DetailsView : ContentView
             }
         }
     }
-    private CollectionView GetParentCollectionView(Element element)
+    static CollectionView GetParentCollectionView(Element element)
     {
         Element parent = element.Parent;
-        while (parent != null && !(parent is CollectionView))
+        while (parent != null && parent is not CollectionView)
         {
             parent = parent.Parent;
         }

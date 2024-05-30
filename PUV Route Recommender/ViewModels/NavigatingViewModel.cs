@@ -19,28 +19,22 @@ namespace CommuteMate.ViewModels
         readonly IMapServices _mapServices;
         readonly IConnectivity _connectivity;
         readonly ICommuteMateApiService _commuteMateApiService;
-        readonly IStreetService _streetService;
-        readonly RoutePathSelection selection;
-        readonly RoutePathDetails details;
         readonly SlideUpCard slideUpCard;
-        public NavigatingViewModel(IStreetService streetService, IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
+        public NavigatingViewModel(IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
         {
             Title = "Map";
-            _streetService = streetService;
             _mapServices = mapServices;
             _connectivity = connectivity;
             _commuteMateApiService = commuteMateApiService;
-            selection = new RoutePathSelection(this);
-            details = new RoutePathDetails(this);
             slideUpCard = new SlideUpCard(this);
         }
 
         //properties
         [ObservableProperty]
         string originText;
+
         [ObservableProperty]
         LocationDetails originLocation;
-
 
         [ObservableProperty]
         string destinationText;
@@ -51,26 +45,31 @@ namespace CommuteMate.ViewModels
         string source;
 
         [ObservableProperty]
-        ObservableCollection<LocationDetails> searchResults = new();
+        ObservableCollection<LocationDetails> searchResults = [];
 
         [ObservableProperty]
-        ObservableCollection<RoutePath> pathOptions = new();
+        ObservableCollection<RoutePath> pathOptions = [];
 
         [ObservableProperty]
         RoutePath currentPath = new();
 
         [ObservableProperty]
-        ObservableCollection<Pin> positions = new();
+        ObservableCollection<RouteStep> currentPathSteps = [];
 
         [ObservableProperty]
-        ObservableCollection<Microsoft.Maui.Controls.Maps.Polyline> lines = new();
-        public MapControl mapControl { get; set; }
-        public GoogleMap map { get; set; }
-        public SearchBar originSearchBar { get; set; }
-        public Button originCancel { get; set; }
-        public SearchBar destinationSearchBar { get; set; }
-        public Button destinationCancel { get; set; }
-        public Frame showDetailsButton { get; set; }
+        ObservableCollection<Pin> positions = [];
+
+        [ObservableProperty]
+        ObservableCollection<CustomPin> intersections = [];
+
+        [ObservableProperty]
+        ObservableCollection<Microsoft.Maui.Controls.Maps.Polyline> lines = [];
+        public GoogleMap Map { get; set; }
+        public SearchBar OriginSearchBar { get; set; }
+        public Button OriginCancel { get; set; }
+        public SearchBar DestinationSearchBar { get; set; }
+        public Button DestinationCancel { get; set; }
+        public Frame ShowDetailsButton { get; set; }
         public Button GetLocationButton { get; set; }
         public Button GetRoutesButton { get; set; }
 
@@ -91,45 +90,46 @@ namespace CommuteMate.ViewModels
                 var result = await Shell.Current.DisplayActionSheet("Make Location As:", "Cancel", null, ["Origin", "Destination"]);
                 switch (result)
                 {
-                    case "Origin":
+                    case "Origin"://remove
                         if (OriginLocation != null)
                         {
                             var origin = new Microsoft.Maui.Devices.Sensors.Location(OriginLocation.Coordinate.Y, OriginLocation.Coordinate.X);
-                            var originPin = map.Pins.Where(p => p.Location == origin).FirstOrDefault();
-                            await _mapServices.RemoveGooglePin(originPin, map);
+                            var originPin = Map.Pins.Where(p => p.Location == origin).FirstOrDefault();
+                            await _mapServices.RemoveGooglePin(originPin, Map);
                             Positions.Remove(originPin);
                         }
                         OriginLocation = new LocationDetails
                         {
                             Coordinate = new NetTopologySuite.Geometries.Coordinate(e.Location.Longitude, e.Location.Latitude),
-                            Name = e.Location.Longitude.ToString("F2") + "," + e.Location.Latitude.ToString("F2")
+                            Name = "Origin"
                         };
                         Source = "Origin";
                         await SelectLocation(OriginLocation);
+                        OriginText = e.Location.Longitude.ToString("F4") + "," + e.Location.Latitude.ToString("F4");
                         break;
 
                     case "Destination":
                         if(DestinationLocation != null)
                         {
                             var destination = new Microsoft.Maui.Devices.Sensors.Location(DestinationLocation.Coordinate.Y, DestinationLocation.Coordinate.X);
-                            var destinationPin = map.Pins.Where(p => p.Location == destination).FirstOrDefault();
-                            await _mapServices.RemoveGooglePin(destinationPin, map);
+                            var destinationPin = Map.Pins.Where(p => p.Location == destination).FirstOrDefault();
+                            await _mapServices.RemoveGooglePin(destinationPin, Map);
                             Positions.Remove(destinationPin);
                         }
                         DestinationLocation = new LocationDetails
                         {
                             Coordinate = new NetTopologySuite.Geometries.Coordinate(e.Location.Longitude, e.Location.Latitude),
-                            Name = e.Location.Longitude.ToString("F2") + "," + e.Location.Latitude.ToString("F2")
+                            Name = "Destination"
                         };
                         Source = "Destination";
                         await SelectLocation(DestinationLocation);
+                        DestinationText = e.Location.Longitude.ToString("F4") + "," + e.Location.Latitude.ToString("F4");
                         break;
 
                     case "Cancel":
                         break;
 
                     default:
-                        // Handle unexpected result
                         break;
                 }
             }
@@ -175,7 +175,7 @@ namespace CommuteMate.ViewModels
                     DestinationLocation = null;
                     break;
                 case "Remove":
-                    map.Pins.Remove(pinInfo);
+                    Map.Pins.Remove(pinInfo);
                     Positions.Remove(pinInfo);
                     break;
                 default:
@@ -183,9 +183,12 @@ namespace CommuteMate.ViewModels
             }
         }
 
-        public void ShowSlideUpButton(DismissOrigin e)
+        public async void ShowSlideUpButton()
         {
-            showDetailsButton.IsVisible = true;
+            ShowDetailsButton.IsVisible = true;
+            await ShowDetailsButton.FadeTo(1, 500);
+            ShowDetailsButton.Scale = 0.1;
+            await ShowDetailsButton.ScaleTo(1, 250, Easing.CubicIn);
         }
 
 
@@ -204,7 +207,7 @@ namespace CommuteMate.ViewModels
                     return;
                 }
 
-                await _mapServices.CreateGoogleMapAsync(map);
+                await _mapServices.CreateGoogleMapAsync(Map);
             }
             catch (Exception ex)
             {
@@ -294,8 +297,8 @@ namespace CommuteMate.ViewModels
                 foreach (var location in locations)
                     SearchResults.Add(location);
 
-                if (originSearchBar.IsSoftInputShowing())
-                    await originSearchBar.HideSoftInputAsync(System.Threading.CancellationToken.None);
+                if (OriginSearchBar.IsSoftInputShowing())
+                    await OriginSearchBar.HideSoftInputAsync(System.Threading.CancellationToken.None);
                 Source = source;
             }
             catch (Exception ex)
@@ -316,11 +319,11 @@ namespace CommuteMate.ViewModels
             {
                 OriginText = string.Empty;
                 OnPropertyChanged(nameof(OriginText));
-                if (!originSearchBar.IsFocused)
-                    originCancel.IsVisible = false;
+                if (!OriginSearchBar.IsFocused)
+                    OriginCancel.IsVisible = false;
 
                 var pin = Positions.Where(p => p.Location == new Microsoft.Maui.Devices.Sensors.Location(OriginLocation.Coordinate.Y,OriginLocation.Coordinate.X)).FirstOrDefault();
-                map.Pins.Remove(pin);
+                Map.Pins.Remove(pin);
                 OriginLocation = null;
 
             }
@@ -328,11 +331,11 @@ namespace CommuteMate.ViewModels
             {
                 DestinationText = string.Empty;
                 OnPropertyChanged(nameof(DestinationText));
-                if (!destinationSearchBar.IsFocused)
-                    destinationCancel.IsVisible = false;
+                if (!DestinationSearchBar.IsFocused)
+                    DestinationCancel.IsVisible = false;
 
                 var pin = Positions.Where(p => p.Location == new Microsoft.Maui.Devices.Sensors.Location(DestinationLocation.Coordinate.Y, DestinationLocation.Coordinate.X)).FirstOrDefault();
-                map.Pins.Remove(pin);
+                Map.Pins.Remove(pin);
                 DestinationLocation = null;
             }
             GetRoutesButton.IsVisible = false;
@@ -347,20 +350,20 @@ namespace CommuteMate.ViewModels
             {
                 OriginText = location.Name;
                 OriginLocation = location;
-                originCancel.IsVisible = true;
+                OriginCancel.IsVisible = true;
             }
             else if(Source == "Destination")
             {
                 DestinationText = location.Name;
                 DestinationLocation = location;
-                destinationCancel.IsVisible = true;
+                DestinationCancel.IsVisible = true;
             }
             else
             {
                 await Shell.Current.DisplayAlert("Error", "Unknown Source, Please enter from searchbar", "OK");
             }
 
-            var newPin = await _mapServices.AddGooglePin(location, map) ?? null;
+            var newPin = await _mapServices.AddGooglePin(location, Map) ?? null;
 
 
             if (OriginText is not null && OriginText != "")
@@ -394,16 +397,10 @@ namespace CommuteMate.ViewModels
 
                 try
                 {
-                    //var layers = mapControl.Map.Layers.OfType<MemoryLayer>().ToList();
-                    //foreach(var layer in layers)
-                    //{
-                    //    mapControl.Map.Layers.Remove(layer);
-                    //}
                     var origin = OriginLocation.Coordinate;
                     var destination = DestinationLocation.Coordinate;
 
                     var options = await _commuteMateApiService.GetPath(origin, destination);
-                    //(Route, Path, Fare, Distance)
                     if (PathOptions.Count != 0)
                         PathOptions.Clear();
 
@@ -432,19 +429,66 @@ namespace CommuteMate.ViewModels
         [RelayCommand]
         public async Task SelectPath(RoutePath path)
         {
-            if (Lines.Count > 0)
+            if (IsBusy)
+                return;
+            try
             {
-                foreach(var line in Lines)
+                IsBusy = true;
+                if (path == CurrentPath)
+                    return;
+                if (Lines.Count > 0)
                 {
-                    map.MapElements.Remove(line);
+                    foreach (var pin in Intersections)
+                    {
+                        Map.Pins.Remove(pin);
+                    }
+                    foreach (var line in Lines)
+                    {
+                        Map.MapElements.Remove(line);
+                    }
+                    Intersections.Clear();
+                    Lines.Clear();
                 }
-                Lines.Clear();
+                CurrentPath = path;
+                if (CurrentPathSteps.Count > 0)
+                    CurrentPathSteps.Clear();
+                foreach (var step in CurrentPath.Steps)
+                    CurrentPathSteps.Add(step);
+
+                Queue<Color> colorQueue = new Queue<Color>();
+                colorQueue.Enqueue(Colors.Orange);
+                colorQueue.Enqueue(Colors.Blue);
+                colorQueue.Enqueue(Colors.Red);
+                colorQueue.Enqueue(Colors.Green);
+                colorQueue.Enqueue(Colors.Yellow);
+                colorQueue.Enqueue(Colors.Gray);
+
+
+                for (var i = 0; i < path.Steps.Count; i += 2)
+                {
+                    var step = path.Steps[i];
+                    Color color;
+                    if (step.Action.Contains("Walk"))
+                        color = Colors.Black;
+                    else
+                        color = colorQueue.Dequeue();
+                    var polyline = await _mapServices.AddGooglePolyline(step.StepGeometry, Map, step.Action, color);
+                    if (i + 1 < path.Steps.Count)
+                    {
+                        step = path.Steps[i + 1];
+                        var pin = await _mapServices.AddCustomPin(new Microsoft.Maui.Devices.Sensors.Location(step.StepGeometry.Coordinate.X, step.StepGeometry.Coordinate.Y), Map, step.Action, step.Instruction);
+                        Intersections.Add(pin);
+                    }
+                    Lines.Add(polyline);
+                }
             }
-            CurrentPath = path;
-            foreach(var step in path.Steps)
+            catch (Exception ex)
             {
-                var polyline = await _mapServices.AddGooglePolyline(step.StepGeometry, map, step.Action);
-                Lines.Add(polyline);
+                await Shell.Current.DisplayAlert("Error!", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

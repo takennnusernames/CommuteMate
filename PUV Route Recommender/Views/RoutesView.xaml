@@ -28,60 +28,6 @@
                 <DataTemplate x:DataType="model:Route">
                     <Grid Padding="10">
                         <local:DetailsView Grid.Row="1"/>
-                        <!--<VerticalStackLayout Spacing="15">
-                            <Frame HeightRequest="45"
-                                   Padding="0"
-                                   Style="{StaticResource CardView}"
-                                   BorderColor="Orange"
-                                   x:DataType="model:Route">
-                                <Frame.GestureRecognizers>
-                                    <TapGestureRecognizer
-                                        Command="{Binding Source={RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=GoToDetailsCommand}"
-                                        CommandParameter="{Binding .}"/>
-                                </Frame.GestureRecognizers>
-                                <Grid Padding="0"
-                                      ColumnDefinitions="125, *">
-                                    <HorizontalStackLayout Grid.ColumnSpan="2"
-                                                            Padding="15,0" HeightRequest="30" Spacing="5">
-                                        <Grid ColumnDefinitions="90,*">
-                                            <HorizontalStackLayout Grid.Column="0" >
-                                                <Image Source="dotnet_bot.svg"/>
-                                                <Label Text="{Binding Code}" VerticalOptions="Center" Margin="18,0"/>
-                                            </HorizontalStackLayout>
-                                            <HorizontalStackLayout Grid.Column="1" HorizontalOptions="End">
-                                                <Image Source="routes_icon.png"/>
-                                                <Label Text="{Binding Name}" VerticalOptions="Center"/>
-                                            </HorizontalStackLayout>
-                                        </Grid>
-                                    </HorizontalStackLayout>
-                                </Grid>
-                            </Frame>
-                            <Frame IsVisible="{Binding Source={RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=IsStreetFrameVisible}" x:Name="StreetFrame" Padding="0" BackgroundColor="White" BorderColor="Black" Margin="0,-45,0,0" 
-                                   CornerRadius="20" WidthRequest="345">
-                                <ScrollView HeightRequest="240" Margin="0,20,0,0" Padding="18" BackgroundColor="Transparent">
-                                    <CollectionView
-                                        BackgroundColor="Wheat"
-                                        Grid.Row="1"
-                                        Grid.Column="0"
-                                        SelectionMode="None"
-                                        ItemsSource="{Binding Source={RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=Streets}">
-
-                                        <CollectionView.ItemTemplate>
-                                            <DataTemplate>
-                                                <Grid Padding="10">
-                                                    <ScrollView>
-                                                        <VerticalStackLayout Grid.ColumnSpan="2" BackgroundColor="Yellow"
-                     Padding="5" HorizontalOptions="Center">
-                                                            <Label Style="{StaticResource MediumLabel}" Text="{Binding .}"/>
-                                                        </VerticalStackLayout>
-                                                    </ScrollView>
-                                                </Grid>
-                                            </DataTemplate>
-                                        </CollectionView.ItemTemplate>
-                                    </CollectionView>
-                                </ScrollView>
-                            </Frame>
-                        </VerticalStackLayout>-->
                     </Grid>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

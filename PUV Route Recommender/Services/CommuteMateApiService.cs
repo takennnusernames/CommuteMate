@@ -70,7 +70,6 @@ namespace CommuteMate.Services
                 return null;
             }
         }
-
         public async Task<List<RoutePath>> GetPath(Coordinate origin, Coordinate destination)
         {
             var requestBody = new PathRequest{
@@ -138,19 +137,12 @@ namespace CommuteMate.Services
                                     StepGeometry = walk.geometry
                                 });
 
-                            else if(ridingQueue.Count>0)
+                            if(ridingQueue.Count>0)
                                 steps.Add(new RouteStep
                                 {
                                     Action = "Pickup",
                                     Instruction = "Wait for PUV at " + walk.to,
                                     StepGeometry = new Point(walk.geometry.Coordinates.Last())
-                                });
-                            else
-                                steps.Add(new RouteStep
-                                {
-                                    Action = action,
-                                    Instruction = instruction,
-                                    StepGeometry = walk.geometry
                                 });
 
                             //geometries.Enqueue(walkGeom);
@@ -181,9 +173,9 @@ namespace CommuteMate.Services
 
                                 steps.Add(new RouteStep
                                 {
-                                    Action = "Drop off",
+                                    Action = "Drop off at " + ride.to,
                                     Instruction = "Pay the fare of P" + ride.fare,
-                                    StepGeometry = new Point(walk.geometry.Coordinates.Last())
+                                    StepGeometry = new Point(ride.geometry.Coordinates.Last())
                                 });
                                 //geometries.Enqueue(rideGeom);
                             }

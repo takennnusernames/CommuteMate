@@ -12,18 +12,15 @@ namespace CommuteMate.ViewModels
 {
     public partial class RoutesViewModel : BaseViewModel
     {  
-        readonly IOverpassApiServices _overpassApiServices;
         readonly IConnectivity _connectivity;
         readonly IRouteService _routeService;
         readonly ICommuteMateApiService _commuteMateApiService;
         public RoutesViewModel(
-            IOverpassApiServices overpassApiServices, 
             IConnectivity connectivity,
             IRouteService routeService,
             ICommuteMateApiService commuteMateApiService) 
         {
             Title = "Route List";
-            _overpassApiServices = overpassApiServices;
             _connectivity = connectivity;
             _routeService = routeService;
             _commuteMateApiService = commuteMateApiService;

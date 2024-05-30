@@ -26,7 +26,7 @@ namespace CommuteMate.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to retrive routes: {ex.Message}");
+                Console.WriteLine($"Failed to insert route: {ex.Message}");
                 throw;
             }
         }
@@ -55,7 +55,7 @@ namespace CommuteMate.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to retrive routes: {ex.Message}");
+                Console.WriteLine($"Failed to retrive route: {ex.Message}");
                 throw;
             }
         }

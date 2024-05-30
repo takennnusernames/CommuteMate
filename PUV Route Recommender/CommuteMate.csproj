@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Resources\Images\back_icon.png" />
+    <None Remove="Resources\Images\commutemate_logo.png" />
     <None Remove="Resources\Images\destination_icon.png" />
     <None Remove="Resources\Images\details_icon.png" />
     <None Remove="Resources\Images\fare_icon.png" />
@@ -76,7 +77,6 @@
     <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.20" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.20" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-    <PackageReference Include="QuickGraph" Version="3.6.61119.7" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
     <PackageReference Include="SQLiteNetExtensions" Version="2.1.0" />
     <PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.8" />
@@ -86,21 +86,12 @@
     <ProjectReference Include="..\..\Api\CommuteMate.ApiClient\CommuteMate.ApiClient.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Update="Views\SlideUpSheets\RoutePathSelection.xaml.cs">
-      <DependentUpon>RoutePathSelection.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\RoutesView.xaml.cs">
       <DependentUpon>RoutesView.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <MauiXaml Update="Views\DetailsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-    <MauiXaml Update="Views\SlideUpSheets\RoutePathDetails.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-    <MauiXaml Update="Views\SlideUpSheets\RoutePathSelection.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\InfoPage.xaml">
@@ -112,16 +103,10 @@
     <MauiXaml Update="Views\NavigatingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Views\RoutesInfoPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
     <MauiXaml Update="Views\RoutesView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\SlideUpSheets\SlideUpCard.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-    <MauiXaml Update="Views\SlideUpSheets\TestSheet.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\VehicleInfoPage.xaml">

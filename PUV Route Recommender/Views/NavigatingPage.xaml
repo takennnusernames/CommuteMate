@@ -13,7 +13,7 @@
 
     <Grid>
         <!--<mapsui:MapControl x:Name="mapControl" BindingContext="{Binding}"/>-->
-        <maps:Map x:Name="map" MapType="Street" MapClicked="map_MapClicked" ItemsSource="{Binding Positions}">
+        <maps:Map x:Name="map" MapType="Street" MapClicked="Map_MapClicked" ItemsSource="{Binding Positions}">
             <maps:Map.ItemTemplate>
                 <DataTemplate x:DataType="maps:Pin">
                     <maps:Pin Location="{Binding Location}"
@@ -56,8 +56,8 @@
                                TextColor="Black"
                                AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, AutoSize"
                                AbsoluteLayout.LayoutFlags="WidthProportional" 
-                               Focused="originSearchBar_Focused"
-                               Unfocused="originSearchBar_Unfocused"/>
+                               Focused="OriginSearchBar_Focused"
+                               Unfocused="OriginSearchBar_Unfocused"/>
 
                     <!--<BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
                                AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
@@ -101,8 +101,8 @@ AbsoluteLayout.LayoutFlags="PositionProportional"/>
                                AbsoluteLayout.LayoutBounds="0, 0, 1, AutoSize"
                                AbsoluteLayout.LayoutFlags="WidthProportional"
                                
-                               Focused="destinationSearchBar_Focused"
-                               Unfocused="destinationSearchBar_Unfocused"/>
+                               Focused="DestinationSearchBar_Focused"
+                               Unfocused="DestinationSearchBar_Unfocused"/>
 
                     <Frame Padding="0" WidthRequest="50" HeightRequest="47" BackgroundColor="Black" CornerRadius="0">
                         <Image Source="destination_icon.png" WidthRequest="40" HeightRequest="40"
@@ -150,11 +150,12 @@ AbsoluteLayout.LayoutFlags="PositionProportional"/>
                     HorizontalOptions="End"
                     x:Name="ShowDetailsButton"
                     IsVisible="False"
+                   Opacity="0"
                    Style="{StaticResource CardView}">
                 <ImageButton
-                    Source="details_icon.png"
+                    Source="commutemate_logo.png"
                     Command="{Binding ShowCardCommand}"
-                    HeightRequest="44" 
+                    HeightRequest="50" 
                     WidthRequest="44" 
                     Margin="0,0,0,0"
                     />

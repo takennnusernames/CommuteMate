@@ -8,19 +8,19 @@
              x:DataType="viewModel:RoutesViewModel">
     <VerticalStackLayout Spacing="15">
         <Frame HeightRequest="45"
-       Padding="0"
-       Style="{StaticResource CardView}"
+               Padding="0"
+               Style="{StaticResource CardView}"
                BorderColor="Orange"
-             x:DataType="model:Route">
+               x:DataType="model:Route">
             <Frame.GestureRecognizers>
                 <TapGestureRecognizer 
-                    Tapped="TapGestureRecognizer_Tapped"/>
+                    />
             </Frame.GestureRecognizers>
             <Grid Padding="0"
-          ColumnDefinitions="125, *">
+                  ColumnDefinitions="125, *">
                 <HorizontalStackLayout Grid.ColumnSpan="2"
-                             Padding="15,0" HeightRequest="30" Spacing="5">
-                    <Grid ColumnDefinitions="90,*">
+                                       Padding="15,0" HeightRequest="30" Spacing="5">
+                    <Grid ColumnDefinitions="Auto,*">
                         <HorizontalStackLayout Grid.Column="0" >
                             <Image Source="vehicle_icon.png"/>
                             <Label Text="{Binding Code}" VerticalOptions="Center" Margin="12,0"/>
@@ -33,25 +33,51 @@
                 </HorizontalStackLayout>
             </Grid>
         </Frame>
-        <Frame x:Name="StreetFrame" IsVisible="False" Padding="0" BackgroundColor="White" BorderColor="Black" Margin="0,-45,0,0" 
+        <Frame x:Name="StreetFrame" IsVisible="False" Padding="0" BorderColor="Black" 
                CornerRadius="20" WidthRequest="345">
-            <CollectionView
-                        Margin="0,20,0,0" BackgroundColor="Yellow"
+            <Grid RowDefinitions="Auto,300,Auto,*" >
+
+                <Label Text="Streets part of the Route" HorizontalOptions="Center" Padding="10"/>
+                <CarouselView
+                    
+                        Margin="1,10" 
+                        BackgroundColor="Transparent"
+                        IndicatorView="indicatorView"
                         x:Name="StreetCollection"
                         Grid.Row="1"
-                        Grid.Column="0"
-                        SelectionMode="None"
-                    ItemsSource="{Binding .}"
-                HeightRequest="200">
+                        VerticalOptions="FillAndExpand"
+                        Loop="False"
+                        ItemsSource="{Binding .}">
 
-                    <CollectionView.ItemTemplate>
+                    <CarouselView.ItemTemplate>
                         <DataTemplate>
-                        <Grid Padding="10">
-                            <Label Style="{StaticResource MediumLabel}" Text="{Binding}" HorizontalTextAlignment="Center"/>
-                        </Grid>
+                            <ContentView>
+                                <ListView ItemsSource="{Binding}" SelectionMode="None" Style="{StaticResource MediumLabel}">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextCell Text="{Binding}" TextColor="Black"/>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </ContentView>
                         </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                    </CarouselView.ItemTemplate>
+                </CarouselView>
+
+                <IndicatorView
+                    x:Name="indicatorView"
+                    IndicatorColor="LightGray"
+                    SelectedIndicatorColor="DarkGray"
+                    HorizontalOptions="Center" Grid.Row="2"/>
+
+                <Button x:Name="OsmButton"  x:DataType="model:Route" Grid.Row="3" Padding="10" Margin="0, 10"
+                            Text="Open Route on OpenStreetMap.org" 
+                            Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=OpenOSMCommand}"
+                            CommandParameter="{Binding Osm_Id}"
+                            HorizontalOptions="Center"
+                            VerticalOptions="Center"
+                            />
+            </Grid>
         </Frame>
     </VerticalStackLayout>
 </ContentView>

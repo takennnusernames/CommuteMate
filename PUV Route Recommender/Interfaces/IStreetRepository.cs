@@ -10,8 +10,10 @@ namespace CommuteMate.Interfaces
     {
         Task<Street> InsertStreetAsync(Street street);
         Task<Street> GetStreetByOsmIdAsync(long wayId);
+        Task<List<Street>> GetStreetByRouteIdAsync(long osmId);
         Task<int> GetStreetIdAsync(string name);
         Task<Street> GetStreetByIdAsync(int id);
         Task UpdateStreetAsync(Street street);
+        Task DeleteStreetAsync(Street street);
     }
 }

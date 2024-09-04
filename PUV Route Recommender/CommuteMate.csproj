@@ -24,6 +24,20 @@
     <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-android|AnyCPU'">
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <DebugSymbols>True</DebugSymbols>
+    <RunAOTCompilation>False</RunAOTCompilation>
+    <PublishTrimmed>False</PublishTrimmed>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net8.0-ios|AnyCPU'">
+    <MtouchLink>Full</MtouchLink>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">
+    <RunAOTCompilation>False</RunAOTCompilation>
+    <PublishTrimmed>False</PublishTrimmed>
+    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+  </PropertyGroup>
   <ItemGroup>
     <!-- App Icon -->
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\commutemate.svg" Color="#512BD4" />
@@ -50,7 +64,10 @@
     <None Remove="Resources\Images\origin_icon.png" />
     <None Remove="Resources\Images\riding_icon.png" />
     <None Remove="Resources\Images\route_icon.png" />
+    <None Remove="Resources\Images\Sample\next_icon.png" />
+    <None Remove="Resources\Images\Sample\survey_icon.png" />
     <None Remove="Resources\Images\search_icon.png" />
+    <None Remove="Resources\Images\still_icon.png" />
     <None Remove="Resources\Images\vehicle_icon.png" />
     <None Remove="Resources\Images\walking_icon.png" />
   </ItemGroup>
@@ -86,18 +103,30 @@
     <ProjectReference Include="..\..\Api\CommuteMate.ApiClient\CommuteMate.ApiClient.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="Views\MapView.xaml.cs">
+      <DependentUpon>MapView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\VehicleInfoPage.xaml.cs">
+      <DependentUpon>VehicleInfoPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\RoutesView.xaml.cs">
       <DependentUpon>RoutesView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\DataInfoPage.xaml.cs">
+      <DependentUpon>DataInfoPage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
     <MauiXaml Update="Views\DetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Views\InfoPage.xaml">
+    <MauiXaml Update="Views\SurveyPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Views\MethodTests.xaml">
+    <MauiXaml Update="Views\VehicleInfoPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\MapView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\NavigatingPage.xaml">
@@ -109,7 +138,7 @@
     <MauiXaml Update="Views\SlideUpSheets\SlideUpCard.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
-    <MauiXaml Update="Views\VehicleInfoPage.xaml">
+    <MauiXaml Update="Views\DataInfoPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
   </ItemGroup>

@@ -29,6 +29,11 @@ namespace CommuteMate.Services
         {
             return await _streetRepository.GetStreetByOsmIdAsync(wayId);
         }
+
+        public async Task<List<Street>> GetStreetByRouteIdAsync(long routeId)
+        {
+            return await _streetRepository.GetStreetByRouteIdAsync(routeId);
+        }
         public async Task<int> GetStreetIdAsync(string name)
         {
             return await _streetRepository.GetStreetIdAsync(name);
@@ -40,6 +45,10 @@ namespace CommuteMate.Services
         public async Task UpdateStreetAsync(Street street)
         {
             await _streetRepository.UpdateStreetAsync(street);
+        }
+        public async Task DeleteStreetAsync(Street street)
+        {
+            await _streetRepository.DeleteStreetAsync(street);
         }
     }
 }

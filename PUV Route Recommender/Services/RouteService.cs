@@ -28,6 +28,17 @@ namespace CommuteMate.Services
                 return routes;
             return null;
         }
+        public async Task<List<Route>> GetOfflineRoutesAsync()
+        {
+            var routes = await _routeRepository.GetAllRoutesAsync();
+
+            if (routes is not null)
+            {
+                routes = routes.Where(route => route.StreetNameSaved == true).ToList();
+                return routes;
+            }
+            return null;
+        }
         public async Task<List<Street>> GetRouteStreets(int id)
         {
             var streets = await _routeRepository.GetRouteStreets(id);

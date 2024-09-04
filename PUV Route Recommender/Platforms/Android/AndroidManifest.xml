@@ -1,13 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="Commute_Mate.app" android:versionCode="1" android:versionName="Beta">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="CommuteMate_v2.CommuteMate_v2" android:versionCode="1" android:versionName="Beta">
 	<application android:networkSecurityConfig="@xml/network_security_config" android:allowBackup="true" android:icon="@mipmap/appicon" android:supportsRtl="true" android:label="CommuteMate">
-    <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g" />
-    <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
-  </application>
+		<meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyBR83nQPdiVRczeycyaJWrsqKCpq5mQ8e8" />
+		<!--<meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g" />-->
+		<meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
+	</application>
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-	<uses-sdk android:targetSdkVersion="34" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-sdk android:targetSdkVersion="34" android:minSdkVersion="21" />
+	<queries>
+		<intent>
+			<action android:name="android.intent.action.VIEW" />
+			<data android:scheme="http" />
+		</intent>
+		<intent>
+			<action android:name="android.intent.action.VIEW" />
+			<data android:scheme="https" />
+		</intent>
+	</queries>
 </manifest>

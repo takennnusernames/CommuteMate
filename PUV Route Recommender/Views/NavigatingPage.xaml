@@ -6,19 +6,25 @@
              xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
              xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
              xmlns:model="clr-namespace:CommuteMate.Models"
+             xmlns:utils="clr-namespace:CommuteMate.Utilities"
              x:Class="CommuteMate.Views.NavigatingPage"
              x:DataType="viewModel:NavigatingViewModel"
              Title="{Binding Title}">
- 
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <utils:NullToCountConverter x:Key="NullToCountConverter" />
+        </ResourceDictionary>
+    </ContentPage.Resources>
 
     <Grid>
         <!--<mapsui:MapControl x:Name="mapControl" BindingContext="{Binding}"/>-->
-        <maps:Map x:Name="map" MapType="Street" MapClicked="Map_MapClicked" ItemsSource="{Binding Positions}">
+        <maps:Map x:Name="map" MapType="Street" MapClicked="Map_MapClicked" ItemsSource="{Binding Intersections}">
             <maps:Map.ItemTemplate>
-                <DataTemplate x:DataType="maps:Pin">
-                    <maps:Pin Location="{Binding Location}"
+                <DataTemplate x:DataType="model:CustomPin">
+                    <model:CustomPin Location="{Binding Location}"
                               Address="{Binding Address}"
                               Label="{Binding Label}"
+                              ImageSource="{Binding ImageSource}"
                               MarkerClicked="Pin_MarkerClicked"/>
                 </DataTemplate>
             </maps:Map.ItemTemplate>
@@ -58,10 +64,6 @@
                                AbsoluteLayout.LayoutFlags="WidthProportional" 
                                Focused="OriginSearchBar_Focused"
                                Unfocused="OriginSearchBar_Unfocused"/>
-
-                    <!--<BoxView BackgroundColor="Black" WidthRequest="50" HeightRequest="47"
-                               AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
-                               AbsoluteLayout.LayoutFlags="PositionProportional" />-->
                     <Frame Padding="0" WidthRequest="50" HeightRequest="47" BackgroundColor="Black" CornerRadius="0">
                         <Image Source="origin_icon.png" WidthRequest="40" HeightRequest="40"
 AbsoluteLayout.LayoutBounds="0, 0.5, AutoSize, AutoSize"
@@ -130,34 +132,38 @@ AbsoluteLayout.LayoutFlags="PositionProportional"/>
                                 Text="Use Current Location"
                                 Margin="9"
                                 Command="{Binding GetLocationCommand}"
+                                BackgroundColor="Orange"
+                                TextColor="Black"
                                 IsVisible="False"/>
 
                         <Button x:Name="GetRoutesButton"
                                 Margin="9"
                                 Text="Get Routes"
                                 Command="{Binding GetRoutesCommand}"
+                                BackgroundColor="Green"
                                 IsVisible="False"/>
                     </VerticalStackLayout>
                 </AbsoluteLayout>
                 
             </Grid>
-            <Frame HeightRequest="50"
-                   WidthRequest="50"
+            <Frame HeightRequest="90"
+                   WidthRequest="40"
                    CornerRadius="100"
-                   BackgroundColor="White" Padding="0"
+                   BackgroundColor="Transparent" Padding="0"
                     Grid.Row="1"
                     VerticalOptions="CenterAndExpand" 
                     HorizontalOptions="End"
                     x:Name="ShowDetailsButton"
                     IsVisible="False"
                    Opacity="0"
-                   Style="{StaticResource CardView}">
+                   BorderColor="Transparent">
                 <ImageButton
                     Source="commutemate_logo.png"
                     Command="{Binding ShowCardCommand}"
-                    HeightRequest="50" 
+                    HeightRequest="90" 
                     WidthRequest="44" 
                     Margin="0,0,0,0"
+                    BorderColor="Black"
                     />
             </Frame>
 
@@ -184,6 +190,17 @@ AbsoluteLayout.LayoutFlags="PositionProportional"/>
                         <Setter Property="IsVisible" Value="False" />
                     </DataTrigger>
                 </CollectionView.Triggers>
+                <CollectionView.EmptyView>
+                    <!--<StackLayout Padding="100">
+                        <Image
+                                    HorizontalOptions="Center"
+                                    HeightRequest="160"
+                                    WidthRequest="160"
+                                    Source="nodata.png"
+                                    VerticalOptions="Center" />
+                    </StackLayout>-->
+                    <Label Text="Location not found, Please make sure to search for areas around Cebu City"/>
+                </CollectionView.EmptyView>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="model:LocationDetails">
                         <ScrollView>

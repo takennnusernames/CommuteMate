@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Map = Microsoft.Maui.Controls.Maps.Map;
 
 namespace CommuteMate.Models
 {
@@ -22,5 +23,9 @@ namespace CommuteMate.Models
             get => (ImageSource)GetValue(ImageSourceProperty);
             set => SetValue(ImageSourceProperty, value);
         }
+    }
+    public class CustomMap : Map
+    {
+        public List<CustomPin> CustomPins { get; set; } = new List<CustomPin>();
     }
 }

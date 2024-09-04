@@ -12,7 +12,7 @@ namespace CommuteMate.Interfaces
         Task CreateGoogleMapAsync(GoogleMap map);
         Task<Pin> AddGooglePin(Location location, GoogleMap map, string label);
         Task<Pin> AddGooglePin(LocationDetails location, GoogleMap map);
-        Task<CustomPin> AddCustomPin(LocationDetails location, GoogleMap map);
+        Task<CustomPin> AddCustomPin(Geometry geometry, GoogleMap map, string label, string action);
         Task<Pin> AddGoogleMarker(Location location, GoogleMap map, string label, string action);
         Task RemoveGooglePin(Pin pin, GoogleMap map);
         Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action);

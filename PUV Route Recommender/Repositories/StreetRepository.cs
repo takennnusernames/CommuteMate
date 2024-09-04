@@ -37,10 +37,15 @@ namespace CommuteMate.Repositories
         public async Task<Street> GetStreetByOsmIdAsync(long osmId)
         {
 
-            return await _dbContext.Streets.Where(s => s.Osm_Id == osmId).Include(s => s.Routes).FirstOrDefaultAsync();
+            return await _dbContext.Streets.Where(s => s.RouteId == osmId).Include(s => s.Routes).FirstOrDefaultAsync();
             //return await db.Table<Street>().FirstOrDefaultAsync(x => x.Way_Id == wayId);
         }
 
+        public async Task<List<Street>> GetStreetByRouteIdAsync(long osmId)
+        {
+            var streets = _dbContext.Streets.Where(s => s.RouteId == osmId).ToList();
+            return await Task.FromResult(streets);
+        }
         public async Task<Street> GetStreetByIdAsync(int id)
         {
             return await _dbContext.Streets.Where(s => s.StreetId == id).FirstOrDefaultAsync();
@@ -54,6 +59,11 @@ namespace CommuteMate.Repositories
         public async Task UpdateStreetAsync(Street street)
         {
             _dbContext.Entry(street).State = EntityState.Modified;
+            await _dbContext.SaveChangesAsync();
+        }
+        public async Task DeleteStreetAsync(Street street)
+        {
+            _dbContext.Streets.Remove(street);
             await _dbContext.SaveChangesAsync();
         }
     }

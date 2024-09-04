@@ -19,7 +19,7 @@ namespace CommuteMate.ViewModels
 
         public Task GetVehicles()
         {   
-            if(Vehicles == null)
+            if(Vehicles.Count == 0)
             {
                 List<Vehicle> vehicles = _vehicleRepository.GetVehicles();
 

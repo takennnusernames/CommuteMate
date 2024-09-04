@@ -18,17 +18,51 @@ namespace CommuteMate.Models
         public virtual ICollection<Street> Streets { get; set; }
 
     }
+    public class RouteView : BindableObject
+    {
+        public long Osm_Id { get; set; }
+        public string Code { get; set; }
+        public string Name { get; set; }
+        private bool isStreetFrameVisible;
+        public bool IsStreetFrameVisible
+        {
+            get { return isStreetFrameVisible; }
+            set
+            {
+                isStreetFrameVisible = value;
+                OnPropertyChanged(nameof(IsStreetFrameVisible));
+            }
+        }
+
+        private bool isDownloaded;
+        public bool IsDownloaded
+        {
+            get { return isDownloaded; }
+            set
+            {
+                isDownloaded = value;
+                OnPropertyChanged(nameof(IsDownloaded));
+            }
+        }
+        public bool IsNotDownloaded => !IsDownloaded;
+        public ObservableCollection<string> Streets { get; set; } = [];
+    }
     public class Street
     {
         [PrimaryKey, AutoIncrement]
         public int StreetId { get; set; }
         [Unique]
-        public long Osm_Id { get; set; }
+        public long RouteId { get; set; }
         public string Name { get; set; }
         public string GeometryWKT { get; set; }
 
         [NotMapped]
         public List<Coordinate> Coordinates { get; set; }
+        //public RoutesViewModel ParentViewModel { get; set; }
+        //public Street(RoutesViewModel parent)
+        //{
+        //    ParentViewModel = parent;
+        //}
         public virtual ICollection<Route> Routes { get; set; }
         public override bool Equals(object obj)
         {
@@ -42,7 +76,7 @@ namespace CommuteMate.Models
 
         public override int GetHashCode()
         {
-            return StreetId.GetHashCode() ^ Osm_Id.GetHashCode();
+            return StreetId.GetHashCode() ^ RouteId.GetHashCode();
             // Combine hash codes of relevant properties
         }
     }

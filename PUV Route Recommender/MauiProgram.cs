@@ -21,10 +21,9 @@ namespace CommuteMate
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                .UseSkiaSharp(true) /*for mapsui*/
+                //.UseSkiaSharp(true) /*for mapsui*/
                 .UseMauiMaps()
                 .UseBottomSheet()
-                //.UseMauiMaps() /*uses google maps api key*/
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -65,22 +64,24 @@ namespace CommuteMate
             builder.Services.AddSingleton<RoutesViewModel>();
             builder.Services.AddTransient<NavigatingViewModel>();
             builder.Services.AddSingleton<VehicleInfoViewModel>();
+            builder.Services.AddSingleton<MapViewModel>();
 
             //Views
             builder.Services.AddSingleton<RoutesView>();
             builder.Services.AddSingleton<NavigatingPage>();
-            builder.Services.AddTransient<MethodTests>();
+            builder.Services.AddTransient<SurveyPage>();
+            builder.Services.AddTransient<MapView>();
             builder.Services.AddSingleton<DetailsView>();
-            builder.Services.AddSingleton<InfoPage>();
+            builder.Services.AddSingleton<VehicleInfoPage>();
 
             //Sheet
             builder.Services.AddSingleton<SlideUpCard>();
 
             var dbContext = new CommuteMateDbContext();
 
-//#if DEBUG
-//            dbContext.Database.EnsureDeleted();
-//#endif
+#if DEBUG
+            dbContext.Database.EnsureDeleted();
+#endif
             dbContext.Database.EnsureCreated();
             dbContext.Dispose();
 

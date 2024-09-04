@@ -22,15 +22,15 @@
 
         <ShellContent
             Title="PUVs"
-            ContentTemplate="{DataTemplate views:InfoPage}"
+            ContentTemplate="{DataTemplate views:VehicleInfoPage}"
             Route="InforPage" 
             Icon="vehicle_icon.svg"/>
 
-        <!--<ShellContent
-            Title="Main"
-            ContentTemplate="{DataTemplate views:MethodTests}"
-            Route="MethodTests" 
-            Icon="dotnet_bot.svg"/>-->
+        <ShellContent
+            Title="Survey"
+            ContentTemplate="{DataTemplate views:SurveyPage}"
+            Route="SurveyPage" 
+            Icon="survey_icon.png"/>
 
     </TabBar>
 </Shell>

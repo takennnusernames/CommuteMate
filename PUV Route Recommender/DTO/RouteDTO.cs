@@ -26,6 +26,6 @@ namespace CommuteMate.DTO
         public int Id { get; set; }
         public int OsmId { get; set; }
         public string StreetName { get; set; }
-        public GeometryDTO Geometry { get; set; }
+        public string GeometryWKT { get; set; }
     }
 }

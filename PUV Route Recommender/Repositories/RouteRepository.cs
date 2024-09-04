@@ -65,7 +65,7 @@ namespace CommuteMate.Repositories
             try
             {
                 return await _dbContext.Routes.Where(r => r.Osm_Id == id).Include(r => r.Streets).FirstOrDefaultAsync();
-                //return await db.Table<Route>().FirstOrDefaultAsync(r => r.Osm_Id == id);
+                //return await db.Table<Route>().FirstOrDefaultAsync(r => r.RouteId == id);
             }
             catch (Exception ex)
             {

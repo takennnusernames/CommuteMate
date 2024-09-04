@@ -5,10 +5,17 @@ namespace CommuteMate.Views;
 
 public partial class VehicleInfoPage : ContentPage
 {
-	private Vehicle _vehicle;
-	public VehicleInfoPage()
+	public VehicleInfoPage(VehicleInfoViewModel viewModel)
 	{
 		InitializeComponent();
+        BindingContext = viewModel;
 	}
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        var viewModel = BindingContext as VehicleInfoViewModel;
+        viewModel.GetVehicles();
+    }
 
 }

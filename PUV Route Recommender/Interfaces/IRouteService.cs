@@ -6,6 +6,7 @@ namespace CommuteMate.Interfaces
     {
         Task<Route> InsertRouteAsync(Route route);
         Task<List<Route>> GetAllRoutesAsync();
+        Task<List<Route>> GetOfflineRoutesAsync();
         Task<Route> GetRouteByOsmIdAsync(long id);
         Task<Route> GetRouteByIdAsync(int id);
         Task<List<Street>> GetRouteStreets(int id);

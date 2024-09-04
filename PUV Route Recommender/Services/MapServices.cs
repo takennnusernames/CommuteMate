@@ -10,7 +10,6 @@ using Microsoft.Maui.Maps;
 using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Controls.Maps;
 using Colors = Microsoft.Maui.Graphics.Colors;
-using Mapsui.UI.Maui;
 
 namespace CommuteMate.Services
 {
@@ -19,7 +18,7 @@ namespace CommuteMate.Services
         readonly HttpClient _httpClient;
         CancellationTokenSource _cancellationTokenSource;
         IGeolocation _geolocation;
-        public MapServices(IGeolocation geolocation) 
+        public MapServices(IGeolocation geolocation)
         {
             _httpClient = new HttpClient();
             _cancellationTokenSource = new CancellationTokenSource();
@@ -62,28 +61,26 @@ namespace CommuteMate.Services
                 Address = location.Coordinate.X.ToString() + ", " + location.Coordinate.Y.ToString()
             };
 
+            map.Pins.Add(pin);
             MapSpan mapSpan = new MapSpan(pin.Location, 0.01, 0.01);
             map.MoveToRegion(mapSpan);
             return Task.FromResult(pin);
         }
 
-        public Task<CustomPin> AddCustomPin(LocationDetails location, GoogleMap map)
+        public Task<CustomPin> AddCustomPin(Geometry geometry, GoogleMap map, string label, string action)
         {
             var customPin = new CustomPin
             {
                 Location = new Location
                 {
-                    Latitude = location.Coordinate.Y,
-                    Longitude = location.Coordinate.X
+                    Latitude = geometry.Coordinate.X,
+                    Longitude = geometry.Coordinate.Y
                 },
-                Label = location.Name,
-                Address = location.Coordinate.X.ToString() + ", " + location.Coordinate.Y.ToString(),
-                ImageSource = "dotnet_bot" // Name of the image file without the extension
+                Label = action,
+                Address = label,
+                ImageSource = "still_icon"
             };
-
-            MapSpan mapSpan = new MapSpan(customPin.Location, 0.01, 0.01);
-            map.Pins.Add(pin);
-            map.MoveToRegion(mapSpan);
+            map.Pins.Add(customPin);
             return Task.FromResult(customPin);
         }
         public async Task<Pin> AddGoogleMarker(Location location, GoogleMap map, string label, string action)
@@ -112,7 +109,7 @@ namespace CommuteMate.Services
 
                 foreach (var lineString in multiLineString.Geometries)
                 {
-                    if(lineString.GeometryType == "Point")
+                    if (lineString.GeometryType == "Point")
                     {
                         var point = (Point)geometry;
                         locations.Add(new Location(point.X, point.Y));
@@ -133,7 +130,7 @@ namespace CommuteMate.Services
                 locations.Add(new Location(point.X, point.Y));
             }
             var polyline = new Polyline();
-            
+
             var color = Colors.Coral;
             if (action.Contains("Walk"))
             {
@@ -145,7 +142,7 @@ namespace CommuteMate.Services
                 polyline.StrokeColor = Colors.Orange;
                 polyline.StrokeWidth = 6;
             }
-            
+
             foreach (var position in locations)
             {
                 polyline.Geopath.Add(position);
@@ -262,7 +259,7 @@ namespace CommuteMate.Services
             if (response.IsSuccessStatusCode)
             {
                 var locations = await response.Content.ReadFromJsonAsync<List<LocationDTO>>();
-                foreach ( var location in locations )
+                foreach (var location in locations)
                 {
                     Coordinate coordinate = new Coordinate(double.Parse(location.lon), double.Parse(location.lat));
                     locationList.Add(new LocationDetails
@@ -281,16 +278,17 @@ namespace CommuteMate.Services
             _cancellationTokenSource.Cancel();
             _cancellationTokenSource = new CancellationTokenSource();
             var request = new HttpRequestMessage(HttpMethod.Post, "https://places.googleapis.com/v1/places:searchText");
-            request.Headers.Add("X-Goog-Api-Key", "AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
+            request.Headers.Add("X-Goog-Api-Key", "AIzaSyBR83nQPdiVRczeycyaJWrsqKCpq5mQ8e8");
+            //request.Headers.Add("X-Goog-Api-Key", "AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
             request.Headers.Add("X-Goog-FieldMask", "places.displayName,places.location");
-            double latitude = 10.25;
-            double longitude = 123.77;
-            double highLatitude = 10.4953;
-            double highLongitude = 123.9309;
+            double latitude = 10.2592519;
+            double longitude = 123.7633896;
+            double highLatitude = 10.498277;
+            double highLongitude = 123.9291998;
 
             var json = $@"{{
                   ""textQuery"" : ""{input}"",
-                  ""locationBias"": {{
+                  ""locationRestriction"": {{
                         ""rectangle"": {{
                             ""low"": {{
                                 ""latitude"": {latitude},

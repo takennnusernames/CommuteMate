@@ -9,10 +9,10 @@ namespace CommuteMate
             InitializeComponent();
 
             Routing.RegisterRoute(nameof(NavigatingPage), typeof(NavigatingPage));
-            Routing.RegisterRoute(nameof(InfoPage), typeof(InfoPage));
             Routing.RegisterRoute(nameof(VehicleInfoPage), typeof(VehicleInfoPage));
             Routing.RegisterRoute(nameof(RoutesView), typeof(RoutesView));
-            Routing.RegisterRoute(nameof(MethodTests), typeof(MethodTests));
+            Routing.RegisterRoute(nameof(SurveyPage), typeof(SurveyPage));
+            Routing.RegisterRoute(nameof(MapView), typeof(MapView));
         }
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mapsui="clr-namespace:Mapsui.UI.Maui;assembly=Mapsui.UI.Maui"
+             xmlns:the49="https://schemas.the49.com/dotnet/2023/maui"   
+             xmlns:sheets="clr-namespace:CommuteMate.Views.SlideUpSheets"
+             xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
+             xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
+             xmlns:local="clr-namespace:CommuteMate.Views"
+             x:Class="CommuteMate.Views.MapView"
+             Title="Map View"
+             x:Name="this">
+    <Grid>
+
+        <maps:Map x:Name="testMap" MapType="Street"/>
+    </Grid>
+</ContentPage>
+ 

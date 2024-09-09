@@ -1,17 +1,6 @@
-﻿using CommuteMate.ApiClient;
-using ApiRoute = CommuteMate.ApiClient.Models.ApiModels.Route;
-using CommuteMate.Interfaces;
+﻿using CommuteMate.Interfaces;
 using CommuteMate.Views;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using System.Collections.Immutable;
-using NetTopologySuite.Geometries;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using CommuteMate.DTO;
 
 namespace CommuteMate.ViewModels
 {
@@ -58,27 +47,31 @@ namespace CommuteMate.ViewModels
             get { return _pageSize; }
             set { _pageSize = value; }
         }
-
         public int CurrentPage
         {
             get { return _currentPage; }
             set { _currentPage = value; }
         }
+        [ObservableProperty]
+        public bool nextPage = false;
+        [ObservableProperty]
+        public bool previousPage = false;
 
-        public ObservableCollection<Route> FilteredRoutes { get; } = [];
         public ObservableCollection<RouteView> SearchResults { get; } = [];
         public ObservableCollection<Street> Streets { get; } = [];
+        public ObservableCollection<Street> UniqueStreets { get; } = [];
+        public List<Street> _streets { get; set; } = [];
         [ObservableProperty]
         string searchInput;
         public Button getRoutesButton { get; set; }
         public SearchBar RoutesSearchBar { get; set; }
         public Button CancelSearchButton { get; set; }
 
-        private List<string> _streetNames = [];
+        private List<Street> _uniqueStreets = [];
         private List<string> _streetGeometries = [];
        
 
-        public ObservableCollection<List<string>> StreetList = new();
+        public ObservableCollection<string> StreetList = new();
         //commands
         [RelayCommand]
         async Task ShowRoutesAsync()
@@ -196,7 +189,32 @@ namespace CommuteMate.ViewModels
                 IsBusy = false;
             }
         }
+        [RelayCommand]
+        async Task GoToDetails(RouteView route)
+        {
 
+            if (IsBusy)
+                return;
+            try
+            {
+                IsBusy = true;
+
+                Task.Delay(100).Wait();
+                await Shell.Current.GoToAsync($"{nameof(RouteDetailsView)}", true,
+                    new Dictionary<string, object>
+                    {
+                    {"Route", route},
+                    });
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error! Unable to retrieve information", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
         [RelayCommand]
         async Task GetStreets(RouteView route)
         {
@@ -209,11 +227,16 @@ namespace CommuteMate.ViewModels
                     route.IsStreetFrameVisible = false;
                     return;
                 }
-
+                if(Routes.Any(route => route.IsStreetFrameVisible))
+                {
+                    foreach (var r in Routes.Where(route => route.IsStreetFrameVisible))
+                    {
+                        r.IsStreetFrameVisible = false;
+                    }
+                }
                 IsBusy = true;
-                List<Street> streets = [];
                 if(route.IsDownloaded)
-                    streets = await _streetService.GetStreetByRouteIdAsync(route.Osm_Id);
+                    _streets = await _streetService.GetStreetByRouteIdAsync(route.Osm_Id);
                 else
                 {
                     if (_connectivity.NetworkAccess != NetworkAccess.Internet)
@@ -223,20 +246,20 @@ namespace CommuteMate.ViewModels
                         return;
                     }
 
-                    streets = await _commuteMateApiService.GetRouteStreets(route.Osm_Id) ?? throw new Exception("streets is null");
-                    string count = streets.Count.ToString();
-                    await Shell.Current.DisplayAlert("Test", count, "Ok");
+                    _streets = await _commuteMateApiService.GetRouteStreets(route.Osm_Id) ?? throw new Exception("streets is null");
                 }
 
                 route.IsStreetFrameVisible = true;
-                _streetNames.Clear();
-                _streetNames = streets.GroupBy(s => s.Name).Select(g => g.Key).ToList();
-                _streetNames.Add("test");
-                _streetGeometries.Clear();
-                _streetGeometries = streets.GroupBy(s => s.GeometryWKT).Select(g => g.Key).ToList();
+                //_streetGeometries.Clear();
+                //_streetGeometries = _streets.GroupBy(s => s.GeometryWKT).Select(g => g.Key).ToList();
 
+                Streets.Clear();
+                foreach (var street in _streets)
+                {
+                    Streets.Add(street);
+                }
 
-                LoadPage(route, _currentPage);
+                LoadPage(_currentPage);
             }
             catch (Exception ex)
             {
@@ -248,40 +271,64 @@ namespace CommuteMate.ViewModels
             }
 
         }
-        void LoadPage(RouteView route, int page)
+        void LoadPage(int page)
         {
-            var count = _streetNames.Count.ToString();
-            Shell.Current.DisplayAlert("LoadPage", count, "Ok");
-            var paginatedStreetNames = _streetNames.Skip((page - 1) * _pageSize).Take(_pageSize);
+            _uniqueStreets.Clear();
+            _uniqueStreets = _streets.GroupBy(s => s.Name).Select(g => g.First()).ToList();
+            var paginatedStreetNames = _uniqueStreets.Skip((page - 1) * _pageSize).Take(_pageSize).ToList();
 
-            route.Streets.Clear();
-            foreach (var name in paginatedStreetNames)
+            //StreetList.Clear();
+            //foreach (var name in paginatedStreetNames)
+            //{
+            //    StreetList.Add(name);
+            //}
+
+            UniqueStreets.Clear();
+            foreach (var street in paginatedStreetNames)
             {
-                route.Streets.Add(name);
+                UniqueStreets.Add(street);
             }
-            var routeCount = route.Streets.Count.ToString();
-
-            Shell.Current.DisplayAlert("Route", routeCount, "Ok");
+            if (_currentPage * _pageSize < _uniqueStreets.Count)
+                NextPage = true;
         }
 
         [RelayCommand]
-        void LoadNextPage(RouteView route)
+        void LoadNextPage()
         {
-            if (_currentPage * _pageSize < _streetNames.Count)
+            if (_currentPage * _pageSize < _uniqueStreets.Count)
             {
                 _currentPage++;
-                LoadPage(route, _currentPage);
+                LoadPage(_currentPage);
             }
+            if (_currentPage * _pageSize < _uniqueStreets.Count)
+                NextPage = true;
+            else
+                NextPage = false;
+
+            if (_currentPage > 1)
+                PreviousPage = true;
+            else
+                PreviousPage = false;
         }
 
         [RelayCommand]
-        void LoadPreviousPage(RouteView route)
+        void LoadPreviousPage()
         {
             if (_currentPage > 1)
             {
                 _currentPage--;
-                LoadPage(route, _currentPage);
+                LoadPage(_currentPage);
             }
+
+            if (_currentPage * _pageSize < _uniqueStreets.Count)
+                NextPage = true;
+            else
+                NextPage = false;
+
+            if (_currentPage > 1)
+                PreviousPage = true;
+            else
+                PreviousPage = false;
         }
         [RelayCommand]
         async Task ShowOnMap(long osmId)
@@ -292,7 +339,8 @@ namespace CommuteMate.ViewModels
             {
                 IsBusy = true;
                 //get osm data
-                var serializedStreets = JsonSerializer.Serialize(_streetGeometries);
+                var streetGeoms = Streets.Select(g => g.GeometryWKT).ToList();
+                var serializedStreets = JsonSerializer.Serialize(streetGeoms);
 
                 await Shell.Current.GoToAsync($"{nameof(MapView)}?Streets={serializedStreets}");
             }
@@ -350,7 +398,10 @@ namespace CommuteMate.ViewModels
                         await _streetService.UpdateStreetAsync(data);
                     }
                     else
+                    {
+                        street.RouteId = osmId;
                         await _streetService.InsertStreetAsync(street);
+                    }
                 }
             }
             catch (Exception ex)

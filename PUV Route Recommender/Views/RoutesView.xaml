@@ -97,41 +97,47 @@
                                             x:Name="StreetCollection"
                                             Grid.Row="1"
                                             VerticalOptions="FillAndExpand"
-                                            ItemsSource="{Binding Streets}">
+                                            ItemsSource="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=UniqueStreets}">
 
                                             <CollectionView.ItemTemplate>
-                                                <DataTemplate>
-                                                    <Label Text="{Binding}" Style="{StaticResource MediumLabel}" HorizontalTextAlignment="Center"/>
+                                                <DataTemplate x:DataType="model:Street">
+                                                    <Label Text="{Binding Name}" Style="{StaticResource MediumLabel}" HorizontalTextAlignment="Center"/>
                                                 </DataTemplate>
                                             </CollectionView.ItemTemplate>
                                         </CollectionView>
 
                                         <Grid Grid.Row="2" ColumnDefinitions="*,Auto,*" HeightRequest="40" Padding="0">
                                             <ImageButton Source="back_icon" Grid.Column="0"
-                                                         Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=LoadPreviousPageCommand}"
-                                                         CommandParameter="{Binding .}"
-                                                         BackgroundColor="Transparent"/>
+                                                         BindingContext="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}}"
+                                                         x:DataType="viewModel:RoutesViewModel"
+                                                         Command="{Binding LoadPreviousPageCommand}"
+                                                         BackgroundColor="Transparent" 
+                                                         IsEnabled="{Binding PreviousPage}"/>
                                             <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=DownloadOfflineCommand}"
                                                     CommandParameter="{Binding Osm_Id}"
-                                                    Grid.Column="1" Text="Download Offline" BackgroundColor="White" TextColor="Black" BorderColor="Black" IsVisible="{Binding IsNotDownloaded}"/>
+                                                    Grid.Column="1" Text="Download Offline" BackgroundColor="White" TextColor="Black" BorderColor="Black" 
+                                                    IsVisible="{Binding IsNotDownloaded}"/>
                                             <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=DeleteOfflineDataCommand}"
                                                     CommandParameter="{Binding Osm_Id}"
-                                                    Grid.Column="1" Text="Delete Offline Data" BackgroundColor="White" TextColor="Black" BorderColor="Black" IsVisible="{Binding IsDownloaded}"/>
+                                                    Grid.Column="1" Text="Delete Offline Data" BackgroundColor="White" TextColor="Black" BorderColor="Black" 
+                                                    IsVisible="{Binding IsDownloaded}"/>
                                             <ImageButton Source="next_icon" Grid.Column="2" 
-                                                         Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=LoadNextPageCommand}"
-                                                         CommandParameter="{Binding .}"
-                                                         BackgroundColor="Transparent"/>
+                                                         BindingContext="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}}"
+                                                         x:DataType="viewModel:RoutesViewModel"
+                                                         Command="{Binding LoadNextPageCommand}"
+                                                         BackgroundColor="Transparent" 
+                                                         IsEnabled="{Binding NextPage}"/>
                                         </Grid>
                                         <Grid Grid.Row="3" ColumnDefinitions="*,*">
-                                            <Button x:Name="OpenMap"  x:DataType="model:Route" Grid.Column="0" Padding="10" Margin="0, 10"
+                                            <Button x:Name="OpenMap" Grid.Column="0" Padding="10" Margin="0, 10"
                                                 Text="Show Route on Map" 
                                                 Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=ShowOnMapCommand}"
-                                                CommandParameter="{Binding Osm_Id}"
+                                                CommandParameter="{Binding Osm_Id }"
                                                 HorizontalOptions="Center"
                                                 VerticalOptions="Center"
                                                     BackgroundColor="Green"
                                                 />
-                                            <Button x:Name="OsmButton"  x:DataType="model:Route" Grid.Column="1" Padding="10" Margin="0, 10"
+                                            <Button x:Name="OsmButton" Grid.Column="1" Padding="10" Margin="0, 10"
                                                 Text="OpenStreetMap.org" 
                                                 Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=OpenOSMCommand}"
                                                 CommandParameter="{Binding Osm_Id}"

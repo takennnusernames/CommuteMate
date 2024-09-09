@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:viewModel="clr-namespace:CommuteMate.ViewModels"
+             xmlns:model="clr-namespace:CommuteMate.Models"
+             x:Class="CommuteMate.Views.RouteListView"
+             x:DataType="viewModel:RoutesViewModel"
+             Title="{Binding Title}">
+
+    <Grid Padding="12"
+          RowDefinitions="Auto,*,Auto"
+          RowSpacing="0"
+          BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}">
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="40"/>
+            </Grid.ColumnDefinitions>
+            <AbsoluteLayout Grid.ColumnSpan="2" Margin="6">
+                <SearchBar x:Name="RoutesSearchBar"
+                               BindingContext="{Binding}"
+                               Placeholder="Search Street Name or Route Code/Name"
+                               Text="{Binding SearchInput}"
+                               SearchCommand="{Binding SearchCommand}"
+                               BackgroundColor="White"
+                               CancelButtonColor="Transparent"
+                               Grid.Column="0"
+                               TextColor="Black"
+                               AbsoluteLayout.LayoutBounds="0.5, 0.5, 1, AutoSize"
+                               AbsoluteLayout.LayoutFlags="WidthProportional"
+                           Focused="RoutesSearchBar_Focused"
+                           Unfocused="RoutesSearchBar_Unfocused"
+                           />
+                <Button x:Name="CancelSearchButton"
+                            Text="X"
+                            Grid.Column="1"
+                            BackgroundColor="Transparent"
+                            TextColor="black"
+                            BindingContext="{Binding}"
+                            FontAttributes="Bold"
+                            FontSize="20"
+                            CornerRadius="0"
+                            Command="{Binding CancelSearchCommand}"
+                            HorizontalOptions="End"
+                            IsVisible="False"
+                            AbsoluteLayout.LayoutBounds="1, 0, AutoSize, AutoSize"
+                            AbsoluteLayout.LayoutFlags="PositionProportional" />
+            </AbsoluteLayout>
+        </Grid>
+        <CollectionView BackgroundColor="Transparent"
+                        Grid.Row="1"
+                        ItemsSource="{Binding Routes}"
+                        SelectionMode="None"
+                        x:Name="collection">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:RouteView">
+                    <Grid Padding="10">
+                        <ContentView>
+                            <VerticalStackLayout Spacing="15">
+                                <Frame HeightRequest="45"
+                                       Padding="0"
+                                       Style="{StaticResource CardView}"
+                                       BorderColor="Orange">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                                            Tapped="TapGestureRecognizer_Tapped"
+                                            Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=GoToDetailsCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid Padding="0"
+                                            ColumnDefinitions="125, *">
+                                        <HorizontalStackLayout Grid.ColumnSpan="2"
+                                   Padding="15,0" HeightRequest="30" Spacing="5">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <HorizontalStackLayout Grid.Column="0" >
+                                                    <Image Source="vehicle_icon.png"/>
+                                                    <Label Text="{Binding Code}" VerticalOptions="Center" Margin="12,0"/>
+                                                </HorizontalStackLayout>
+                                                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                                    <Image Source="route_icon.png"/>
+                                                    <Label Text="{Binding Name}" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Frame>
+                            </VerticalStackLayout>
+                        </ContentView>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+        <Button
+            x:Name="GetRoutesButton"
+            Grid.Row="2"
+            Margin="9"
+            Command="{Binding GetRoutesCommand}"
+            IsEnabled="{Binding IsNotBusy}"
+            Text="Refresh Routes"/>
+
+        <ActivityIndicator
+            Grid.RowSpan="2"
+            Grid.ColumnSpan="2"
+            HorizontalOptions="Fill"
+            IsRunning="{Binding IsBusy}"
+            IsVisible="{Binding IsBusy}"
+            VerticalOptions="Center"/>
+    </Grid>
+
+</ContentPage>

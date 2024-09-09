@@ -12,7 +12,6 @@ namespace CommuteMate.Views;
 [QueryProperty(nameof(Streets), "Streets")]
 public partial class MapView : ContentPage
 {
-    readonly MapServices _mapServices;
     public List<string> _streets { get; set; }
     public string Streets
     {
@@ -64,49 +63,10 @@ public partial class MapView : ContentPage
         }
         return locations;
     }
-
-    async Task<List<Coordinate>> WktToLineString(string wktString)
-    {
-        await Task.Delay(0);
-
-
-        // Find the index of the opening and closing parentheses
-        int startIndex = wktString.IndexOf('(');
-        int endIndex = wktString.LastIndexOf(')');
-
-        // Extract the substring between the parentheses
-        string coordinatesString = wktString.Substring(startIndex + 1, endIndex - startIndex - 1);
-
-        // Split coordinates string into individual coordinates
-        string[] coordinateStrings = coordinatesString.Split(',');
-
-        List<Coordinate> coordinates = new List<Coordinate>();
-
-        foreach (var coordinateString in coordinateStrings)
-        {
-            // Split coordinate string into X and Y
-            string[] parts = coordinateString.Trim().Split(' ');
-
-            // Parse X and Y values
-            if (parts.Length == 2 && double.TryParse(parts[0], out double x) && double.TryParse(parts[1], out double y))
-            {
-                coordinates.Add(new Coordinate { X = x, Y = y });
-            }
-            else
-            {
-                // Handle invalid coordinate format
-                throw new FormatException("Invalid coordinate format in WKT string.");
-            }
-        }
-
-        return coordinates;
-    }
-
     protected override void OnAppearing()
     {
         base.OnAppearing();
         CreateGoogleMapAsync(testMap);
-        List<LineString> lines = new List<LineString>();
         foreach(var street in _streets)
         {
             var line = (LineString)new WKTReader().Read(street);

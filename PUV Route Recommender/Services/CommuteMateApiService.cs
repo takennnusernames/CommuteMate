@@ -142,7 +142,6 @@ namespace CommuteMate.Services
                             }
 
                             //geometries.Enqueue(walkGeom);
-                            var fare = 12;
                             if (ridingQueue.Count > 0)
                             {
                                 var ride = ridingQueue.Dequeue();
@@ -248,7 +247,7 @@ namespace CommuteMate.Services
                 throw new Exception($"Error in Getting Available Routes:", ex);
             }
         }
-        public async Task<List<string?>> SearchRoute(string text)
+        public async Task<List<string>> SearchRoute(string text)
         {
             var responseData = await _client.GetFromJsonAsync<List<string>>($"/api/route/search?input={text}");
             return responseData;

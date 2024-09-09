@@ -45,7 +45,16 @@ namespace CommuteMate.Models
             }
         }
         public bool IsNotDownloaded => !IsDownloaded;
-        public ObservableCollection<string> Streets { get; set; } = [];
+        private ObservableCollection<string> streets = [];
+        public ObservableCollection<string> Streets
+        {
+            get { return streets; }
+            set
+            {
+                streets = value;
+                OnPropertyChanged(nameof(streets));
+            }
+        }
     }
     public class Street
     {

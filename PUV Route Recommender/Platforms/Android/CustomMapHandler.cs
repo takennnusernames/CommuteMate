@@ -21,7 +21,7 @@ namespace CommuteMate.Platforms.Android
         {
         }
 
-        public CustomMapHandler(IPropertyMapper? mapper = null, CommandMapper? commandMapper = null) : base(
+        public CustomMapHandler(IPropertyMapper mapper = null, CommandMapper commandMapper = null) : base(
             mapper ?? CustomMapper, commandMapper ?? CommandMapper)
         {
         }

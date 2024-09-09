@@ -16,7 +16,7 @@ namespace CommuteMate.Platforms.iOS
 {
     public class CustomMapHandler : MapHandler
     {
-        private static UIView? lastTouchedView;
+        private static UIView lastTouchedView;
         public static readonly IPropertyMapper<IMap, IMapHandler> CustomMapper =
             new PropertyMapper<IMap, IMapHandler>(Mapper)
             {

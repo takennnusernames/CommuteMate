@@ -62,23 +62,26 @@ namespace CommuteMate
 
             //ViewModels
             builder.Services.AddSingleton<RoutesViewModel>();
+            builder.Services.AddSingleton<RouteDetailsViewModel>();
             builder.Services.AddTransient<NavigatingViewModel>();
             builder.Services.AddSingleton<VehicleInfoViewModel>();
             builder.Services.AddSingleton<MapViewModel>();
 
             //Views
             builder.Services.AddSingleton<RoutesView>();
+            builder.Services.AddSingleton<RouteListView>();
             builder.Services.AddSingleton<NavigatingPage>();
             builder.Services.AddTransient<SurveyPage>();
             builder.Services.AddTransient<MapView>();
+            builder.Services.AddTransient<RouteDetailsView>();
             builder.Services.AddSingleton<DetailsView>();
             builder.Services.AddSingleton<VehicleInfoPage>();
 
             //Sheet
             builder.Services.AddSingleton<SlideUpCard>();
 
+            //Database
             var dbContext = new CommuteMateDbContext();
-
 #if DEBUG
             dbContext.Database.EnsureDeleted();
 #endif

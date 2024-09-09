@@ -100,7 +100,7 @@ namespace CommuteMate.Services
             map.Pins.Remove(pin);
             return Task.FromResult(map);
         }
-        public async Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action)
+        public Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action)
         {
             List<Location> locations = [];
             if (geometry.GeometryType.Equals("MultiLineString"))
@@ -149,11 +149,11 @@ namespace CommuteMate.Services
             }
             map.MapElements.Add(polyline);
 
-            return polyline;
+            return Task.FromResult(polyline);
 
         }
 
-        public async Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action, Microsoft.Maui.Graphics.Color color)
+        public Task<Polyline> AddGooglePolyline(Geometry geometry, GoogleMap map, string action, Microsoft.Maui.Graphics.Color color)
         {
             List<Location> locations = [];
             if (geometry.GeometryType.Equals("MultiLineString"))
@@ -194,7 +194,7 @@ namespace CommuteMate.Services
             }
             map.MapElements.Add(polyline);
 
-            return polyline;
+            return Task.FromResult(polyline);
 
         }
 

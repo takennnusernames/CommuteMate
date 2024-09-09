@@ -35,8 +35,6 @@ public partial class DetailsView : ContentView
 
     public ObservableCollection<List<string>> StreetList = new();
 
-    private List<Street> streets;
-    
 
     //private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
     //{
@@ -143,7 +141,7 @@ public partial class DetailsView : ContentView
         oldView.IsVisible = false;
     }
 
-    private async void Open_Button_Clicked(object sender, EventArgs e)
+    private void Open_Button_Clicked(object sender, EventArgs e)
     {
         var button = (Button)sender;
         var route = (Route)button.BindingContext;

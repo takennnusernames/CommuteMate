@@ -32,7 +32,7 @@ namespace CommuteMate.Services
                 var route = new Route
                 {
                     RouteId = data.Id,
-                    Osm_Id = data.OsmId,
+                    OsmId = data.OsmId,
                     Code = data.RouteCode,
                     Name = data.RouteName
                 };
@@ -52,7 +52,7 @@ namespace CommuteMate.Services
                     streets.Add(new Street
                     {
                         StreetId = data.Id,
-                        RouteId = data.OsmId,
+                        OsmId = data.OsmId,
                         Name = data.StreetName,
                         GeometryWKT = data.GeometryWKT
                     });

@@ -146,7 +146,7 @@ namespace CommuteMate.ViewModels
                 if (!response)
                     return;
                 IsBusy = true;
-                //var routeView = Routes.Where(route => route.Osm_Id == osmId).FirstOrDefault();
+                //var routeView = Routes.Where(route => route.OsmId == osmId).FirstOrDefault();
                 //routeView.IsDownloaded = true;
 
                 var route = await _routeService.GetRouteByOsmIdAsync(osmId);
@@ -159,7 +159,7 @@ namespace CommuteMate.ViewModels
                 {
                     Route newRoute = new Route
                     {
-                        Osm_Id = route.Osm_Id,
+                        OsmId = route.OsmId,
                         Code = route.Code,
                         Name = route.Name,
                         StreetNameSaved = true,
@@ -172,7 +172,7 @@ namespace CommuteMate.ViewModels
                     var data = await _streetService.GetStreetByIdAsync(street.StreetId);
                     if (data is not null)
                     {
-                        data.RouteId = osmId;
+                        data.OsmId = osmId;
                         data.GeometryWKT = street.GeometryWKT;
                         await _streetService.UpdateStreetAsync(data);
                     }
@@ -201,7 +201,7 @@ namespace CommuteMate.ViewModels
                 if (!response)
                     return;
                 IsBusy = true;
-                //var routeView = Routes.Where(route => route.Osm_Id == osmId).FirstOrDefault();
+                //var routeView = Routes.Where(route => route.OsmId == osmId).FirstOrDefault();
                 //routeView.IsDownloaded = false;
 
                 var route = await _routeService.GetRouteByOsmIdAsync(osmId);

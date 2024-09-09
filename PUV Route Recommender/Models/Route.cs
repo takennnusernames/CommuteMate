@@ -1,5 +1,6 @@
 ﻿using NetTopologySuite.Geometries;
 using SQLite;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 
@@ -11,12 +12,56 @@ namespace CommuteMate.Models
         [PrimaryKey, AutoIncrement]
         public int RouteId { get; set; }
         [Unique]
-        public long Osm_Id { get; set; }
+        public long OsmId { get; set; }
         public string Code { get; set; }
         public string Name { get; set; }
         public bool StreetNameSaved { get; set; }
         public virtual ICollection<Street> Streets { get; set; }
+        public virtual ICollection<RouteStreet> RouteStreets { get; set; }
 
+    }
+    public class Street
+    {
+        [PrimaryKey, AutoIncrement]
+        public int StreetId { get; set; }
+        [Unique]
+        public long OsmId { get; set; }
+        public string Name { get; set; }
+        public string GeometryWKT { get; set; }
+
+        [NotMapped]
+        public List<Coordinate> Coordinates { get; set; }
+        public virtual ICollection<Route> Routes { get; set; }
+        public virtual ICollection<RouteStreet> RouteStreets { get; set; }
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+
+            var otherStreet = (Street)obj;
+            return Routes == otherStreet.Routes;
+            // Add other relevant property comparisons if needed
+        }
+
+        public override int GetHashCode()
+        {
+            return StreetId.GetHashCode() ^ OsmId.GetHashCode();
+            // Combine hash codes of relevant properties
+        }
+    }
+
+    public class RouteStreet
+    {
+        [PrimaryKey, AutoIncrement]
+        public int RelationId { get; init; }
+
+        [ForeignKey("Route")]
+        public int RouteId { get; init; }
+        public Route Route { get; init; }
+
+        [ForeignKey("Street")]
+        public int StreetId { get; init; }
+        public Street Street { get; init; }
     }
     public class RouteView : BindableObject
     {
@@ -54,39 +99,6 @@ namespace CommuteMate.Models
                 streets = value;
                 OnPropertyChanged(nameof(streets));
             }
-        }
-    }
-    public class Street
-    {
-        [PrimaryKey, AutoIncrement]
-        public int StreetId { get; set; }
-        [Unique]
-        public long RouteId { get; set; }
-        public string Name { get; set; }
-        public string GeometryWKT { get; set; }
-
-        [NotMapped]
-        public List<Coordinate> Coordinates { get; set; }
-        //public RoutesViewModel ParentViewModel { get; set; }
-        //public Street(RoutesViewModel parent)
-        //{
-        //    ParentViewModel = parent;
-        //}
-        public virtual ICollection<Route> Routes { get; set; }
-        public override bool Equals(object obj)
-        {
-            if (obj == null || GetType() != obj.GetType())
-                return false;
-
-            var otherStreet = (Street)obj;
-            return Routes == otherStreet.Routes;
-            // Add other relevant property comparisons if needed
-        }
-
-        public override int GetHashCode()
-        {
-            return StreetId.GetHashCode() ^ RouteId.GetHashCode();
-            // Combine hash codes of relevant properties
         }
     }
 

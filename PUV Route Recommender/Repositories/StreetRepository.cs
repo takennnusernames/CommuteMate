@@ -37,13 +37,13 @@ namespace CommuteMate.Repositories
         public async Task<Street> GetStreetByOsmIdAsync(long osmId)
         {
 
-            return await _dbContext.Streets.Where(s => s.RouteId == osmId).Include(s => s.Routes).FirstOrDefaultAsync();
+            return await _dbContext.Streets.Where(s => s.OsmId == osmId).Include(s => s.Routes).FirstOrDefaultAsync();
             //return await db.Table<Street>().FirstOrDefaultAsync(x => x.Way_Id == wayId);
         }
 
         public async Task<List<Street>> GetStreetByRouteIdAsync(long osmId)
         {
-            var streets = _dbContext.Streets.Where(s => s.RouteId == osmId).ToList();
+            var streets = _dbContext.Streets.Where(s => s.OsmId == osmId).ToList();
             return await Task.FromResult(streets);
         }
         public async Task<Street> GetStreetByIdAsync(int id)

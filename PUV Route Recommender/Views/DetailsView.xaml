@@ -73,7 +73,7 @@
                 <Button x:Name="OsmButton"  x:DataType="model:Route" Grid.Row="3" Padding="10" Margin="0, 10"
                             Text="Open Route on OpenStreetMap.org" 
                             Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=OpenOSMCommand}"
-                            CommandParameter="{Binding Osm_Id}"
+                            CommandParameter="{Binding OsmId}"
                             HorizontalOptions="Center"
                             VerticalOptions="Center"
                             />

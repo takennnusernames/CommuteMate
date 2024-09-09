@@ -13,7 +13,8 @@
           BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}">
         <Grid Grid.Row="0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="320"/>
+                <ColumnDefinition Width="280"/>
+                <ColumnDefinition Width="40"/>
                 <ColumnDefinition Width="40"/>
             </Grid.ColumnDefinitions>
             <AbsoluteLayout Grid.ColumnSpan="2" Margin="6">
@@ -43,6 +44,17 @@
                             Command="{Binding CancelSearchCommand}"
                             HorizontalOptions="End"
                             IsVisible="False"
+                            AbsoluteLayout.LayoutBounds="1, 0, AutoSize, AutoSize"
+                            AbsoluteLayout.LayoutFlags="PositionProportional" />
+            </AbsoluteLayout>
+            <AbsoluteLayout Grid.Column="2" Margin="6">
+                <ImageButton x:Name="ShowDownloadsButton"
+                            Grid.Column="2"
+                            BackgroundColor="Black"
+                            CornerRadius="0"
+                            Command="{Binding ShowDownloadsCommand}"
+                            Source="downloads.png"
+                            HorizontalOptions="End"
                             AbsoluteLayout.LayoutBounds="1, 0, AutoSize, AutoSize"
                             AbsoluteLayout.LayoutFlags="PositionProportional" />
             </AbsoluteLayout>

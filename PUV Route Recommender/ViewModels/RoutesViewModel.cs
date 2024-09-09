@@ -116,7 +116,7 @@ namespace CommuteMate.ViewModels
                     RouteView newRoute = new RouteView
                     {
                         Code = route.Code,
-                        Osm_Id = route.Osm_Id,
+                        Osm_Id = route.OsmId,
                         Name = name,
                         IsStreetFrameVisible = false
                     };
@@ -168,7 +168,7 @@ namespace CommuteMate.ViewModels
                     RouteView newRoute = new RouteView
                     {
                         Code = route.Code,
-                        Osm_Id = route.Osm_Id,
+                        Osm_Id = route.OsmId,
                         Name = name,
                         IsStreetFrameVisible = false
                     };
@@ -380,7 +380,7 @@ namespace CommuteMate.ViewModels
                 {
                     Route newRoute = new Route
                     {
-                        Osm_Id = routeView.Osm_Id,
+                        OsmId = routeView.Osm_Id,
                         Code = routeView.Code,
                         Name = routeView.Name,
                         StreetNameSaved = true,
@@ -393,13 +393,13 @@ namespace CommuteMate.ViewModels
                     var data = await _streetService.GetStreetByIdAsync(street.StreetId);
                     if (data is not null)
                     {
-                        data.RouteId = osmId;
+                        data.OsmId = osmId;
                         data.GeometryWKT = street.GeometryWKT;
                         await _streetService.UpdateStreetAsync(data);
                     }
                     else
                     {
-                        street.RouteId = osmId;
+                        street.OsmId = osmId;
                         await _streetService.InsertStreetAsync(street);
                     }
                 }
@@ -447,6 +447,54 @@ namespace CommuteMate.ViewModels
             finally
             { 
                 IsBusy = false; 
+            }
+        }
+
+        [RelayCommand]
+        async Task ShowDownloads()
+        {
+            if (IsBusy)
+                return;
+            try
+            {
+                var response = await Shell.Current.DisplayAlert("Open", "Show downloaded routes", "OK", "Cancel");
+                if (!response)
+                    return;
+
+                IsBusy = true;
+                List<Route> routes = [];
+
+                routes = await _routeService.GetOfflineRoutesAsync();
+
+                if (SearchResults.Count != 0)
+                    SearchResults.Clear();
+
+
+                if (routes != null)
+                    foreach (var result in routes)
+                    {
+                        var parts = result.Name.Split(new[] { ':' }, 2);
+                        var name = parts.Length > 1 ? parts[1] : result.Name;
+                        SearchResults.Add(new RouteView
+                        {
+                            Code = result.Code,
+                            Osm_Id = result.OsmId,
+                            Name = name,
+                            IsStreetFrameVisible = false
+                        });
+                    }
+
+                Routes = new ObservableCollection<RouteView>(SearchResults);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get routes: {ex.Message}");
+                await Shell.Current.DisplayAlert("Alert!", "Press Retrieve Routes button to Load Routes", "OK");
+
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 

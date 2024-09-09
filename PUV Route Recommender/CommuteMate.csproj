@@ -61,7 +61,7 @@
     <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\commutemate.svg" Color="#512BD4" />
     <!-- Splash Screen -->
     <!--<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128, 128" />-->
-    <MauiSplashScreen Include="Resources\Splash\commutematesplash.svg" Color="white" />
+    <MauiSplashScreen Include="Resources\Splash\commutemate_splash.svg" Color="white" />
     <!-- Images -->
     <MauiImage Include="Resources\Images\* " />
     <MauiImage Include="Resources\Images\Sample\* " />
@@ -76,6 +76,8 @@
     <None Remove="Resources\Images\commutemate_logo.png" />
     <None Remove="Resources\Images\destination_icon.png" />
     <None Remove="Resources\Images\details_icon.png" />
+    <None Remove="Resources\Images\download.png" />
+    <None Remove="Resources\Images\downloads.png" />
     <None Remove="Resources\Images\fare_icon.png" />
     <None Remove="Resources\Images\info_icon.png" />
     <None Remove="Resources\Images\jeepney_sample2.jpg" />

@@ -49,6 +49,8 @@ namespace CommuteMate
                 new StreetRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IRouteRepository>(provider =>
                 new RouteRepository(provider.GetService<CommuteMateDbContext>()));
+            builder.Services.AddSingleton<IRouteStreetRepository>(provider =>
+                new RouteStreetRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IVehicleRepository, VehicleRepository>();
 
             //Services

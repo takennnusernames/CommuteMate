@@ -6,10 +6,9 @@ using System.Threading.Tasks;
 
 namespace CommuteMate.Interfaces
 {
-    public interface IRouteStreetRepository
+    public interface IRouteStreetService
     {
-        Task<bool> InsertStreetRelation(RouteStreet routeStreet);
+        Task<bool> CreateRelation(RouteStreet relation);
         Task<List<Street>> GetRelatedStreets(long osmId);
-        bool CheckRelation(long streetId, long routeId);
     }
 }

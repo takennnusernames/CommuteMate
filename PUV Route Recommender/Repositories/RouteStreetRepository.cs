@@ -15,18 +15,28 @@ namespace CommuteMate.Repositories
             _dbContext = dbContext;
         }
 
-        public async void InsertStreetRelation(RouteStreet routeStreet)
+        public async Task<bool> InsertStreetRelation(RouteStreet routeStreet)
         {
             try
             {
                 await _dbContext.AddAsync(routeStreet);
                 await _dbContext.SaveChangesAsync();
+                return true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to insert route: {ex.Message}");
-                throw;
+                Console.WriteLine($"Failed to insert relation: {ex.Message}");
+                return false;
             }
+        }
+
+        public async Task<List<Street>> GetRelatedStreets(long osmId)
+        {
+            return await Task.FromResult(_dbContext.Streets.Where(street => street.RouteStreets.Any(routeStreet => routeStreet.RouteOsmId == osmId)).ToList());
+        }
+        public bool CheckRelation(long streetId, long routeId)
+        {
+            return _dbContext.RouteStreets.Any(r => r.RouteOsmId == routeId && r.StreetOsmId == streetId);
         }
     }
 }

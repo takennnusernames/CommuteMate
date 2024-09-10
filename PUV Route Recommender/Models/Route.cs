@@ -56,11 +56,11 @@ namespace CommuteMate.Models
         public int RelationId { get; init; }
 
         [ForeignKey("Route")]
-        public int RouteId { get; init; }
+        public long RouteOsmId { get; init; }
         public Route Route { get; init; }
 
         [ForeignKey("Street")]
-        public int StreetId { get; init; }
+        public long StreetOsmId { get; init; }
         public Street Street { get; init; }
     }
     public class RouteView : BindableObject

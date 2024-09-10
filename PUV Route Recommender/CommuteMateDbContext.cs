@@ -26,15 +26,15 @@ namespace CommuteMate
             modelBuilder.Entity<RouteStreet>()
                 .HasOne(rs => rs.Route)
                 .WithMany(s => s.RouteStreets)
-                .HasForeignKey(rs => rs.StreetId)
-                .HasPrincipalKey(r => r.RouteId)
+                .HasForeignKey(rs => rs.RouteOsmId)
+                .HasPrincipalKey(r => r.OsmId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<RouteStreet>()
                 .HasOne(rs => rs.Street)
                 .WithMany(s => s.RouteStreets)
-                .HasForeignKey(rs => rs.StreetId)
-                .HasPrincipalKey(r => r.StreetId)
+                .HasForeignKey(rs => rs.StreetOsmId)
+                .HasPrincipalKey(r => r.OsmId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Route>()

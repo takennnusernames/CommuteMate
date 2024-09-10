@@ -24,13 +24,15 @@ namespace CommuteMate.Repositories
         {
             try
             {
+                if (_dbContext.Streets.Where(s => s.OsmId == street.OsmId).FirstOrDefault() is not null)
+                    return street;
                 await _dbContext.AddAsync(street);
                 await _dbContext.SaveChangesAsync();
                 return street;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to add route: {ex.Message}");
+                Console.WriteLine($"Failed to add street: {ex.Message}");
                 throw;
             }
         }

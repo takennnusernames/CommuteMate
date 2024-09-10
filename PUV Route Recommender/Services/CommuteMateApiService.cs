@@ -244,7 +244,7 @@ namespace CommuteMate.Services
             catch(Exception ex)
             {
                 Console.WriteLine($"Exception: {ex.Message}");
-                throw new Exception($"Error in Getting Available Routes:", ex);
+                return null;
             }
         }
         public async Task<List<string>> SearchRoute(string text)

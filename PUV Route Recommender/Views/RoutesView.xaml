@@ -125,12 +125,12 @@
                                                          Command="{Binding LoadPreviousPageCommand}"
                                                          BackgroundColor="Transparent" 
                                                          IsEnabled="{Binding PreviousPage}"/>
-                                            <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=DownloadOfflineCommand}"
-                                                    CommandParameter="{Binding Osm_Id}"
+                                            <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=ConfirmationCommand}"
+                                                    CommandParameter="{Binding .}"
                                                     Grid.Column="1" Text="Download Offline" BackgroundColor="White" TextColor="Black" BorderColor="Black" 
                                                     IsVisible="{Binding IsNotDownloaded}"/>
-                                            <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=DeleteOfflineDataCommand}"
-                                                    CommandParameter="{Binding Osm_Id}"
+                                            <Button Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=ConfirmationCommand}"
+                                                    CommandParameter="{Binding .}"
                                                     Grid.Column="1" Text="Delete Offline Data" BackgroundColor="White" TextColor="Black" BorderColor="Black" 
                                                     IsVisible="{Binding IsDownloaded}"/>
                                             <ImageButton Source="next_icon" Grid.Column="2" 

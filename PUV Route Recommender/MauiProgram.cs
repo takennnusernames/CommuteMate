@@ -58,6 +58,7 @@ namespace CommuteMate
             builder.Services.AddSingleton<IGeolocation>(Geolocation.Default);
             builder.Services.AddSingleton<IRouteService, RouteService>();
             builder.Services.AddSingleton<IStreetService, StreetService>();
+            builder.Services.AddSingleton<IRouteStreetService, RouteStreetService>();
             builder.Services.AddSingleton<IMapServices, MapServices>();
             builder.Services.AddSingleton<ICommuteMateApiService, CommuteMateApiService>();
 

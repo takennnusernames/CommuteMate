@@ -6,12 +6,10 @@ namespace CommuteMate.Services
     public class RouteService : IRouteService
     {
         IRouteRepository _routeRepository;
-        private readonly IStreetService _streetService;
 
-        public RouteService(IRouteRepository routeRepository, IStreetService streetService)
+        public RouteService(IRouteRepository routeRepository)
         {
             _routeRepository = routeRepository;
-            _streetService = streetService;
         }
         public async Task<Route> InsertRouteAsync(Route newRoute)
         {

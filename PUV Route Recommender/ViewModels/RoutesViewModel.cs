@@ -11,12 +11,14 @@ namespace CommuteMate.ViewModels
         readonly IStreetService _streetService;
         readonly ICommuteMateApiService _commuteMateApiService;
         readonly IMapServices _mapServices;
+        readonly IRouteStreetService _routeStreetService;
         public RoutesViewModel(
             IConnectivity connectivity,
             IRouteService routeService,
             IStreetService streetService,
             ICommuteMateApiService commuteMateApiService,
-            IMapServices mapServices)
+            IMapServices mapServices,
+            IRouteStreetService routeStreetService)
         {
             Title = "Route List";
             _connectivity = connectivity;
@@ -24,6 +26,7 @@ namespace CommuteMate.ViewModels
             _streetService = streetService;
             _commuteMateApiService = commuteMateApiService;
             _mapServices = mapServices;
+            _routeStreetService = routeStreetService;
         }
         //properties
         private ObservableCollection<RouteView> _allRoutes = [];
@@ -92,6 +95,9 @@ namespace CommuteMate.ViewModels
                         $"Only the downloaded routes will be shown", "OK");
 
                     routes = await _routeService.GetOfflineRoutesAsync();
+
+                    RoutesSearchBar.IsEnabled = false;
+                    RoutesSearchBar.Placeholder = "Can't search while offline";
                 }
 
                 else
@@ -118,16 +124,20 @@ namespace CommuteMate.ViewModels
                         Code = route.Code,
                         Osm_Id = route.OsmId,
                         Name = name,
-                        IsStreetFrameVisible = false
+                        IsStreetFrameVisible = false,
+                        IsDownloaded = route.StreetNameSaved
                     };
                     Routes.Add(newRoute);
                     _allRoutes.Add(newRoute);
                 }
+
+                RoutesSearchBar.IsEnabled = true;
+                RoutesSearchBar.Placeholder = "Search Street Name or Route Code/Name";
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Unable to get routes: {ex.Message}");
-                await Shell.Current.DisplayAlert("Alert!", "Press Retrieve Routes button to Load Routes", "OK");
+                await Shell.Current.DisplayAlert("Alert!", "Press Refresh Routes button to Load Routes", "OK");
 
             }
             finally
@@ -151,8 +161,10 @@ namespace CommuteMate.ViewModels
                 }
                 var routes = await _commuteMateApiService.GetRoutes();
 
-                if (_allRoutes.Count != 0)
-                    _allRoutes.Clear();
+                if (SearchResults.Count != 0)
+                    SearchResults.Clear();
+
+                Routes = new ObservableCollection<RouteView>(_allRoutes);
 
                 if (routes.Count == 0)
                 {
@@ -170,13 +182,19 @@ namespace CommuteMate.ViewModels
                         Code = route.Code,
                         Osm_Id = route.OsmId,
                         Name = name,
-                        IsStreetFrameVisible = false
+                        IsStreetFrameVisible = false,
+                        IsDownloaded = route.StreetNameSaved
                     };
                     Routes.Add(newRoute);
                     _allRoutes.Add(newRoute);
                 }
 
                 getRoutesButton.IsEnabled = false;
+
+
+                RoutesSearchBar.IsEnabled = true;
+                RoutesSearchBar.Placeholder = "Search Street Name or Route Code/Name";
+
             }
             catch (Exception ex)
             {
@@ -236,7 +254,7 @@ namespace CommuteMate.ViewModels
                 }
                 IsBusy = true;
                 if(route.IsDownloaded)
-                    _streets = await _streetService.GetStreetByRouteIdAsync(route.Osm_Id);
+                    _streets = await _routeStreetService.GetRelatedStreets(route.Osm_Id);
                 else
                 {
                     if (_connectivity.NetworkAccess != NetworkAccess.Internet)
@@ -357,18 +375,42 @@ namespace CommuteMate.ViewModels
         }
 
         [RelayCommand]
+        async Task Confirmation(RouteView route)
+        {
+            if(IsBusy)
+                return;
+            try
+            {
+                if (route.IsDownloaded)
+                {
+                    var response = await Shell.Current.DisplayAlert("Delete", "Are you sure you want to delete this Route Data?", "Yes", "Cancel");
+                    if (!response)
+                        return;
+                    else
+                        await DeleteOfflineData(route.Osm_Id);
+                }
+                else
+                {
+                    var response = await Shell.Current.DisplayAlert("Download", "Route Data will be downloaded to your device", "Proceed", "Cancel");
+                    if (!response)
+                        return;
+                    else
+                        await DownloadOffline(route.Osm_Id);
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
         async Task DownloadOffline(long osmId)
         {
             if(IsBusy)
                 return;
             try
             {
-                var response = await Shell.Current.DisplayAlert("Download", "Route Data will be downloaded to your device", "Proceed", "Cancel");
-                if (!response)
-                    return;
                 IsBusy = true;
                 var routeView = Routes.Where(route => route.Osm_Id == osmId).FirstOrDefault();
-                routeView.IsDownloaded = true;
 
                 var route = await _routeService.GetRouteByOsmIdAsync(osmId);
                 if (route is not null)
@@ -385,7 +427,7 @@ namespace CommuteMate.ViewModels
                         Name = routeView.Name,
                         StreetNameSaved = true,
                     };
-                    await _routeService.InsertRouteAsync(newRoute);
+                    route = await _routeService.InsertRouteAsync(newRoute);
                 }
 
                 foreach (var street in Streets)
@@ -393,16 +435,42 @@ namespace CommuteMate.ViewModels
                     var data = await _streetService.GetStreetByIdAsync(street.StreetId);
                     if (data is not null)
                     {
-                        data.OsmId = osmId;
                         data.GeometryWKT = street.GeometryWKT;
-                        await _streetService.UpdateStreetAsync(data);
+                        try
+                        {
+                            await _streetService.UpdateStreetAsync(data);
+                        }
+                        catch(Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
                     }
                     else
                     {
-                        street.OsmId = osmId;
-                        await _streetService.InsertStreetAsync(street);
+                        try
+                        {
+                            await _streetService.InsertStreetAsync(street);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                    }
+                    try
+                    {
+                        await _routeStreetService.CreateRelation(new RouteStreet
+                        {
+                            Street = street,
+                            Route = route
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
                     }
                 }
+
+                routeView.IsDownloaded = true;
             }
             catch (Exception ex)
             {
@@ -414,16 +482,12 @@ namespace CommuteMate.ViewModels
             }
         }
 
-        [RelayCommand]
         async Task DeleteOfflineData(long osmId)
         {
             if (IsBusy)
                 return;
             try
             {
-                var response = await Shell.Current.DisplayAlert("Delete", "Are you sure you want to delete this Route Data?", "Yes", "Cancel");
-                if (!response)
-                    return;
                 IsBusy = true;
                 var routeView = Routes.Where(route => route.Osm_Id == osmId).FirstOrDefault();
                 routeView.IsDownloaded = false;
@@ -480,11 +544,13 @@ namespace CommuteMate.ViewModels
                             Code = result.Code,
                             Osm_Id = result.OsmId,
                             Name = name,
-                            IsStreetFrameVisible = false
+                            IsStreetFrameVisible = false,
+                            IsDownloaded = result.StreetNameSaved
                         });
                     }
 
                 Routes = new ObservableCollection<RouteView>(SearchResults);
+                getRoutesButton.IsEnabled = true;
             }
             catch (Exception ex)
             {

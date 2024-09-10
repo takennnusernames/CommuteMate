@@ -106,6 +106,7 @@ namespace CommuteMate.Repositories
 
         public async Task UpdateRouteAsync(Route route)
         {
+            //_dbContext.Routes.Update(route);
             _dbContext.Entry(route).State = EntityState.Modified;
             await _dbContext.SaveChangesAsync();
         }

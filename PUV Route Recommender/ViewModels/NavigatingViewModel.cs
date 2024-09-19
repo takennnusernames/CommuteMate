@@ -73,6 +73,7 @@ namespace CommuteMate.ViewModels
         public Button GetLocationButton { get; set; }
         public Button GetRoutesButton { get; set; }
         public SlideUpCard SlideUpCard {  get; set; }
+        public CollectionView RouteStepsCollectionView { get; set; }
 
         public async Task MapClicked(MapClickedEventArgs e)
         {
@@ -191,6 +192,17 @@ namespace CommuteMate.ViewModels
             await ShowDetailsButton.ScaleTo(1, 250, Easing.CubicIn);
         }
 
+        private void SetCollectionViewHeight()
+        {
+            // Get the screen height
+            var screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+
+            // Calculate 40% of the screen height for CollectionView max height
+            double collectionViewHeight = screenHeight * 0.4;
+
+            // Set the calculated height to MaxHeightRequest of the CollectionView
+            RouteStepsCollectionView.MaximumHeightRequest = collectionViewHeight;
+        }
 
         [RelayCommand]
         async Task CreateMap()
@@ -484,6 +496,8 @@ namespace CommuteMate.ViewModels
                 colorQueue.Enqueue(Colors.Yellow);
                 colorQueue.Enqueue(Colors.Gray);
 
+
+                SetCollectionViewHeight();
 
                 foreach (var step in path.Steps)
                 {

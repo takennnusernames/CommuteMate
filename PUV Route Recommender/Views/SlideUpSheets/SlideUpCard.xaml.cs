@@ -15,6 +15,7 @@ public partial class SlideUpCard : BottomSheet
             Ratio = 0.75f
         };
         medium = new MediumDetent();
+        viewModel.RouteStepsCollectionView = RouteStepsCollectionView;
     }
     public async Task Refresh()
     {

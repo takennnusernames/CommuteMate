@@ -48,7 +48,7 @@
                 <ImageButton Source="back_icon.png" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center" WidthRequest="30" 
                              Padding="0" Margin="0"/>
                 <!--<Button Text="Back" Clicked="BackToPrioritySelect" HorizontalOptions="Start" VerticalOptions="Center"/>-->
-                <Label Text="Priority: Fare" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" Margin="-3"/>
+                <Label Text="Choose Route/Path Option" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" Margin="-3"/>
             </FlexLayout>
 
             <CollectionView x:Name="pathOptions"
@@ -89,7 +89,17 @@
                 <Label Text="Route Details" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" />
             </FlexLayout>
 
-            <Grid RowDefinitions="*,*,400,*" BackgroundColor="LightBlue">
+            <Grid  BackgroundColor="LightBlue">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <!-- First row will adjust to its content -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Second row will adjust to its content -->
+                    <RowDefinition Height="*" />
+                    <!-- Third row grows to fill available space -->
+                    <RowDefinition Height="Auto" />
+                    <!-- Last row adjusts to its content -->
+                </Grid.RowDefinitions>
                 <FlexLayout Grid.Row="0" HorizontalOptions="Center">
                     <Image Source="fare_icon.png" HeightRequest="40" WidthRequest="40"/>
                     <Label 
@@ -108,7 +118,8 @@ Style="{StaticResource LargeLabel}" HorizontalOptions="Center" VerticalOptions="
                      Grid.Row="2"
                      BackgroundColor="Wheat"
                      ItemsSource="{Binding CurrentPathSteps}"
-                     SelectionMode="None">
+                     SelectionMode="None"
+                     x:Name="RouteStepsCollectionView">
 
                     <CollectionView.ItemTemplate>
                         <DataTemplate x:DataType="model:RouteStep">

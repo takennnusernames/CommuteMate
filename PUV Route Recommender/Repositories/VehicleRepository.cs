@@ -19,7 +19,7 @@ namespace CommuteMate.Repositories
                 Type="Traditional Jeepney", 
                 Info=new VehicleInfo
                 {
-                    MinimumFare = 12.0,
+                    MinimumFare = 13.0,
                     MinimumKM = 4,
                     Comfortability = 3,
                     FareRate = 1.80
@@ -32,7 +32,7 @@ namespace CommuteMate.Repositories
                 Type="Modernized Jeepney",
                 Info=new VehicleInfo
                 {
-                    MinimumFare = 14.0,
+                    MinimumFare = 15.0,
                     MinimumKM = 4,
                     Comfortability = 6,
                     FareRate = 1.80
@@ -45,7 +45,7 @@ namespace CommuteMate.Repositories
                 Type="Modernized Jeepney (Aircon)",
                 Info=new VehicleInfo
                 {
-                    MinimumFare = 14.0,
+                    MinimumFare = 15.0,
                     MinimumKM = 4,
                     Comfortability = 8,
                     FareRate = 2.20

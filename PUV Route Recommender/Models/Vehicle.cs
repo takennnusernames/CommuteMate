@@ -16,7 +16,7 @@ namespace CommuteMate.Models
     public class VehicleInfo
     {
         public double MinimumFare { get; set; }
-        public int MinimumKM { get; set; }
+        public double MinimumKM { get; set; }
         public double FareRate { get; set; }
         public double Comfortability { get; set; }
 

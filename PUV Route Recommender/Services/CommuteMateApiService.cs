@@ -25,21 +25,29 @@ namespace CommuteMate.Services
         }
         public async Task<List<Route>> GetRoutes()
         {
-            var responseData = await _client.GetFromJsonAsync<List<RouteDTO>>("/api/Route");
-            List<Route> routes = [];
-            foreach(var data in responseData)
+            try
             {
-                var route = new Route
+                var responseData = await _client.GetFromJsonAsync<List<RouteDTO>>("/api/Route");
+                List<Route> routes = [];
+                foreach (var data in responseData)
                 {
-                    RouteId = data.Id,
-                    OsmId = data.OsmId,
-                    Code = data.RouteCode,
-                    Name = data.RouteName
-                };
-                route = await _routeService.InsertRouteAsync(route);
-                routes.Add(route);
+                    var route = new Route
+                    {
+                        RouteId = data.Id,
+                        OsmId = data.OsmId,
+                        Code = data.RouteCode,
+                        Name = data.RouteName
+                    };
+                    route = await _routeService.InsertRouteAsync(route);
+                    routes.Add(route);
+                }
+                return routes;
             }
-            return routes;
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return [];
+            }
         }
         public async Task<List<Street>> GetRouteStreets(long osmId)
         {
@@ -251,6 +259,52 @@ namespace CommuteMate.Services
         {
             var responseData = await _client.GetFromJsonAsync<List<string>>($"/api/route/search?input={text}");
             return responseData;
+        }
+
+        public async Task<List<Vehicle>> GetVehicles()
+        {
+            try
+            {
+                var responseData = await _client.GetFromJsonAsync<List<PuvDTO>>("/api/Puv");
+                List<Vehicle> vehicles = [];
+                foreach (var data in responseData)
+                {
+                    //var driveUrl = data.SampleImage;
+                    //var regex = new System.Text.RegularExpressions.Regex(@"(?:drive\.google\.com\/file\/d\/|d\/|id=)([^\/?]+)", System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                    //string imageLink;
+                    //var match = regex.Match(driveUrl);
+                    //if (match.Success)
+                    //{
+                    //    var fileId = match.Groups[1].Value;
+                    //    imageLink = $"https://drive.google.com/uc?export=view&id={fileId}";
+                    //}
+                    //else
+                    //{
+                    //    throw new ArgumentException("Invalid Google Drive URL format.", nameof(driveUrl));
+                    //}
+                    var vehicle = new Vehicle
+                    {
+                        VehicleID = data.Id,
+                        Type = data.Type,
+                        Info = new VehicleInfo
+                        {
+                            MinimumFare = data.MinimumFare,
+                            MinimumKM = data.MinimumKm,
+                            Comfortability = data.Comfortability,
+                            FareRate = data.FareIncrease
+                        },
+                        ImageFileName = data.SampleImage
+                    };
+                    vehicles.Add(vehicle);
+                }
+                return vehicles;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
         }
     }
 }

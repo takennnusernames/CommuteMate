@@ -25,7 +25,7 @@
                                 <Frame x:Name="VehicleType" WidthRequest="300">
                                     <Label Text="{Binding Type}" HorizontalOptions="Center"/>
                                 </Frame>
-                                <Frame x:Name="VehicleImage" WidthRequest="300" HeightRequest="400" BackgroundColor="White" Padding="0">
+                                <Frame x:Name="VehicleImage" BackgroundColor="White" Padding="0" WidthRequest="300" HeightRequest="400">
                                     <Image Source="{Binding ImageFileName}"/>
                                 </Frame>
                                 <Frame x:Name="VehicleInformation" WidthRequest="300">
@@ -47,6 +47,14 @@
            IndicatorColor="LightGray"
            SelectedIndicatorColor="DarkGray"
            HorizontalOptions="Center" />
+
+            <ActivityIndicator
+                Grid.RowSpan="2"
+                Grid.ColumnSpan="2"
+                HorizontalOptions="Fill"
+                IsRunning="{Binding IsBusy}"
+                IsVisible="{Binding IsBusy}"
+                VerticalOptions="Center"/>
         </Grid>
     </Frame>
 </ContentPage>

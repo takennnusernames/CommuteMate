@@ -1,10 +1,21 @@
 using The49.Maui.BottomSheet;
 
 namespace CommuteMate.Views;
-
+[QueryProperty(nameof(OfflinePath), "Path")]
 public partial class NavigatingPage : ContentPage
 {
-	public NavigatingPage(NavigatingViewModel viewModel)
+    OfflinePath path;
+    public OfflinePath Path
+    {
+        get => path;
+        set
+        {
+            path = value;
+            OnPropertyChanged();
+        }
+    }
+    
+    public NavigatingPage(NavigatingViewModel viewModel)
 	{
 		InitializeComponent();
         BindingContext = viewModel;
@@ -17,7 +28,8 @@ public partial class NavigatingPage : ContentPage
         viewModel.ShowDetailsButton = ShowDetailsButton;
         viewModel.GetRoutesButton = GetRoutesButton;
         viewModel.GetLocationButton = GetLocationButton;
-
+        if (path != null)
+            viewModel.deserializeOfflinePathCommand.ExecuteAsync(path);
     }
     private void BottomSheet_Dismissed(object sender, DismissOrigin e)
     {
@@ -68,4 +80,5 @@ public partial class NavigatingPage : ContentPage
 
         GetLocationButton.IsVisible = false;
     }
+
 }

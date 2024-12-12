@@ -16,6 +16,7 @@ public partial class SlideUpCard : BottomSheet
         };
         medium = new MediumDetent();
         viewModel.RouteStepsCollectionView = RouteStepsCollectionView;
+        viewModel.DetailsGrid = DetailsGrid;
     }
     public async Task Refresh()
     {

@@ -1,12 +1,6 @@
-﻿using CommuteMate.DTO;
-using CommuteMate.Interfaces;
+﻿using CommuteMate.Interfaces;
 using NetTopologySuite.Geometries;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Json;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace CommuteMate.Services
 {
@@ -49,6 +43,54 @@ namespace CommuteMate.Services
         public async Task DeleteStreetAsync(Street street)
         {
             await _streetRepository.DeleteStreetAsync(street);
+        }
+
+        public async Task<string> GeometryToWkt(List<Coordinate> coordinates)
+        {
+            await Task.Delay(0);
+
+            if (coordinates == null || coordinates.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            // Construct the LINESTRING WKT string
+            StringBuilder wktBuilder = new StringBuilder();
+
+            if(coordinates.Count > 1)
+                wktBuilder.Append("LINESTRING (");
+            else if(coordinates.Count == 1)
+                wktBuilder.Append("POINT (");
+
+            foreach (Coordinate coord in coordinates)
+            {
+                wktBuilder.Append(coord.X).Append(" ").Append(coord.Y).Append(", ");
+            }
+
+            // Remove the trailing comma and space
+            wktBuilder.Length -= 2;
+            wktBuilder.Append(")");
+
+            return wktBuilder.ToString();
+        }
+
+        public async Task<string> LocationToWkt(Coordinate coordinate)
+        {
+            await Task.Delay(0);
+
+            // Construct the LINESTRING WKT string
+            StringBuilder wktBuilder = new StringBuilder();
+            
+            wktBuilder.Append("POINT (");
+
+
+            wktBuilder.Append(coordinate.X).Append(" ").Append(coordinate.Y).Append(", ");
+
+            // Remove the trailing comma and space
+            wktBuilder.Length -= 2;
+            wktBuilder.Append(")");
+
+            return wktBuilder.ToString();
         }
     }
 }

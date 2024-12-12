@@ -36,7 +36,7 @@ public partial class DetailsView : ContentView
     public ObservableCollection<List<string>> StreetList = new();
 
 
-    //private async void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    //private async void RouteTapped(object sender, TappedEventArgs e)
     //{
     //    try
     //    {

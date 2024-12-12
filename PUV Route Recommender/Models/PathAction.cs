@@ -1,16 +1,22 @@
 ﻿using NetTopologySuite.Geometries;
 namespace CommuteMate.Models
 {
-    public class PathAction
-    {
-        public Street Street { get; set; }
-        public string Act { get; set; }
-    }
-    public class RoutePath
+    public class RoutePath : BindableObject
     {
         public List<RouteStep> Steps { get; set; }
         public PathSummary Summary { get; set; }
         public List<Geometry> RouteGeometry { get; set; }
+        private bool isDownloaded = false;
+        public bool IsDownloaded
+        {
+            get { return isDownloaded; }
+            set
+            {
+                isDownloaded = value;
+                OnPropertyChanged(nameof(IsDownloaded));
+            }
+        }
+        public bool IsNotDownloaded => !IsDownloaded;
     }
     public class RouteStep
     {

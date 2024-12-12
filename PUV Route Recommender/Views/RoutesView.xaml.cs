@@ -40,7 +40,7 @@ public partial class RoutesView : ContentPage
             CancelSearchButton.IsVisible = false;
     }
 
-    private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    private void RouteTapped(object sender, TappedEventArgs e)
     {
 
         var frame = (Frame)sender;
@@ -65,5 +65,14 @@ public partial class RoutesView : ContentPage
             parent = parent.Parent;
         }
         return parent as CollectionView;
+    }
+
+    private void DownloadTapped(object sender, TappedEventArgs e)
+    {
+        var frame = (Frame)sender;
+        var collectionView = GetParentCollectionView(frame);
+        ScrollToTop(collectionView, frame);
+
+        return;
     }
 }

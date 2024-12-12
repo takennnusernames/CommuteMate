@@ -1,5 +1,4 @@
-﻿using Mapsui.Layers;
-using CommuteMate.Interfaces;
+﻿using CommuteMate.Interfaces;
 using CommuteMate.Views.SlideUpSheets;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
@@ -7,9 +6,8 @@ using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
 using MapClickedEventArgs = Microsoft.Maui.Controls.Maps.MapClickedEventArgs;
 using PinClickedEventArgs = Microsoft.Maui.Controls.Maps.PinClickedEventArgs;
 using Pin = Microsoft.Maui.Controls.Maps.Pin;
-using NetTopologySuite.Geometries;
-using The49.Maui.BottomSheet;
-using System.Linq;
+using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Alerts;
 
 namespace CommuteMate.ViewModels
 {
@@ -19,12 +17,21 @@ namespace CommuteMate.ViewModels
         readonly IMapServices _mapServices;
         readonly IConnectivity _connectivity;
         readonly ICommuteMateApiService _commuteMateApiService;
-        public NavigatingViewModel(IMapServices mapServices, ICommuteMateApiService commuteMateApiService, IConnectivity connectivity)
+        readonly IDownloadsRepository _downloadsRepository;
+        readonly IStreetService _streetService;
+        public NavigatingViewModel(
+            IMapServices mapServices,
+            ICommuteMateApiService commuteMateApiService,
+            IConnectivity connectivity,
+            IDownloadsRepository downloadsRepository,
+            IStreetService streetService)
         {
             Title = "Map";
             _mapServices = mapServices;
             _connectivity = connectivity;
             _commuteMateApiService = commuteMateApiService;
+            _downloadsRepository = downloadsRepository;
+            _streetService = streetService;
             SlideUpCard = new SlideUpCard(this);
 
         }
@@ -72,8 +79,10 @@ namespace CommuteMate.ViewModels
         public Frame ShowDetailsButton { get; set; }
         public Button GetLocationButton { get; set; }
         public Button GetRoutesButton { get; set; }
-        public SlideUpCard SlideUpCard {  get; set; }
+        public SlideUpCard SlideUpCard { get; set; }
         public CollectionView RouteStepsCollectionView { get; set; }
+
+        public Grid DetailsGrid { get; set; }
 
         public async Task MapClicked(MapClickedEventArgs e)
         {
@@ -86,6 +95,19 @@ namespace CommuteMate.ViewModels
                 {
                     await Shell.Current.DisplayAlert("No connectivity!",
                         $"Please check internet and try again.", "OK");
+                    return;
+                }
+                if (!_mapServices.checkLocationBounding(e.Location))
+                {
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                    string text = "Location is Out of Bounds";
+                    ToastDuration duration = ToastDuration.Short;
+                    double fontSize = 14;
+
+                    var toast = Toast.Make(text, duration, fontSize);
+
+                    await toast.Show(cancellationTokenSource.Token);
                     return;
                 }
                 var result = await Shell.Current.DisplayActionSheet("Make Location As:", "Cancel", null, ["Origin", "Destination"]);
@@ -110,7 +132,7 @@ namespace CommuteMate.ViewModels
                         break;
 
                     case "Destination":
-                        if(DestinationLocation != null)
+                        if (DestinationLocation != null)
                         {
                             var destination = new Microsoft.Maui.Devices.Sensors.Location(DestinationLocation.Coordinate.Y, DestinationLocation.Coordinate.X);
                             var destinationPin = Map.Pins.Where(p => p.Location == destination).FirstOrDefault();
@@ -196,12 +218,18 @@ namespace CommuteMate.ViewModels
         {
             // Get the screen height
             var screenHeight = DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+            //var screenHeight = SlideUpCard.Height;
 
-            // Calculate 40% of the screen height for CollectionView max height
-            double collectionViewHeight = screenHeight * 0.4;
+            // Calculate 30% of the screen height for CollectionView max height
+            double collectionViewHeight = screenHeight * 0.3;
+
+
+            double gridHeight = screenHeight * 0.9;
 
             // Set the calculated height to MaxHeightRequest of the CollectionView
             RouteStepsCollectionView.MaximumHeightRequest = collectionViewHeight;
+            //RouteStepsCollectionView.HeightRequest = collectionViewHeight;
+            //DetailsGrid.HeightRequest = gridHeight;
         }
 
         [RelayCommand]
@@ -248,8 +276,19 @@ namespace CommuteMate.ViewModels
                 try
                 {
                     var location = await _mapServices.GetCurrentLocationAsync();
-                    if(location == null)
-                        await Shell.Current.DisplayAlert("Out of Bounds", $"Make sure to select a location within Cebu City", "OK");
+                    if (location == null)
+                    {
+                        CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                        string text = "Location is Out of Bounds";
+                        ToastDuration duration = ToastDuration.Short;
+                        double fontSize = 14;
+
+                        var toast = Toast.Make(text, duration, fontSize);
+
+                        await toast.Show(cancellationTokenSource.Token);
+                        return;
+                    }
                     else
                     {
                         await SelectLocation(location);
@@ -307,7 +346,7 @@ namespace CommuteMate.ViewModels
                 if (SearchResults.Count != 0)
                     SearchResults.Clear();
 
-                if(locations != null)
+                if (locations != null)
                     foreach (var location in locations)
                         SearchResults.Add(location);
 
@@ -332,14 +371,14 @@ namespace CommuteMate.ViewModels
         [RelayCommand]
         void CancelSearch(string source)
         {
-            if(source == "Origin")
+            if (source == "Origin")
             {
                 OriginText = string.Empty;
                 OnPropertyChanged(nameof(OriginText));
                 if (!OriginSearchBar.IsFocused)
                     OriginCancel.IsVisible = false;
 
-                if(OriginLocation != null)
+                if (OriginLocation != null)
                 {
                     var pin = Positions.Where(p => p.Location == new Microsoft.Maui.Devices.Sensors.Location(OriginLocation.Coordinate.Y, OriginLocation.Coordinate.X)).FirstOrDefault();
                     Map.Pins.Remove(pin);
@@ -347,13 +386,13 @@ namespace CommuteMate.ViewModels
                 }
 
             }
-            else if(source == "Destination")
+            else if (source == "Destination")
             {
                 DestinationText = string.Empty;
                 OnPropertyChanged(nameof(DestinationText));
                 if (!DestinationSearchBar.IsFocused)
                     DestinationCancel.IsVisible = false;
-                if(DestinationLocation != null)
+                if (DestinationLocation != null)
                 {
                     var pin = Positions.Where(p => p.Location == new Microsoft.Maui.Devices.Sensors.Location(DestinationLocation.Coordinate.Y, DestinationLocation.Coordinate.X)).FirstOrDefault();
                     Map.Pins.Remove(pin);
@@ -374,7 +413,7 @@ namespace CommuteMate.ViewModels
                 OriginLocation = location;
                 OriginCancel.IsVisible = true;
             }
-            else if(Source == "Destination")
+            else if (Source == "Destination")
             {
                 DestinationText = location.Name;
                 DestinationLocation = location;
@@ -389,7 +428,7 @@ namespace CommuteMate.ViewModels
 
 
             if (OriginText is not null && OriginText != "")
-                if(DestinationText is not null && DestinationText != "")
+                if (DestinationText is not null && DestinationText != "")
                 {
                     GetLocationButton.IsVisible = false;
                     GetRoutesButton.IsVisible = true;
@@ -544,6 +583,90 @@ namespace CommuteMate.ViewModels
             MapSpan mapSpan = new MapSpan(pin.Location, 0.01, 0.01);
             Map.MoveToRegion(mapSpan);
         }
+        [RelayCommand]
+        async Task DownloadPath(RoutePath Path)
+        {
+            if (IsBusy)
+                return;
+            try
+            {
+                IsBusy = true;
+                string pathName = OriginText + " to " + DestinationText;
+                string puvCodes = "";
+                List<OfflineStep> steps = [];
+                foreach (string code in Path.Summary.PUVCodes)
+                {
+                    puvCodes += code + ", ";
+                }
+                puvCodes = puvCodes.TrimEnd(',', ' ');
+                //pathName += puvCodes;
+
+                Summary summary = await _downloadsRepository.createSummary(new Summary
+                {
+                    TotalDistance = Path.Summary.TotalDistance,
+                    TotalDuration = Path.Summary.TotalDuration,
+                    TotalFare = Path.Summary.TotalFare,
+                    PUVs = puvCodes
+                });
+
+                OfflinePath newPath = await _downloadsRepository.createPath(new OfflinePath
+                {
+                    PathName = pathName,
+                    Origin = OriginText,
+                    OriginPoint = await _streetService.LocationToWkt(OriginLocation.Coordinate),
+                    Destination = DestinationText,
+                    DestinationPoint = await _streetService.LocationToWkt(DestinationLocation.Coordinate),
+                    Summary = summary
+                });
+
+
+                foreach (RouteStep step in Path.Steps)
+                {
+                    string geometryWkt = await _streetService.GeometryToWkt(step.StepGeometry.Coordinates.ToList());
+                    OfflineStep newStep = await _downloadsRepository.createStep(new OfflineStep
+                    {
+                        Action = step.Action,
+                        Instruction = step.Instruction,
+                        GeometryWkt = geometryWkt,
+                    });
+
+                    await _downloadsRepository.createPathStep(new PathStep
+                    {
+                        Path = newPath,
+                        Step = newStep
+                    });
+                }
+                await _downloadsRepository.updatePath(newPath);
+                CurrentPath.IsDownloaded = true;
+
+                CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                string text = "Go to Routes Page to view downloads";
+                ToastDuration duration = ToastDuration.Short;
+                double fontSize = 14;
+
+                var toast = Toast.Make(text, duration, fontSize);
+
+                await toast.Show(cancellationTokenSource.Token);
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error! Unable to download data, Please try again later", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+            return;
+        }
+
+        [RelayCommand]
+        async Task<RoutePath> deserializeOfflinePath(OfflinePath path)
+        {
+            RoutePath newPath = new RoutePath();
+
+            return newPath;
+        }
         public Task PrioritySelect(string priority)
         {
             List<RoutePath> prioritize = [];
@@ -565,7 +688,7 @@ namespace CommuteMate.ViewModels
                     break;
             }
             PathOptions.Clear();
-            foreach(var option in prioritize)
+            foreach (var option in prioritize)
             {
                 PathOptions.Add(option);
             }
@@ -573,6 +696,6 @@ namespace CommuteMate.ViewModels
             return Task.FromResult(PathOptions);
         }
 
-        
+
     }
 }

@@ -30,7 +30,6 @@ namespace CommuteMate.Models
         public string GeometryWKT { get; set; }
 
         [NotMapped]
-        public List<Coordinate> Coordinates { get; set; }
         public virtual ICollection<Route> Routes { get; set; }
         public virtual ICollection<RouteStreet> RouteStreets { get; set; }
         public override bool Equals(object obj)
@@ -49,7 +48,6 @@ namespace CommuteMate.Models
             // Combine hash codes of relevant properties
         }
     }
-
     public class RouteStreet
     {
         [PrimaryKey, AutoIncrement]
@@ -63,6 +61,10 @@ namespace CommuteMate.Models
         public long StreetOsmId { get; init; }
         public Street Street { get; init; }
     }
+
+    
+    
+    //ViewModel
     public class RouteView : BindableObject
     {
         public long Osm_Id { get; set; }
@@ -100,15 +102,6 @@ namespace CommuteMate.Models
                 OnPropertyChanged(nameof(streets));
             }
         }
-    }
-
-    //project objects]
-    public class StreetWithCoordinates
-    {
-        public int StreetId { get; set; }
-        public long Osm_Id { get; set; }
-        public string Role { get; set; }
-        public List<Coordinate> Coordinates { get; set; }
     }
 
 }

@@ -10,7 +10,6 @@ namespace CommuteMate.Services
             if (db != null)
                 return;
             // Get an absolute path to the database file
-            //var databasePath = PathAction.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "MyData.db");
             var databasePath = Path.Combine(FileSystem.AppDataDirectory, "Commute_Mate_Data.db");
 
             try

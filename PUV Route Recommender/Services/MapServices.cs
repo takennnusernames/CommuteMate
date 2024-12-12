@@ -207,7 +207,21 @@ namespace CommuteMate.Services
             }
             return locations;
         }
+        public bool checkLocationBounding(Location location)
+        {
+            var latitude = location.Latitude;
+            var longitude = location.Longitude;
 
+            var minX = 123.77;
+            var minY = 10.25;
+            var maxX = 123.9309;
+            var maxY = 10.4953;
+
+            if (latitude >= minY && latitude <= maxY && longitude >= minX && longitude <= maxX)
+                return true;
+            else
+                return false;
+        }
         public async Task<LocationDetails> GetCurrentLocationAsync()
         {
             var location = await _geolocation.GetLocationAsync(new GeolocationRequest
@@ -218,19 +232,14 @@ namespace CommuteMate.Services
 
             if (location != null)
             {
-                var latitude = location.Latitude;
-                var longitude = location.Longitude;
-
-                var minX = 123.77;
-                var minY = 10.25;
-                var maxX = 123.9309;
-                var maxY = 10.4953;
-
-                if (latitude >= minY && latitude <= maxY && longitude >= minX && longitude <= maxX)
+                if (checkLocationBounding(location))
                 {
+                    var latitude = location.Latitude;
+                    var longitude = location.Longitude;
+
                     LocationDetails details = new LocationDetails
                     {
-                        Coordinate = new Coordinate(latitude, longitude),
+                        Coordinate = new Coordinate(longitude, latitude),
                         Name = new string(latitude.ToString() + "," + longitude.ToString())
                     };
 
@@ -281,10 +290,15 @@ namespace CommuteMate.Services
             request.Headers.Add("X-Goog-Api-Key", "AIzaSyBR83nQPdiVRczeycyaJWrsqKCpq5mQ8e8");
             //request.Headers.Add("X-Goog-Api-Key", "AIzaSyC_zmye1jCAnMGsWfevUPmN8UzlRz6mu_g");
             request.Headers.Add("X-Goog-FieldMask", "places.displayName,places.location");
-            double latitude = 10.2592519;
-            double longitude = 123.7633896;
-            double highLatitude = 10.498277;
-            double highLongitude = 123.9291998;
+            //double latitude = 10.2592519;
+            //double longitude = 123.7633896;
+            //double highLatitude = 10.498277;
+            //double highLongitude = 123.9291998;
+
+            double latitude = 10.2500;
+            double longitude = 123.8500;
+            double highLatitude = 10.3500;
+            double highLongitude = 123.9500;
 
             var json = $@"{{
                   ""textQuery"" : ""{input}"",
@@ -331,17 +345,6 @@ namespace CommuteMate.Services
                 throw new Exception("Error in Searching Location", ex);
             }
 
-        }
-
-        static double CalculateTotalLength(List<Coordinate> coordinates)
-        {
-            double totalDistance = 0;
-            for (int i = 0; i < coordinates.Count - 1; i++)
-            {
-                double distance = CalculateHaversineDistance(coordinates[i], coordinates[i + 1]);
-                totalDistance += distance;
-            }
-            return totalDistance;
         }
 
         // Function to calculate the distance between two coordinates using the Haversine formula

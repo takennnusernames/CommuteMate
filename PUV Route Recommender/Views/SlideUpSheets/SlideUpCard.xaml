@@ -89,7 +89,7 @@
                 <Label Text="Route Details" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" FontSize="20" Padding="0" />
             </FlexLayout>
 
-            <Grid  BackgroundColor="LightBlue">
+            <Grid BackgroundColor="LightBlue" x:Name="DetailsGrid">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <!-- First row will adjust to its content -->
@@ -97,6 +97,7 @@
                     <!-- Second row will adjust to its content -->
                     <RowDefinition Height="*" />
                     <!-- Third row grows to fill available space -->
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <!-- Last row adjusts to its content -->
                 </Grid.RowDefinitions>
@@ -158,6 +159,8 @@ Style="{StaticResource LargeLabel}" HorizontalOptions="Center" VerticalOptions="
                     <Label Text="{Binding DestinationText}"
          Style="{StaticResource LargeLabel}" HorizontalOptions="Center" VerticalOptions="Center"/>
                 </HorizontalStackLayout>
+                <Button Grid.Row="4" Text="Download Offline" Command="{Binding DownloadPathCommand}" CommandParameter="{Binding CurrentPath}" IsVisible="{Binding CurrentPath.IsNotDownloaded}"/>
+                <Button Grid.Row="4" Text="Already Downloaded" IsEnabled="False" Command="{Binding DownloadPathCommand}" CommandParameter="{Binding CurrentPath}" IsVisible="{Binding CurrentPath.IsDownloaded}"/>
             </Grid>
         </VerticalStackLayout>
         

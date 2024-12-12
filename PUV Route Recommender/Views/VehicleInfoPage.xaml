@@ -7,14 +7,6 @@
              x:DataType="viewModel:VehicleInfoViewModel"
              Title="Vehicle List">
 
-    <!--<ListView x:Name="vehicle_list" BackgroundColor="Red">
-        <ListView.ItemTemplate>
-            <DataTemplate>
-                <TextCell Text="{Binding Type}"/>
-            </DataTemplate>
-        </ListView.ItemTemplate>
-    </ListView>-->
-
     <Frame BackgroundColor="Transparent" CornerRadius="0">
         <Grid RowDefinitions="*,Auto">
             <CarouselView ItemsSource="{Binding Vehicles}" HeightRequest="600" IndicatorView="indicatorView" VerticalOptions="Start" BackgroundColor="Transparent">

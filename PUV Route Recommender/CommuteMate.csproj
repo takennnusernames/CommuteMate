@@ -99,6 +99,7 @@
     <MauiSplashScreen Include="Resources\AppIcon\commutemate.svg" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Maui" Version="9.1.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.68.0.3533" />
     <PackageReference Include="Mapsui" Version="4.1.5" />
@@ -112,7 +113,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Nominatim" Version="1.2.0" />
     <PackageReference Include="OsmSharp" Version="6.2.0" />
-    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.20" />
+    <PackageReference Include="Microsoft.Maui.Controls" Version="8.0.91" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.20" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
@@ -127,6 +128,9 @@
     <Compile Update="Views\MapView.xaml.cs">
       <DependentUpon>MapView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\OfflinePathMapVIew.xaml.cs">
+      <DependentUpon>OfflinePathMapVIew.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\VehicleInfoPage.xaml.cs">
       <DependentUpon>VehicleInfoPage.xaml</DependentUpon>
     </Compile>
@@ -138,10 +142,16 @@
     <MauiXaml Update="Views\DetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
+    <MauiXaml Update="Views\OfflinePathMapVIew.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Views\RouteDetailsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\RouteListView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Views\SlideUpSheets\OfflineSlideUpCard.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
     <MauiXaml Update="Views\SurveyPage.xaml">

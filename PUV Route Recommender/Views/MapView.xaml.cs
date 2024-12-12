@@ -1,11 +1,8 @@
-using CommuteMate.Services;
 using Microsoft.Maui.Maps;
 using NetTopologySuite.Geometries;
 using Location = Microsoft.Maui.Devices.Sensors.Location;
 using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
-using Microsoft.Maui.Controls.Maps;
 using NetTopologySuite.IO;
-using Microsoft.Maui.Controls.Shapes;
 
 namespace CommuteMate.Views;
 

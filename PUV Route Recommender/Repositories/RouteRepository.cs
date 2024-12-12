@@ -1,8 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
 using CommuteMate.Interfaces;
-using SQLite;
-using System.Collections;
 
 namespace CommuteMate.Repositories
 {

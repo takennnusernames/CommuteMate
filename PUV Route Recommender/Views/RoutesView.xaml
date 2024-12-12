@@ -9,7 +9,7 @@
              Title="{Binding Title}">
 
     <Grid Padding="12"
-          RowDefinitions="Auto,*,Auto"
+          RowDefinitions="Auto,Auto,*,Auto"
           RowSpacing="0"
           BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}">
         <Grid Grid.Row="0">
@@ -62,6 +62,49 @@
         </Grid>
         <CollectionView BackgroundColor="Transparent"
                         Grid.Row="1"
+                        ItemsSource="{Binding Downloads}"
+                        SelectionMode="None">
+            <CollectionView.ItemTemplate>
+                <DataTemplate x:DataType="model:OfflinePath">
+                    <Grid Padding="10">
+                        <ContentView>
+                            <VerticalStackLayout Spacing="15">
+                                <Frame HeightRequest="45"
+                                       Padding="0"
+                                       Style="{StaticResource CardView}"
+                                       BorderColor="Orange">
+                                    <Frame.GestureRecognizers>
+                                        <TapGestureRecognizer 
+                    Tapped="DownloadTapped"
+                    Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=ShowDownloadedPathCommand}"
+                                            CommandParameter="{Binding .}"/>
+                                    </Frame.GestureRecognizers>
+                                    <Grid Padding="0"
+                    ColumnDefinitions="125, *">
+                                        <HorizontalStackLayout Grid.ColumnSpan="2"
+           Padding="15,0" HeightRequest="30" Spacing="5">
+                                            <Grid ColumnDefinitions="Auto,*">
+                                                <HorizontalStackLayout Grid.Column="0" >
+                                                    <Image Source="vehicle_icon.png"/>
+                                                    <Label Text="{Binding Summary.PUVs}" VerticalOptions="Center" Margin="12,0"/>
+                                                </HorizontalStackLayout>
+                                                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="End">
+                                                    <Image Source="route_icon.png"/>
+                                                    <Label Text="{Binding PathName}" VerticalOptions="Center"/>
+                                                </HorizontalStackLayout>
+                                            </Grid>
+                                        </HorizontalStackLayout>
+                                    </Grid>
+                                </Frame>
+                            </VerticalStackLayout>
+                        </ContentView>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            
+        </CollectionView>
+        <CollectionView BackgroundColor="Transparent"
+                        Grid.Row="2"
                         ItemsSource="{Binding Routes}"
                         SelectionMode="None"
                         x:Name="collection">
@@ -77,7 +120,7 @@
                                        BorderColor="Orange">
                                     <Frame.GestureRecognizers>
                                         <TapGestureRecognizer 
-                                            Tapped="TapGestureRecognizer_Tapped"
+                                            Tapped="RouteTapped"
                                             Command="{Binding Source={x:RelativeSource AncestorType={x:Type viewModel:RoutesViewModel}}, Path=GetStreetsCommand}"
                                             CommandParameter="{Binding .}"/>
                                     </Frame.GestureRecognizers>
@@ -167,7 +210,7 @@
         </CollectionView>
         <Button
             x:Name="GetRoutesButton"
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="9"
             Command="{Binding GetRoutesCommand}"
             IsEnabled="{Binding IsNotBusy}"

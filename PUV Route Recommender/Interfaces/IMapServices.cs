@@ -1,7 +1,5 @@
 ﻿using NetTopologySuite.Geometries;
-using CommuteMate.DTO;
 using Location = Microsoft.Maui.Devices.Sensors.Location;
-using Map = Mapsui.Map;
 using GoogleMap = Microsoft.Maui.Controls.Maps.Map;
 using Microsoft.Maui.Controls.Maps;
 
@@ -20,5 +18,6 @@ namespace CommuteMate.Interfaces
         Task<LocationDetails> GetCurrentLocationAsync();
         Task<List<LocationDetails>> SearchLocationAsync(string input);
         Task<List<LocationDetails>> GoogleSearchLocationAsync(string input);
+        bool checkLocationBounding(Location location);
     }
 }

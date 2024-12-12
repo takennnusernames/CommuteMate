@@ -4,6 +4,7 @@ using CommuteMate.Services;
 using CommuteMate.Views;
 using CommuteMate.Views.SlideUpSheets;
 using Microsoft.Extensions.Logging;
+using CommunityToolkit.Maui;
 using SkiaSharp.Views.Maui.Controls.Hosting;
 using The49.Maui.BottomSheet;
 #if ANDROID
@@ -22,6 +23,7 @@ namespace CommuteMate
             builder
                 .UseMauiApp<App>()
                 //.UseSkiaSharp(true) /*for mapsui*/
+                .UseMauiCommunityToolkit()
                 .UseMauiMaps()
                 .UseBottomSheet()
                 .ConfigureFonts(fonts =>
@@ -51,6 +53,8 @@ namespace CommuteMate
                 new RouteRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IRouteStreetRepository>(provider =>
                 new RouteStreetRepository(provider.GetService<CommuteMateDbContext>()));
+            builder.Services.AddSingleton<IDownloadsRepository>(provider =>
+                new DownloadsRepository(provider.GetService<CommuteMateDbContext>()));
             builder.Services.AddSingleton<IVehicleRepository, VehicleRepository>();
 
             //Services
@@ -76,18 +80,20 @@ namespace CommuteMate
             builder.Services.AddSingleton<NavigatingPage>();
             builder.Services.AddTransient<SurveyPage>();
             builder.Services.AddTransient<MapView>();
+            builder.Services.AddTransient<OfflinePathMapView>();
             builder.Services.AddTransient<RouteDetailsView>();
             builder.Services.AddSingleton<DetailsView>();
             builder.Services.AddSingleton<VehicleInfoPage>();
 
             //Sheet
             builder.Services.AddSingleton<SlideUpCard>();
+            builder.Services.AddSingleton<OfflineSlideUpCard>();
 
             //Database
             var dbContext = new CommuteMateDbContext();
-#if DEBUG
-            dbContext.Database.EnsureDeleted();
-#endif
+//#if DEBUG
+//            dbContext.Database.EnsureDeleted();
+//#endif
             dbContext.Database.EnsureCreated();
             dbContext.Dispose();
 

@@ -1,4 +1,6 @@
-﻿using CommuteMate.Interfaces;
+﻿using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Core;
+using CommuteMate.Interfaces;
 using CommuteMate.Views;
 using System.Text.RegularExpressions;
 
@@ -12,13 +14,15 @@ namespace CommuteMate.ViewModels
         readonly ICommuteMateApiService _commuteMateApiService;
         readonly IMapServices _mapServices;
         readonly IRouteStreetService _routeStreetService;
+        readonly IDownloadsRepository _downloadsRepository;
         public RoutesViewModel(
             IConnectivity connectivity,
             IRouteService routeService,
             IStreetService streetService,
             ICommuteMateApiService commuteMateApiService,
             IMapServices mapServices,
-            IRouteStreetService routeStreetService)
+            IRouteStreetService routeStreetService,
+            IDownloadsRepository downloadsRepository)
         {
             Title = "Route List";
             _connectivity = connectivity;
@@ -27,11 +31,13 @@ namespace CommuteMate.ViewModels
             _commuteMateApiService = commuteMateApiService;
             _mapServices = mapServices;
             _routeStreetService = routeStreetService;
+            _downloadsRepository = downloadsRepository;
         }
         //properties
         private ObservableCollection<RouteView> _allRoutes = [];
 
         private ObservableCollection<RouteView> _filteredRoutes = [];
+        private ObservableCollection<OfflinePath> _downloads = [];
 
         public ObservableCollection<RouteView> Routes
         {
@@ -39,6 +45,16 @@ namespace CommuteMate.ViewModels
             set
             {
                 _filteredRoutes = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<OfflinePath> Downloads
+        {
+            get => _downloads;
+            set
+            {
+                _downloads = value;
                 OnPropertyChanged();
             }
         }
@@ -159,10 +175,19 @@ namespace CommuteMate.ViewModels
                         $"Please check internet and try again.", "OK");
                     return;
                 }
-                var routes = await _commuteMateApiService.GetRoutes();
 
                 if (SearchResults.Count != 0)
                     SearchResults.Clear();
+
+                if (Downloads.Count > 0)
+                {
+                    Routes = new ObservableCollection<RouteView>(_allRoutes);
+                    Downloads.Clear();
+                    if(_allRoutes.Count > 0)
+                        return;
+                }
+                var routes = await _commuteMateApiService.GetRoutes();
+
 
                 Routes = new ObservableCollection<RouteView>(_allRoutes);
 
@@ -499,18 +524,37 @@ namespace CommuteMate.ViewModels
                     await _routeService.UpdateRouteAsync(route);
                 }
 
-                foreach (var street in Streets)
-                {
-                    await _streetService.InsertStreetAsync(street);
-                }
+                //foreach (var street in Streets)
+                //{
+                //    await _streetService.InsertStreetAsync(street);
+                //}
             }
             catch(Exception ex)
             {
-                await Shell.Current.DisplayAlert("Error! Failed delete data, Please try again later", ex.Message, "OK");
+                await Shell.Current.DisplayAlert("Error! Failed to delete data, Please try again later", ex.Message, "OK");
             }
             finally
             { 
                 IsBusy = false; 
+            }
+        }
+        
+        async Task DeleteOfflinePath(OfflinePath offlinePath)
+        {
+            if (IsBusy)
+                return;
+            try
+            {
+                IsBusy = true;
+                await _downloadsRepository.DeleteOfflinePathAsync(offlinePath);
+            }
+            catch (Exception ex)
+            {
+                await Shell.Current.DisplayAlert("Error! Failed to delete data, Please try again later", ex.Message, "OK");
+            }
+            finally
+            {
+                IsBusy = false;
             }
         }
 
@@ -521,13 +565,15 @@ namespace CommuteMate.ViewModels
                 return;
             try
             {
-                var response = await Shell.Current.DisplayAlert("Open", "Show downloaded routes", "OK", "Cancel");
-                if (!response)
-                    return;
-
                 IsBusy = true;
                 List<Route> routes = [];
 
+                var downloads = await _downloadsRepository.GetAllOfflinePathsAsync();
+                if (downloads.Count != _downloads.Count)
+                {
+                    _downloads = new ObservableCollection<OfflinePath>(downloads);
+                    Downloads = new ObservableCollection<OfflinePath>(_downloads);
+                }
                 routes = await _routeService.GetOfflineRoutesAsync();
 
                 if (SearchResults.Count != 0)
@@ -535,6 +581,7 @@ namespace CommuteMate.ViewModels
 
 
                 if (routes != null)
+                {
                     foreach (var result in routes)
                     {
                         var parts = result.Name.Split(new[] { ':' }, 2);
@@ -548,14 +595,29 @@ namespace CommuteMate.ViewModels
                             IsDownloaded = result.StreetNameSaved
                         });
                     }
+                    getRoutesButton.IsEnabled = true;
+                }
 
-                Routes = new ObservableCollection<RouteView>(SearchResults);
-                getRoutesButton.IsEnabled = true;
+                if (SearchResults.Count() < 1 && Downloads.Count() < 1)
+                {
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                    string text = "You have no downloads";
+                    ToastDuration duration = ToastDuration.Short;
+                    double fontSize = 14;
+
+                    var toast = Toast.Make(text, duration, fontSize);
+
+                    await toast.Show(cancellationTokenSource.Token);
+                    Routes = new ObservableCollection<RouteView>(_allRoutes) ;
+                }
+                else
+                    Routes = new ObservableCollection<RouteView>(SearchResults);
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Unable to get routes: {ex.Message}");
-                await Shell.Current.DisplayAlert("Alert!", "Press Retrieve Routes button to Load Routes", "OK");
+                Debug.WriteLine($"Unable to get downloads: {ex.Message}");
+                await Shell.Current.DisplayAlert("There was an error in retrieving downloads", "Please try restarting your application", "OK");
 
             }
             finally
@@ -564,6 +626,42 @@ namespace CommuteMate.ViewModels
             }
         }
 
+        [RelayCommand]
+        async Task ShowDownloadedPath(OfflinePath offlinePath)
+        {
+            if (IsBusy)
+                return;
+            try
+            {
+                //var steps = await _downloadsRepository.GetPathStep(offlinePath.Id);
+
+                var response = await Shell.Current.DisplayAlert("", "Select Action", "Open on Map", "Delete");
+                if (!response)
+                {
+                    await DeleteOfflinePath(offlinePath);
+                    await ShowDownloads();
+                    return;
+                }
+
+                IsBusy = true;
+                var navigationParameter = new ShellNavigationQueryParameters
+                {
+                    { "Path", offlinePath }
+                };
+
+                await Shell.Current.GoToAsync($"{nameof(OfflinePathMapView)}", navigationParameter);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Unable to get routes: {ex.Message}");
+                await Shell.Current.DisplayAlert("Error!", "Unable to load Streets on Map", "OK");
+
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
         [RelayCommand]
         async Task OpenOSM(long osmId)
         {
@@ -647,7 +745,20 @@ namespace CommuteMate.ViewModels
                 if (RoutesSearchBar.IsSoftInputShowing())
                     await RoutesSearchBar.HideSoftInputAsync(System.Threading.CancellationToken.None);
 
-                Routes = new ObservableCollection<RouteView>(SearchResults);
+                if (SearchResults.Count() < 1)
+                {
+                    CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
+
+                    string text = "You have no downloads";
+                    ToastDuration duration = ToastDuration.Short;
+                    double fontSize = 14;
+
+                    var toast = Toast.Make(text, duration, fontSize);
+
+                    await toast.Show(cancellationTokenSource.Token);
+                }
+                else
+                    Routes = new ObservableCollection<RouteView>(SearchResults);
 
             }
             catch (Exception ex)

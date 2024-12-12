@@ -1,6 +1,3 @@
-using CommuteMate.Repositories;
-using Vehicle = CommuteMate.Models.Vehicle;
-
 namespace CommuteMate.Views;
 
 public partial class VehicleInfoPage : ContentPage
@@ -10,13 +7,6 @@ public partial class VehicleInfoPage : ContentPage
 		InitializeComponent();
         BindingContext = viewModel;
 	}
-
-    //protected override void OnAppearing()
-    //{
-    //    base.OnAppearing();
-    //    var viewModel = BindingContext as VehicleInfoViewModel;
-    //    viewModel.GetVehicles();
-    //}
 
     protected override async void OnNavigatedTo(NavigatedToEventArgs args)
     {

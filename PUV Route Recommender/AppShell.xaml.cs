@@ -15,6 +15,7 @@ namespace CommuteMate
             Routing.RegisterRoute(nameof(RouteDetailsView), typeof(RouteDetailsView));
             Routing.RegisterRoute(nameof(SurveyPage), typeof(SurveyPage));
             Routing.RegisterRoute(nameof(MapView), typeof(MapView));
+            Routing.RegisterRoute(nameof(OfflinePathMapView), typeof(OfflinePathMapView));
         }
     }
 }

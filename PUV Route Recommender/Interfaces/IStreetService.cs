@@ -16,5 +16,7 @@ namespace CommuteMate.Interfaces
         Task<Street> GetStreetByIdAsync(int id);
         Task UpdateStreetAsync(Street street);
         Task DeleteStreetAsync(Street street);
+        Task<string> GeometryToWkt(List<Coordinate> coordinates);
+        Task<string> LocationToWkt(Coordinate coordinate);
     }
 }

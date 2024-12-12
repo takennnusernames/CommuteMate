@@ -12,7 +12,7 @@
              x:Name="this">
     <Grid>
 
-        <maps:Map x:Name="testMap" MapType="Street"/>
+        <maps:Map x:Name="Map" MapType="Street"/>
     </Grid>
 </ContentPage>
  
